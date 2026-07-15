@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Método Express — Sua primeira renda extra em 7 dias | Operação Home Office</title>
+  <meta name="description" content="Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo e entenda como construir seu primeiro serviço em 7 dias, só com o celular.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://exemplo.com.br/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="Operação Home Office">
+  <meta property="og:title" content="Método Express — Sua primeira renda extra em 7 dias">
+  <meta property="og:description" content="Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo e entenda como funciona.">
+  <meta property="og:image" content="https://exemplo.com.br/assets/images/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://exemplo.com.br/">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Método Express — Sua primeira renda extra em 7 dias">
+  <meta name="twitter:description" content="Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo e entenda como funciona.">
+  <meta name="twitter:image" content="https://exemplo.com.br/assets/images/og-image.jpg">
+
+  <meta name="theme-color" content="#0F766E">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
+
+  <!-- Fontes: preconnect + swap para não bloquear a renderização -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="preload" href="styles.css" as="style">
+  <link rel="stylesheet" href="styles.css">
+
+  <!--
+    RASTREAMENTO — Meta Pixel e TikTok Pixel (NÃO ATIVADO)
+    Cole o Meta Pixel (Facebook/Instagram Ads) e o TikTok Pixel aqui dentro do <head>,
+    assim que as contas de anúncio estiverem criadas. Não remova este comentário até ativar.
+
+    1) Meta Pixel: cole o snippet oficial do Gerenciador de Eventos aqui.
+    <script>
+      !function(f,b,e,v,n,t,s){...}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', 'SEU_PIXEL_ID');
+      fbq('track', 'PageView');
+    </script>
+
+    2) TikTok Pixel: cole o snippet oficial do TikTok Ads Manager aqui.
+    <script>
+      !function (w, d, t) {...}(window, document, 'ttq');
+      ttq.load('SEU_PIXEL_ID');
+      ttq.page();
+    </script>
+  -->
+</head>
+<body>
+
+  <!-- ============ 1. VSL + HEADLINE ============ -->
+  <header class="hero">
+    <div class="container">
+      <p class="eyebrow">Operação Home Office</p>
+
+      <!--
+        PLAYER DE VÍDEO — a URL real ainda não existe (vídeo não gravado).
+        A troca é feita numa única constante no topo do script.js: VSL_VIDEO_URL
+
+        Suporta 3 formatos, defina o valor da constante de acordo:
+          • YouTube (privado/não listado): 'https://www.youtube.com/embed/SEU_ID'
+          • Vimeo:                          'https://player.vimeo.com/video/SEU_ID'
+          • Vídeo próprio (self-hosted):    'assets/videos/vsl.mp4'
+
+        Enquanto VSL_VIDEO_URL estiver vazia, aparece o quadro abaixo como aviso visual.
+        O player só carrega (iframe ou <video>) depois do clique do usuário — evita
+        baixar o player do YouTube/Vimeo (script pesado) na primeira carga da página,
+        e garante que nunca haja autoplay.
+      -->
+      <div class="vsl-player" id="vslPlayer" role="button" tabindex="0" aria-label="Reproduzir vídeo de apresentação do Método Express">
+        <div class="vsl-play-btn" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <p class="vsl-player-label">Assista: como funciona o Método Express</p>
+      </div>
+
+      <h1 class="hero-headline">Sua primeira renda extra em 7 dias — só com o celular que você já tem</h1>
+      <p class="hero-subheadline">Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo acima e entenda como funciona.</p>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ============ 2. ISSO É PRA VOCÊ SE... ============ -->
+    <section class="section" aria-labelledby="qualifica-titulo">
+      <div class="container">
+        <h2 id="qualifica-titulo">Isso é pra você se...</h2>
+        <ul class="check-list">
+          <li>Você quer ter mais controle do seu tempo, sem depender só de um emprego fixo</li>
+          <li>Você tem vontade de aprender algo novo, mas não sabe por onde começar</li>
+          <li>Você já pensou em trabalhar com internet, mas achou que precisava saber muito de tecnologia</li>
+          <li>Você não tem dinheiro pra investir em computador, anúncio ou ferramenta paga agora</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 3. O QUE VOCÊ CONSTRÓI EM 7 DIAS ============ -->
+    <section class="section section-alt" aria-labelledby="constroi-titulo">
+      <div class="container">
+        <h2 id="constroi-titulo">O que você constrói em 7 dias</h2>
+        <ul class="build-list">
+          <li>
+            <span class="build-number">1</span>
+            <span>Um serviço definido que você já sabe, ou aprende rápido, a entregar</span>
+          </li>
+          <li>
+            <span class="build-number">2</span>
+            <span>Um perfil profissional publicado, com exemplos prontos pra mostrar</span>
+          </li>
+          <li>
+            <span class="build-number">3</span>
+            <span>Uma oferta escrita em uma frase, fácil de explicar pra qualquer pessoa</span>
+          </li>
+          <li>
+            <span class="build-number">4</span>
+            <span>10 abordagens reais enviadas pra negócios de verdade</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 4. COMO FUNCIONA O MÉTODO ============ -->
+    <section class="section" aria-labelledby="como-funciona-titulo">
+      <div class="container">
+        <h2 id="como-funciona-titulo">Como funciona o método</h2>
+        <div class="stats-row">
+          <div class="stat-card">
+            <span class="stat-number">5</span>
+            <span class="stat-label">módulos</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number">20</span>
+            <span class="stat-label">aulas curtas</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number">6–12</span>
+            <span class="stat-label">minutos por aula</span>
+          </div>
+        </div>
+        <p class="lead-text">Aulas curtas, feitas pra assistir e executar no mesmo dia.</p>
+        <p class="lead-text">Cada aula termina numa ação. Não é curso pra só assistir — é pra fazer.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5. O QUE ISSO NÃO É ============ -->
+    <section class="section section-alt" aria-labelledby="nao-e-titulo">
+      <div class="container">
+        <h2 id="nao-e-titulo">O que isso não é</h2>
+        <ul class="cross-list">
+          <li><span class="cross-icon" aria-hidden="true">✕</span> Não é promessa de renda garantida</li>
+          <li><span class="cross-icon" aria-hidden="true">✕</span> Não é fórmula mágica nem trabalho sem esforço</li>
+          <li><span class="cross-icon" aria-hidden="true">✕</span> Não é curso de programação nem de design avançado</li>
+          <li class="cross-list-highlight"><span class="check-icon" aria-hidden="true">✓</span> É estrutura, execução e acompanhamento — o resto depende de você</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 6. BÔNUS INCLUSO ============ -->
+    <section class="section" aria-labelledby="bonus-titulo">
+      <div class="container">
+        <h2 id="bonus-titulo">Bônus incluso</h2>
+        <div class="bonus-card">
+          <p class="bonus-tag">Bônus</p>
+          <h3>Cofre Financeiro do Operador</h3>
+          <p>5 aulas curtas ensinando a administrar o dinheiro que já for entrando, pra você não desistir por causa de caixa vazio.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 7. INVESTIMENTO ============ -->
+    <section class="section section-alt" aria-labelledby="investimento-titulo" id="investimento">
+      <div class="container">
+        <h2 id="investimento-titulo">Investimento</h2>
+        <div class="price-card">
+          <p class="price">R$97 <span>à vista</span></p>
+          <p class="price-alt">ou 3x de R$37</p>
+
+          <!--
+            BOTÃO DE COMPRA — checkout do Hotmart.
+            Troque a constante HOTMART_CHECKOUT_URL no topo do script.js.
+          -->
+          <a href="#" class="btn btn-primary btn-cta" id="ctaInvestimento" target="_blank" rel="noopener">Quero começar meu Método Express</a>
+
+          <p class="guarantee">
+            <strong>Garantia de execução:</strong> complete as missões da primeira semana e, se mesmo assim achar que não é pra você, devolvemos seu dinheiro.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 8. PERGUNTAS FREQUENTES ============ -->
+    <section class="section" aria-labelledby="faq-titulo">
+      <div class="container">
+        <h2 id="faq-titulo">Perguntas frequentes</h2>
+        <div class="faq-list" id="faqList">
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              <span>Preciso saber alguma coisa de tecnologia?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Não. As aulas te ensinam a usar as ferramentas do zero, passo a passo.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              <span>Preciso ter computador?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Não. Todo o Método Express funciona 100% pelo celular.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              <span>Em quanto tempo eu vejo resultado?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Em 7 dias você sai com perfil, oferta e propostas enviadas. Fechar cliente depende de execução e do mercado — por isso o método não promete prazo pra isso.</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              <span>Funciona pra mim mesmo sendo menor de idade?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer">
+              <p>Sim, com algumas adaptações. O bônus Cofre Financeiro tem uma aula específica sobre como cobrar e receber pagamento sendo menor de idade.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 9. CHAMADA FINAL ============ -->
+    <section class="section section-final" aria-labelledby="final-titulo">
+      <div class="container">
+        <h2 id="final-titulo">Você não precisa estar pronto pra começar.<br>Precisa só dar o primeiro passo.</h2>
+        <a href="#" class="btn btn-primary btn-cta" id="ctaFinal" target="_blank" rel="noopener">Quero começar meu Método Express</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; <span id="anoAtual"></span> Operação Home Office. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Botão flutuante de WhatsApp -->
+  <a href="#" id="whatsappFloat" class="whatsapp-float" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+    <svg viewBox="0 0 32 32" width="28" height="28" fill="#FFFFFF" aria-hidden="true">
+      <path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.5.73 4.83 2 6.79L4 29l7.36-1.93a11.9 11.9 0 0 0 4.66.95h.01c6.62 0 12.02-5.4 12.02-12.02C28.05 8.4 22.65 3 16.02 3zm0 21.8h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.69.97.99-3.6-.23-.37a9.77 9.77 0 0 1-1.5-5.2c0-5.4 4.4-9.8 9.81-9.8 2.62 0 5.08 1.02 6.93 2.88a9.74 9.74 0 0 1 2.87 6.93c0 5.4-4.4 9.77-9.82 9.77zm5.37-7.32c-.29-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.66.15-.2.29-.76.96-.93 1.16-.17.2-.34.22-.63.07-.29-.15-1.24-.46-2.36-1.46-.87-.78-1.46-1.74-1.63-2.03-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.29-.49.1-.2.05-.37-.02-.51-.07-.15-.66-1.59-.9-2.18-.24-.57-.48-.5-.66-.51h-.56c-.2 0-.51.07-.78.37-.27.29-1.02 1-1.02 2.44s1.05 2.83 1.19 3.03c.15.2 2.06 3.14 4.99 4.4.7.3 1.24.48 1.67.61.7.22 1.34.19 1.84.12.56-.08 1.75-.71 2-1.4.24-.68.24-1.27.17-1.4-.07-.13-.27-.2-.56-.34z"/>
+    </svg>
+  </a>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
