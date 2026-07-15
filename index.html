@@ -6,7 +6,7 @@
   <title>Método Express — Sua primeira renda extra em 7 dias | Operação Home Office</title>
   <meta name="description" content="Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo e entenda como construir seu primeiro serviço em 7 dias, só com o celular.">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://exemplo.com.br/">
+  <link rel="canonical" href="https://operacaohomeoffice.vercel.app/">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
@@ -14,16 +14,51 @@
   <meta property="og:site_name" content="Operação Home Office">
   <meta property="og:title" content="Método Express — Sua primeira renda extra em 7 dias">
   <meta property="og:description" content="Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo e entenda como funciona.">
-  <meta property="og:image" content="https://exemplo.com.br/assets/images/og-image.jpg">
+  <meta property="og:image" content="https://operacaohomeoffice.vercel.app/assets/images/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://exemplo.com.br/">
+  <meta property="og:url" content="https://operacaohomeoffice.vercel.app/">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Método Express — Sua primeira renda extra em 7 dias">
   <meta name="twitter:description" content="Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo e entenda como funciona.">
-  <meta name="twitter:image" content="https://exemplo.com.br/assets/images/og-image.jpg">
+  <meta name="twitter:image" content="https://operacaohomeoffice.vercel.app/assets/images/og-image.jpg">
+
+  <!-- Dados estruturados: FAQ no resultado de busca do Google -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Preciso saber alguma coisa de tecnologia?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Não. As aulas te ensinam a usar as ferramentas do zero, passo a passo." }
+      },
+      {
+        "@type": "Question",
+        "name": "Preciso ter computador?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Não. Todo o Método Express funciona 100% pelo celular." }
+      },
+      {
+        "@type": "Question",
+        "name": "Em quanto tempo eu vejo resultado?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Em 7 dias você sai com perfil, oferta e propostas enviadas. Fechar cliente depende de execução e do mercado — por isso o método não promete prazo pra isso." }
+      },
+      {
+        "@type": "Question",
+        "name": "Funciona pra mim mesmo sendo menor de idade?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Sim, com algumas adaptações. O bônus Cofre Financeiro tem uma aula específica sobre como cobrar e receber pagamento sendo menor de idade." }
+      },
+      {
+        "@type": "Question",
+        "name": "Posso comprar os próximos níveis agora?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Ainda não — cada nível é liberado pelo resultado que você conquista no anterior, não por compra antecipada. Isso garante que você só investe no que já vai conseguir aplicar de verdade." }
+      }
+    ]
+  }
+  </script>
 
   <meta name="theme-color" content="#0F766E">
 
@@ -31,11 +66,10 @@
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
   <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
 
-  <!-- Fontes: preconnect + swap para não bloquear a renderização.
+  <!-- Fontes variáveis self-hosted (assets/fonts) — sem conexão com o Google Fonts.
        Sora para títulos (mais expressiva), Inter para texto corrido. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/sora-var.woff2" as="font" type="font/woff2" crossorigin>
 
   <link rel="preload" href="styles.css" as="style">
   <link rel="stylesheet" href="styles.css">
@@ -128,6 +162,36 @@
       <div class="container">
         <h2 id="servico-titulo">O serviço que você vai aprender</h2>
         <p class="lead-text">Organizar o Instagram de pequenos negócios usando ferramentas de IA gratuitas — um serviço que qualquer barbearia, salão ou hamburgueria de bairro precisa e não sabe fazer sozinha.</p>
+
+        <!-- Ilustração antes/depois em CSS puro (sem imagem, sem peso extra) -->
+        <div class="ba-wrap" aria-hidden="true">
+          <div class="ba-phone">
+            <p class="ba-label">Antes</p>
+            <div class="ba-profile">
+              <span class="ba-avatar"></span>
+              <span class="ba-lines"><i style="width:60%"></i><i style="width:38%"></i></span>
+            </div>
+            <div class="ba-grid ba-grid-before">
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+          <div class="ba-arrow">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="14 6 20 12 14 18"/></svg>
+          </div>
+          <div class="ba-phone ba-phone-after">
+            <p class="ba-label">Depois</p>
+            <div class="ba-profile">
+              <span class="ba-avatar"></span>
+              <span class="ba-lines"><i style="width:75%"></i><i style="width:50%"></i></span>
+            </div>
+            <div class="ba-highlights"><i></i><i></i><i></i><i></i></div>
+            <div class="ba-grid ba-grid-after">
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+        </div>
+        <p class="ba-caption">Ilustração do tipo de organização que você aprende a entregar.</p>
+
         <p class="lead-text">Você aprende do zero, direto no celular, e termina com exemplos prontos pra mostrar.</p>
       </div>
     </section>
@@ -266,7 +330,33 @@
     <section class="section reveal" aria-labelledby="evolucao-titulo">
       <div class="container">
         <h2 id="evolucao-titulo">Sua evolução depois do Método Express</h2>
-        <p class="lead-text">O Método Express é o primeiro passo, não o único. Conforme você fecha clientes, dá pra oferecer cada vez mais: depois do Instagram, vem landing page e a primeira campanha de tráfego pago pro mesmo cliente — e, mais adiante, automação com inteligência artificial pra atender lead 24 horas. Cada serviço a mais é receita recorrente pra você e mais resultado pro negócio do seu cliente. Você desbloqueia cada etapa pelo resultado que conquista, não por comprar antes da hora.</p>
+        <p class="lead-text">O Método Express é o primeiro passo, não o único. Conforme você fecha clientes, dá pra oferecer cada vez mais — cada serviço a mais é receita recorrente pra você e mais resultado pro negócio do seu cliente.</p>
+
+        <ul class="build-list evo-list">
+          <li>
+            <span class="build-number">1</span>
+            <span>
+              <strong>Instagram de pequenos negócios — o Método Express</strong>
+              Você está aqui: o serviço de entrada, pra fechar seus primeiros clientes.
+            </span>
+          </li>
+          <li>
+            <span class="build-number">2</span>
+            <span>
+              <strong>Landing page + primeira campanha de tráfego pago</strong>
+              Depois do Instagram, você oferece os próximos serviços pro mesmo cliente que já confia no seu trabalho.
+            </span>
+          </li>
+          <li>
+            <span class="build-number">3</span>
+            <span>
+              <strong>Automação com inteligência artificial</strong>
+              Mais adiante, você monta atendimento de lead 24 horas pro negócio do seu cliente.
+            </span>
+          </li>
+        </ul>
+
+        <p class="lead-text"><strong>Você desbloqueia cada etapa pelo resultado que conquista, não por comprar antes da hora.</strong></p>
       </div>
     </section>
 
@@ -286,6 +376,11 @@
             <span>Quero começar meu Método Express</span>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
           </a>
+
+          <ul class="cta-trust">
+            <li>100% pelo celular</li>
+            <li>Bônus Cofre Financeiro incluso</li>
+          </ul>
 
           <p class="guarantee">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
@@ -358,6 +453,11 @@
           <span>Quero começar meu Método Express</span>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
         </a>
+        <ul class="cta-trust">
+          <li>Garantia de execução</li>
+          <li>100% pelo celular</li>
+          <li>7 dias de missões guiadas</li>
+        </ul>
       </div>
     </section>
 
