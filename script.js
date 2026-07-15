@@ -17,7 +17,7 @@
   var HOTMART_CHECKOUT_URL = 'https://pay.hotmart.com/SEU_CODIGO_AQUI';
 
   // WhatsApp — número no formato internacional, só dígitos (ex: 5511999999999).
-  var WHATSAPP_NUMERO = '55SEUNUMERO';
+  var WHATSAPP_NUMERO = '5548988430812';
   var WHATSAPP_MENSAGEM = 'Oi! Vi a página do Método Express e queria saber mais.';
 
   /* ============================================================
