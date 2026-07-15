@@ -31,13 +31,17 @@
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
   <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
 
-  <!-- Fontes: preconnect + swap para não bloquear a renderização -->
+  <!-- Fontes: preconnect + swap para não bloquear a renderização.
+       Sora para títulos (mais expressiva), Inter para texto corrido. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="preload" href="styles.css" as="style">
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Sem JS: garante que o conteúdo com fade-in apareça normalmente -->
+  <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 
   <!--
     RASTREAMENTO — Meta Pixel e TikTok Pixel (NÃO ATIVADO)
@@ -62,8 +66,17 @@
 </head>
 <body>
 
+  <!-- Mini-header fixo, aparece só depois que rola além do herói -->
+  <div class="sticky-nav" id="stickyNav">
+    <div class="container sticky-nav-inner">
+      <span class="sticky-brand">Método Express</span>
+      <a href="#investimento" class="btn btn-primary btn-sm">Quero começar</a>
+    </div>
+  </div>
+
   <!-- ============ 1. VSL + HEADLINE ============ -->
   <header class="hero">
+    <div class="hero-grain" aria-hidden="true"></div>
     <div class="container">
       <p class="eyebrow">Operação Home Office</p>
 
@@ -83,33 +96,68 @@
       -->
       <div class="vsl-player" id="vslPlayer" role="button" tabindex="0" aria-label="Reproduzir vídeo de apresentação do Método Express">
         <div class="vsl-play-btn" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </div>
         <p class="vsl-player-label">Assista: como funciona o Método Express</p>
       </div>
 
       <h1 class="hero-headline">Sua primeira renda extra em 7 dias — só com o celular que você já tem</h1>
       <p class="hero-subheadline">Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo acima e entenda como funciona.</p>
+
+      <ul class="badge-row">
+        <li class="badge-pill">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><line x1="17" y1="4" x2="21" y2="20"/></svg>
+          Sem anúncio pago
+        </li>
+        <li class="badge-pill">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+          Sem CNPJ
+        </li>
+        <li class="badge-pill">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          Sem computador
+        </li>
+      </ul>
     </div>
   </header>
 
   <main>
 
     <!-- ============ 2. ISSO É PRA VOCÊ SE... ============ -->
-    <section class="section" aria-labelledby="qualifica-titulo">
+    <section class="section reveal" aria-labelledby="qualifica-titulo">
       <div class="container">
         <h2 id="qualifica-titulo">Isso é pra você se...</h2>
         <ul class="check-list">
-          <li>Você quer ter mais controle do seu tempo, sem depender só de um emprego fixo</li>
-          <li>Você tem vontade de aprender algo novo, mas não sabe por onde começar</li>
-          <li>Você já pensou em trabalhar com internet, mas achou que precisava saber muito de tecnologia</li>
-          <li>Você não tem dinheiro pra investir em computador, anúncio ou ferramenta paga agora</li>
+          <li>
+            <span class="icon-circle" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+            </span>
+            <span>Você quer ter mais controle do seu tempo, sem depender só de um emprego fixo</span>
+          </li>
+          <li>
+            <span class="icon-circle" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.5 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg>
+            </span>
+            <span>Você tem vontade de aprender algo novo, mas não sabe por onde começar</span>
+          </li>
+          <li>
+            <span class="icon-circle" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5a16.5 16.5 0 0 1 20 0"/><path d="M5.5 12.5a11.5 11.5 0 0 1 13 0"/><path d="M9 16.5a6.5 6.5 0 0 1 6 0"/><circle cx="12" cy="20" r="1"/></svg>
+            </span>
+            <span>Você já pensou em trabalhar com internet, mas achou que precisava saber muito de tecnologia</span>
+          </li>
+          <li>
+            <span class="icon-circle" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7.5" cy="14.5" r="1"/></svg>
+            </span>
+            <span>Você não tem dinheiro pra investir em computador, anúncio ou ferramenta paga agora</span>
+          </li>
         </ul>
       </div>
     </section>
 
     <!-- ============ 3. O QUE VOCÊ CONSTRÓI EM 7 DIAS ============ -->
-    <section class="section section-alt" aria-labelledby="constroi-titulo">
+    <section class="section section-alt reveal" aria-labelledby="constroi-titulo">
       <div class="container">
         <h2 id="constroi-titulo">O que você constrói em 7 dias</h2>
         <ul class="build-list">
@@ -134,19 +182,22 @@
     </section>
 
     <!-- ============ 4. COMO FUNCIONA O MÉTODO ============ -->
-    <section class="section" aria-labelledby="como-funciona-titulo">
+    <section class="section reveal" aria-labelledby="como-funciona-titulo">
       <div class="container">
         <h2 id="como-funciona-titulo">Como funciona o método</h2>
         <div class="stats-row">
           <div class="stat-card">
+            <svg class="stat-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="14" width="16" height="6" rx="1.5"/></svg>
             <span class="stat-number">5</span>
             <span class="stat-label">módulos</span>
           </div>
           <div class="stat-card">
+            <svg class="stat-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
             <span class="stat-number">20</span>
             <span class="stat-label">aulas curtas</span>
           </div>
           <div class="stat-card">
+            <svg class="stat-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
             <span class="stat-number">6–12</span>
             <span class="stat-label">minutos por aula</span>
           </div>
@@ -157,20 +208,40 @@
     </section>
 
     <!-- ============ 5. O QUE ISSO NÃO É ============ -->
-    <section class="section section-alt" aria-labelledby="nao-e-titulo">
+    <section class="section section-alt reveal" aria-labelledby="nao-e-titulo">
       <div class="container">
         <h2 id="nao-e-titulo">O que isso não é</h2>
         <ul class="cross-list">
-          <li><span class="cross-icon" aria-hidden="true">✕</span> Não é promessa de renda garantida</li>
-          <li><span class="cross-icon" aria-hidden="true">✕</span> Não é fórmula mágica nem trabalho sem esforço</li>
-          <li><span class="cross-icon" aria-hidden="true">✕</span> Não é curso de programação nem de design avançado</li>
-          <li class="cross-list-highlight"><span class="check-icon" aria-hidden="true">✓</span> É estrutura, execução e acompanhamento — o resto depende de você</li>
+          <li>
+            <span class="cross-badge" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+            </span>
+            Não é promessa de renda garantida
+          </li>
+          <li>
+            <span class="cross-badge" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+            </span>
+            Não é fórmula mágica nem trabalho sem esforço
+          </li>
+          <li>
+            <span class="cross-badge" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+            </span>
+            Não é curso de programação nem de design avançado
+          </li>
+          <li class="cross-list-highlight">
+            <span class="cross-badge cross-badge-positive" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+            </span>
+            É estrutura, execução e acompanhamento — o resto depende de você
+          </li>
         </ul>
       </div>
     </section>
 
     <!-- ============ 6. BÔNUS INCLUSO ============ -->
-    <section class="section" aria-labelledby="bonus-titulo">
+    <section class="section reveal" aria-labelledby="bonus-titulo">
       <div class="container">
         <h2 id="bonus-titulo">Bônus incluso</h2>
         <div class="bonus-card">
@@ -182,7 +253,7 @@
     </section>
 
     <!-- ============ 7. INVESTIMENTO ============ -->
-    <section class="section section-alt" aria-labelledby="investimento-titulo" id="investimento">
+    <section class="section section-alt reveal" aria-labelledby="investimento-titulo" id="investimento">
       <div class="container">
         <h2 id="investimento-titulo">Investimento</h2>
         <div class="price-card">
@@ -193,17 +264,21 @@
             BOTÃO DE COMPRA — checkout do Hotmart.
             Troque a constante HOTMART_CHECKOUT_URL no topo do script.js.
           -->
-          <a href="#" class="btn btn-primary btn-cta" id="ctaInvestimento" target="_blank" rel="noopener">Quero começar meu Método Express</a>
+          <a href="#" class="btn btn-primary btn-cta" id="ctaInvestimento" target="_blank" rel="noopener">
+            <span>Quero começar meu Método Express</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+          </a>
 
           <p class="guarantee">
-            <strong>Garantia de execução:</strong> complete as missões da primeira semana e, se mesmo assim achar que não é pra você, devolvemos seu dinheiro.
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            <span><strong>Garantia de execução:</strong> complete as missões da primeira semana e, se mesmo assim achar que não é pra você, devolvemos seu dinheiro.</span>
           </p>
         </div>
       </div>
     </section>
 
     <!-- ============ 8. PERGUNTAS FREQUENTES ============ -->
-    <section class="section" aria-labelledby="faq-titulo">
+    <section class="section reveal" aria-labelledby="faq-titulo">
       <div class="container">
         <h2 id="faq-titulo">Perguntas frequentes</h2>
         <div class="faq-list" id="faqList">
@@ -248,10 +323,14 @@
     </section>
 
     <!-- ============ 9. CHAMADA FINAL ============ -->
-    <section class="section section-final" aria-labelledby="final-titulo">
+    <section class="section section-final reveal" aria-labelledby="final-titulo">
+      <div class="hero-grain" aria-hidden="true"></div>
       <div class="container">
         <h2 id="final-titulo">Você não precisa estar pronto pra começar.<br>Precisa só dar o primeiro passo.</h2>
-        <a href="#" class="btn btn-primary btn-cta" id="ctaFinal" target="_blank" rel="noopener">Quero começar meu Método Express</a>
+        <a href="#" class="btn btn-primary btn-cta" id="ctaFinal" target="_blank" rel="noopener">
+          <span>Quero começar meu Método Express</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </a>
       </div>
     </section>
 
@@ -265,6 +344,7 @@
 
   <!-- Botão flutuante de WhatsApp -->
   <a href="#" id="whatsappFloat" class="whatsapp-float" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+    <span class="whatsapp-pulse" aria-hidden="true"></span>
     <svg viewBox="0 0 32 32" width="28" height="28" fill="#FFFFFF" aria-hidden="true">
       <path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.5.73 4.83 2 6.79L4 29l7.36-1.93a11.9 11.9 0 0 0 4.66.95h.01c6.62 0 12.02-5.4 12.02-12.02C28.05 8.4 22.65 3 16.02 3zm0 21.8h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.69.97.99-3.6-.23-.37a9.77 9.77 0 0 1-1.5-5.2c0-5.4 4.4-9.8 9.81-9.8 2.62 0 5.08 1.02 6.93 2.88a9.74 9.74 0 0 1 2.87 6.93c0 5.4-4.4 9.77-9.82 9.77zm5.37-7.32c-.29-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.66.15-.2.29-.76.96-.93 1.16-.17.2-.34.22-.63.07-.29-.15-1.24-.46-2.36-1.46-.87-.78-1.46-1.74-1.63-2.03-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.29-.49.1-.2.05-.37-.02-.51-.07-.15-.66-1.59-.9-2.18-.24-.57-.48-.5-.66-.51h-.56c-.2 0-.51.07-.78.37-.27.29-1.02 1-1.02 2.44s1.05 2.83 1.19 3.03c.15.2 2.06 3.14 4.99 4.4.7.3 1.24.48 1.67.61.7.22 1.34.19 1.84.12.56-.08 1.75-.71 2-1.4.24-.68.24-1.27.17-1.4-.07-.13-.27-.2-.56-.34z"/>
     </svg>

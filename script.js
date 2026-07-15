@@ -109,10 +109,56 @@
     if (el) el.textContent = new Date().getFullYear();
   }
 
+  /* ============================================================
+     Scroll reveal — fade-in leve nas seções ao entrar na tela.
+     ============================================================ */
+
+  function initScrollReveal() {
+    var targets = document.querySelectorAll('.reveal');
+    if (!targets.length) return;
+
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      targets.forEach(function (el) { el.classList.add('is-visible'); });
+      return;
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    targets.forEach(function (el) { observer.observe(el); });
+  }
+
+  /* ============================================================
+     Mini-header fixo — aparece só depois que passa do herói.
+     ============================================================ */
+
+  function initStickyNav() {
+    var nav = document.getElementById('stickyNav');
+    var hero = document.querySelector('.hero');
+    if (!nav || !hero || !('IntersectionObserver' in window)) return;
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        nav.classList.toggle('is-visible', !entry.isIntersecting);
+      });
+    }, { threshold: 0, rootMargin: '-1px 0px 0px 0px' });
+
+    observer.observe(hero);
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     initVsl();
     initFaq();
     initLinks();
     initFooterYear();
+    initScrollReveal();
+    initStickyNav();
   });
 })();
