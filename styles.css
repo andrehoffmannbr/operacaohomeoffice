@@ -527,6 +527,18 @@ ul {
   padding-top: 4px;
 }
 
+.build-outcomes strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--color-text);
+}
+
+.build-outcomes li span:last-child {
+  padding-top: 0;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+}
+
 /* Variante da timeline usada em "Sua evolução" */
 .evo-list {
   max-width: 560px;
