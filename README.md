@@ -1,14 +1,13 @@
 # Método Express — Landing Page
 
 Página de vendas de página única do curso **Método Express** (marca **Operação Home Office**).
-HTML5 + CSS + JavaScript vanilla, sem framework e sem dependências externas além do Google Fonts.
+HTML5 + CSS + JavaScript vanilla, sem framework e sem nenhuma dependência externa (fontes self-hosted).
 
 ## Estrutura
 
 ```
 /
-├── index.html
-├── styles.css
+├── index.html   (CSS embutido no <head>)
 ├── script.js
 ├── /assets
 │   ├── /images
@@ -47,13 +46,13 @@ O player só carrega o iframe do YouTube/Vimeo (ou o `<video>`, se for arquivo p
 
 ## Performance
 
-- Fontes carregadas via `preconnect` + `font-display: swap`.
-- CSS com `preload`.
+- Fontes self-hosted (`assets/fonts`) com `preload` + `font-display: swap` — zero conexão externa.
+- CSS embutido no `<head>` de `index.html` — elimina a requisição que bloqueava a renderização (Lighthouse). Para editar estilos, edite o bloco `<style>` do `index.html`.
 - JS carregado com `defer`.
-- Nenhuma dependência externa além da fonte do Google Fonts.
+- Nenhuma dependência externa.
 - Vídeo carregado sob demanda (ver seção acima).
 - Se for adicionar imagens (fotos de exemplo de perfil, etc.), use **WebP** e `loading="lazy"` em tudo que estiver abaixo da primeira dobra.
-- Antes de publicar, rode `styles.css` e `script.js` por um minificador (ex: [minify-cli](https://www.npmjs.com/package/minify) ou a própria otimização automática da Vercel) para reduzir o peso final.
+- Antes de publicar, rode `script.js` por um minificador (ex: [minify-cli](https://www.npmjs.com/package/minify) ou a própria otimização automática da Vercel) para reduzir o peso final.
 
 ## Deploy (GitHub + Vercel)
 
