@@ -1150,9 +1150,12 @@ ul {
   <!--
     Meta Pixel — versão otimizada do snippet oficial do Gerenciador de Eventos.
     fbq() fica disponível na hora (qualquer fbq('track', ...) chamado antes
-    do load só entra na fila), mas o carregamento do fbevents.js real (o
-    script pesado) só acontece depois do window.load, pra não competir com
-    fontes/CSS/imagens pelo que importa pro Lighthouse (LCP, FCP etc.).
+    do carregamento real só entra na fila), mas o fbevents.js (script de
+    ~105 KiB + uma chamada extra de config de ~63 KiB, ambos da própria
+    Meta) só é buscado no primeiro toque/scroll/movimento do visitante —
+    ou depois de 4s, o que vier primeiro. Isso tira esse peso do caminho
+    crítico de carregamento (LCP, FCP, TBT) sem perder o PageView de
+    ninguém que realmente interaja com a página.
   -->
   <script>
   !function (f, b, e, v, n, t, s) {
@@ -1162,11 +1165,23 @@ ul {
     };
     if (!f._fbq) f._fbq = n;
     n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
-    f.addEventListener('load', function () {
+
+    var started = false;
+    var triggers = ['scroll', 'touchstart', 'mousemove', 'keydown', 'click'];
+    var fallback;
+
+    function start() {
+      if (started) return;
+      started = true;
+      triggers.forEach(function (evt) { f.removeEventListener(evt, start); });
+      clearTimeout(fallback);
       t = b.createElement(e); t.async = !0; t.src = v;
       s = b.getElementsByTagName(e)[0];
       s.parentNode.insertBefore(t, s);
-    });
+    }
+
+    triggers.forEach(function (evt) { f.addEventListener(evt, start, { passive: true }); });
+    fallback = setTimeout(start, 4000);
   }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '3401433073361667');
   fbq('track', 'PageView');
