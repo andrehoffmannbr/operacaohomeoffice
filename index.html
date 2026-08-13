@@ -1007,6 +1007,62 @@ ul {
   outline-offset: 3px;
 }
 
+/* ---------- Gate de conteúdo (libera após alguns minutos de visita) ---------- */
+
+.gate-message {
+  display: none;
+  padding: 44px 0 64px;
+  text-align: center;
+}
+
+.content-locked .gate-message {
+  display: block;
+}
+
+.content-locked main,
+.content-locked .whatsapp-float,
+.content-locked .footer {
+  display: none;
+}
+
+.content-locked .sticky-nav {
+  display: none !important;
+}
+
+.gate-message-inner {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 40ch;
+  margin: 0 auto;
+}
+
+.gate-message p {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  margin: 0;
+}
+
+.gate-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-accent-light);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: gate-spin 0.9s linear infinite;
+}
+
+@keyframes gate-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate-spinner {
+    animation: none;
+  }
+}
+
 /* ---------- Telas maiores ---------- */
 
 @media (min-width: 640px) {
@@ -1073,8 +1129,8 @@ ul {
       <p class="eyebrow">Operação Home Office</p>
 
       <!--
-        PLAYER DE VÍDEO — a URL real ainda não existe (vídeo não gravado).
-        A troca é feita numa única constante no topo do script.js: VSL_VIDEO_URL
+        PLAYER DE VÍDEO — URL definida em VSL_VIDEO_URL no topo do script.js
+        (hoje: embed do YouTube, vídeo não listado).
 
         Suporta 3 formatos, defina o valor da constante de acordo:
           • YouTube (privado/não listado): 'https://www.youtube.com/embed/SEU_ID'
@@ -1112,6 +1168,21 @@ ul {
       </ul>
     </div>
   </header>
+
+  <!--
+    GATE DE CONTEÚDO — tudo abaixo do vídeo fica escondido até passarem
+    CONTENT_GATE_MINUTES minutos de visita (constante no topo do script.js).
+    Controlado via classe .content-locked no <body>, adicionada/removida
+    pelo initContentGate() em script.js.
+  -->
+  <div class="gate-message" id="gateMessage">
+    <div class="container">
+      <div class="gate-message-inner">
+        <span class="gate-spinner" aria-hidden="true"></span>
+        <p>Continue assistindo — o conteúdo completo libera em instantes.</p>
+      </div>
+    </div>
+  </div>
 
   <main>
 

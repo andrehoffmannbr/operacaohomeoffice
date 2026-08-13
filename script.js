@@ -11,7 +11,11 @@
   //   YouTube: 'https://www.youtube.com/embed/SEU_ID'
   //   Vimeo:   'https://player.vimeo.com/video/SEU_ID'
   //   Arquivo próprio: 'assets/videos/vsl.mp4'
-  var VSL_VIDEO_URL = '';
+  var VSL_VIDEO_URL = 'https://www.youtube.com/embed/a4tbLBVzkOs';
+
+  // Gate de conteúdo — quantos minutos de visita até liberar tudo abaixo do vídeo.
+  var CONTENT_GATE_MINUTES = 5;
+  var CONTENT_GATE_STORAGE_KEY = 'mex_content_unlock_at';
 
   // Link de checkout do Hotmart.
   var HOTMART_CHECKOUT_URL = 'https://pay.hotmart.com/SEU_CODIGO_AQUI';
@@ -63,6 +67,35 @@
         loadVideo();
       }
     });
+  }
+
+  /* ============================================================
+     Gate de conteúdo — tudo abaixo do vídeo fica escondido até
+     CONTENT_GATE_MINUTES minutos de visita. O horário de liberação
+     é salvo no localStorage, então persiste se a pessoa sair e voltar.
+     Se o localStorage não estiver disponível, libera direto (fail-open).
+     ============================================================ */
+
+  function initContentGate() {
+    try {
+      var gateMs = CONTENT_GATE_MINUTES * 60 * 1000;
+      var unlockAt = Number(localStorage.getItem(CONTENT_GATE_STORAGE_KEY));
+
+      if (!unlockAt) {
+        unlockAt = Date.now() + gateMs;
+        localStorage.setItem(CONTENT_GATE_STORAGE_KEY, String(unlockAt));
+      }
+
+      var remaining = unlockAt - Date.now();
+      if (remaining <= 0) return;
+
+      document.body.classList.add('content-locked');
+      setTimeout(function () {
+        document.body.classList.remove('content-locked');
+      }, remaining);
+    } catch (e) {
+      // localStorage indisponível (ex: modo privado) — não bloqueia o conteúdo.
+    }
   }
 
   /* ============================================================
@@ -154,6 +187,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    initContentGate();
     initVsl();
     initFaq();
     initLinks();
