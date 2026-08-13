@@ -11,7 +11,7 @@
   //   YouTube: 'https://www.youtube.com/embed/SEU_ID'
   //   Vimeo:   'https://player.vimeo.com/video/SEU_ID'
   //   Arquivo próprio: 'assets/videos/vsl.mp4'
-  var VSL_VIDEO_URL = 'https://www.youtube.com/embed/a4tbLBVzkOs';
+  var VSL_VIDEO_URL = 'https://www.youtube.com/embed/zyZgphLLg-Y';
 
   // Gate de conteúdo — quantos minutos de visita até liberar tudo abaixo do vídeo.
   var CONTENT_GATE_MINUTES = 5;

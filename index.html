@@ -293,7 +293,7 @@ ul {
 
 .vsl-player {
   position: relative;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   width: 100%;
   border-radius: 0;
   background: linear-gradient(135deg, var(--color-accent-darker), var(--color-accent));
@@ -363,22 +363,13 @@ ul {
   object-fit: cover;
 }
 
-/* Player do YouTube: forçado num box 16:9 do tamanho da altura do card
-   (que no mobile é 4:5) e centralizado — o overflow:hidden do .vsl-player
-   corta as laterais que sobram, então o vídeo preenche o card inteiro
-   sem barra preta (letterbox) nem distorcer a imagem. Em telas onde o
-   card volta a ser 16:9 (ver media query abaixo), a conta bate exata e
-   não corta nada. */
-#vslPlayer .vsl-yt-target {
+.vsl-yt-target,
+.vsl-yt-target iframe {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  width: auto;
-  aspect-ratio: 16 / 9;
-  max-width: none;
   border: 0;
-  transform: translate(-50%, -50%);
 }
 
 /* Botão transparente que cobre o player do YouTube inteiro: intercepta todo
@@ -1144,7 +1135,6 @@ ul {
   }
 
   .vsl-player {
-    aspect-ratio: 16 / 9;
     border-radius: var(--radius-xl);
   }
 
@@ -1249,6 +1239,11 @@ ul {
       pausar/retomar pelo botão que cobre o vídeo, não dá pra avançar.
       Vimeo/vídeo próprio continuam com o fallback simples de iframe/<video>
       (ver initVsl em script.js).
+
+      O card (.vsl-player) usa aspect-ratio 1:1 porque o vídeo atual foi
+      exportado quadrado — combinando com o formato real não precisa
+      cortar nem sobra barra preta. Se trocar de vídeo de novo com outra
+      proporção, ajuste o aspect-ratio aqui pra bater com o novo arquivo.
     -->
     <div class="vsl-wrap">
       <div class="vsl-player" id="vslPlayer" role="button" tabindex="0" aria-label="Reproduzir vídeo de apresentação do Método Express">
