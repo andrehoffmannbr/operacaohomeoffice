@@ -28,19 +28,109 @@
      VSL — carrega o player somente após o clique do usuário.
      Evita baixar o script pesado do YouTube/Vimeo na carga inicial
      da página e garante que nunca haja autoplay.
+
+     Para YouTube especificamente, usa a IFrame Player API (em vez de
+     um <iframe> comum) para desligar os controles nativos — sem barra
+     de progresso, só dá pra pausar/retomar pelo botão que cobre o
+     vídeo, nunca avançar o tempo. Vimeo e vídeo próprio (self-hosted)
+     continuam com o fallback simples de iframe/<video>.
      ============================================================ */
 
   function initVsl() {
     var player = document.getElementById('vslPlayer');
     if (!player) return;
 
+    var loaded = false;
+
+    function extractYouTubeId(url) {
+      var match = url.match(/embed\/([a-zA-Z0-9_-]+)/);
+      return match ? match[1] : null;
+    }
+
+    function togglePlayback(ytPlayer) {
+      if (!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
+      if (ytPlayer.getPlayerState() === window.YT.PlayerState.PLAYING) {
+        ytPlayer.pauseVideo();
+      } else {
+        ytPlayer.playVideo();
+      }
+    }
+
+    function loadYouTubeApi(onReady) {
+      if (window.YT && window.YT.Player) {
+        onReady();
+        return;
+      }
+      var previous = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function () {
+        if (previous) previous();
+        onReady();
+      };
+      var tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+
+    function createYouTubePlayer(videoId) {
+      player.innerHTML =
+        '<div class="vsl-yt-target" id="ytTarget"></div>' +
+        '<button type="button" class="vsl-toggle-overlay" id="vslToggle" data-state="playing" aria-label="Pausar vídeo">' +
+          '<span class="vsl-toggle-icon" aria-hidden="true">' +
+            '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>' +
+          '</span>' +
+        '</button>';
+      player.removeAttribute('role');
+      player.removeAttribute('tabindex');
+
+      var toggle = document.getElementById('vslToggle');
+      var ytPlayer = null;
+
+      toggle.addEventListener('click', function (event) {
+        event.stopPropagation();
+        togglePlayback(ytPlayer);
+      });
+
+      loadYouTubeApi(function () {
+        ytPlayer = new window.YT.Player('ytTarget', {
+          videoId: videoId,
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1,
+            iv_load_policy: 3
+          },
+          events: {
+            onStateChange: function (event) {
+              var isPaused = event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.CUED;
+              toggle.setAttribute('data-state', isPaused ? 'paused' : 'playing');
+              toggle.setAttribute('aria-label', isPaused ? 'Retomar vídeo' : 'Pausar vídeo');
+            }
+          }
+        });
+      });
+    }
+
     function loadVideo() {
-      if (!VSL_VIDEO_URL) return;
+      if (!VSL_VIDEO_URL || loaded) return;
+      loaded = true;
 
-      var isEmbed = VSL_VIDEO_URL.indexOf('youtube.com') !== -1 || VSL_VIDEO_URL.indexOf('vimeo.com') !== -1;
+      var isYouTube = VSL_VIDEO_URL.indexOf('youtube.com') !== -1;
+      var isVimeo = VSL_VIDEO_URL.indexOf('vimeo.com') !== -1;
+
+      if (isYouTube) {
+        var videoId = extractYouTubeId(VSL_VIDEO_URL);
+        if (videoId) {
+          createYouTubePlayer(videoId);
+          return;
+        }
+      }
+
       var el;
-
-      if (isEmbed) {
+      if (isYouTube || isVimeo) {
         el = document.createElement('iframe');
         el.src = VSL_VIDEO_URL + (VSL_VIDEO_URL.indexOf('?') === -1 ? '?' : '&') + 'autoplay=1&rel=0';
         el.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
