@@ -288,14 +288,14 @@ ul {
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0;
 }
 
 .vsl-player {
   position: relative;
   aspect-ratio: 16 / 9;
   width: 100%;
-  border-radius: var(--radius-xl);
+  border-radius: 0;
   background: linear-gradient(135deg, var(--color-accent-darker), var(--color-accent));
   display: flex;
   flex-direction: column;
@@ -1116,6 +1116,14 @@ ul {
 @media (min-width: 640px) {
   .hero {
     padding: 60px 0 68px;
+  }
+
+  .vsl-wrap {
+    padding: 0 20px;
+  }
+
+  .vsl-player {
+    border-radius: var(--radius-xl);
   }
 
   .section {
