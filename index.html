@@ -293,7 +293,7 @@ ul {
 
 .vsl-player {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 5;
   width: 100%;
   border-radius: 0;
   background: linear-gradient(135deg, var(--color-accent-darker), var(--color-accent));
@@ -351,14 +351,34 @@ ul {
 }
 
 .vsl-player video,
-.vsl-player iframe,
-.vsl-yt-target,
-.vsl-yt-target iframe {
+.vsl-player iframe {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+.vsl-player video {
+  object-fit: cover;
+}
+
+/* Player do YouTube: forçado num box 16:9 do tamanho da altura do card
+   (que no mobile é 4:5) e centralizado — o overflow:hidden do .vsl-player
+   corta as laterais que sobram, então o vídeo preenche o card inteiro
+   sem barra preta (letterbox) nem distorcer a imagem. Em telas onde o
+   card volta a ser 16:9 (ver media query abaixo), a conta bate exata e
+   não corta nada. */
+#vslPlayer .vsl-yt-target {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 16 / 9;
+  max-width: none;
+  border: 0;
+  transform: translate(-50%, -50%);
 }
 
 /* Botão transparente que cobre o player do YouTube inteiro: intercepta todo
@@ -1124,6 +1144,7 @@ ul {
   }
 
   .vsl-player {
+    aspect-ratio: 16 / 9;
     border-radius: var(--radius-xl);
   }
 
