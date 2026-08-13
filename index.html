@@ -1140,19 +1140,34 @@ ul {
   <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 
   <!--
-    RASTREAMENTO — Meta Pixel e TikTok Pixel (NÃO ATIVADO)
-    Cole o Meta Pixel (Facebook/Instagram Ads) e o TikTok Pixel aqui dentro do <head>,
-    assim que as contas de anúncio estiverem criadas. Não remova este comentário até ativar.
+    Meta Pixel — versão otimizada do snippet oficial do Gerenciador de Eventos.
+    fbq() fica disponível na hora (qualquer fbq('track', ...) chamado antes
+    do load só entra na fila), mas o carregamento do fbevents.js real (o
+    script pesado) só acontece depois do window.load, pra não competir com
+    fontes/CSS/imagens pelo que importa pro Lighthouse (LCP, FCP etc.).
+  -->
+  <script>
+  !function (f, b, e, v, n, t, s) {
+    if (f.fbq) return;
+    n = f.fbq = function () {
+      n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+    };
+    if (!f._fbq) f._fbq = n;
+    n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
+    f.addEventListener('load', function () {
+      t = b.createElement(e); t.async = !0; t.src = v;
+      s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s);
+    });
+  }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '3401433073361667');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3401433073361667&ev=PageView&noscript=1" alt=""></noscript>
 
-    1) Meta Pixel: cole o snippet oficial do Gerenciador de Eventos aqui.
-    <script>
-      !function(f,b,e,v,n,t,s){...}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', 'SEU_PIXEL_ID');
-      fbq('track', 'PageView');
-    </script>
-
-    2) TikTok Pixel: cole o snippet oficial do TikTok Ads Manager aqui.
+  <!--
+    TikTok Pixel (NÃO ATIVADO) — cole o snippet oficial do TikTok Ads Manager
+    aqui quando a conta de anúncio estiver criada.
     <script>
       !function (w, d, t) {...}(window, document, 'ttq');
       ttq.load('SEU_PIXEL_ID');
