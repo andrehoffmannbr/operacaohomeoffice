@@ -101,7 +101,8 @@
             modestbranding: 1,
             rel: 0,
             playsinline: 1,
-            iv_load_policy: 3
+            iv_load_policy: 3,
+            cc_load_policy: 0
           },
           events: {
             onStateChange: function (event) {
