@@ -1069,7 +1069,8 @@ ul {
 
 .content-locked main,
 .content-locked .whatsapp-float,
-.content-locked .footer {
+.content-locked .footer,
+.content-locked .hero-copy {
   display: none;
 }
 
@@ -1237,7 +1238,13 @@ ul {
       </div>
     </div>
 
-    <div class="container">
+    <!--
+      Headline, subtítulo e selos ficam escondidos enquanto o gate de
+      conteúdo estiver ativo (mesma classe .content-locked no <body> que
+      esconde o <main>) — na primeira tela só aparece o vídeo, sem cara
+      de página de vendas. Ver CONTENT_GATE_MINUTES em script.js.
+    -->
+    <div class="container hero-copy">
       <h1 class="hero-headline">Sua primeira renda extra em 7 dias — só com o celular que você já tem</h1>
       <p class="hero-subheadline">Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo acima e entenda como funciona.</p>
 
