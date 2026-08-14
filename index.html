@@ -1117,6 +1117,16 @@ ul {
   display: none !important;
 }
 
+/* Fundo preto enquanto espera o gate liberar — sem gradiente claro atrás
+   do vídeo, fica com cara de player em tela cheia, não de página de vendas. */
+body.content-locked {
+  background: #000000;
+}
+
+.content-locked .hero {
+  background: #000000;
+}
+
 /* ---------- Telas maiores ---------- */
 
 @media (min-width: 640px) {
