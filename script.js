@@ -6,19 +6,32 @@
      Veja o README.md para a lista completa de placeholders.
      ============================================================ */
 
-  // URL do vídeo (VSL). Ainda não gravado — deixe vazio até ter o vídeo pronto.
-  // Exemplos de formato aceito:
+  // URL do vídeo (VSL) — um por dispositivo, já que o vídeo do mobile é
+  // quadrado (1:1) e o do desktop é 16:9. A escolha entre os dois usa o
+  // mesmo breakpoint (640px) do CSS — ver getVslVideoUrl() logo abaixo.
+  // Exemplos de formato aceito pra cada constante:
   //   YouTube: 'https://www.youtube.com/embed/SEU_ID'
   //   Vimeo:   'https://player.vimeo.com/video/SEU_ID'
   //   Arquivo próprio: 'assets/videos/vsl.mp4'
-  var VSL_VIDEO_URL = 'https://www.youtube.com/embed/zyZgphLLg-Y';
+  var VSL_VIDEO_URL_MOBILE = 'https://www.youtube.com/embed/zyZgphLLg-Y';
+  var VSL_VIDEO_URL_DESKTOP = 'https://www.youtube.com/embed/a4tbLBVzkOs';
+  var VSL_DESKTOP_BREAKPOINT = '(min-width: 640px)';
 
-  // Gate de conteúdo — quantos minutos de visita até liberar tudo abaixo do vídeo.
-  var CONTENT_GATE_MINUTES = 5;
+  function getVslVideoUrl() {
+    var isDesktop = window.matchMedia && window.matchMedia(VSL_DESKTOP_BREAKPOINT).matches;
+    return isDesktop ? VSL_VIDEO_URL_DESKTOP : VSL_VIDEO_URL_MOBILE;
+  }
+
+  // Gate de conteúdo — quantos segundos de visita até liberar tudo abaixo do
+  // vídeo (headline, oferta rápida, resto da página). 415s = 6min55s.
+  var CONTENT_GATE_SECONDS = 415;
   var CONTENT_GATE_STORAGE_KEY = 'mex_content_unlock_at';
 
-  // Link de checkout do Hotmart.
+  // Link de checkout do Hotmart (seção Investimento, mais abaixo na página).
   var HOTMART_CHECKOUT_URL = 'https://pay.hotmart.com/SEU_CODIGO_AQUI';
+
+  // Link de checkout do Kiwify — botão de oferta rápida logo abaixo do vídeo.
+  var KIWIFY_CHECKOUT_URL = 'https://pay.kiwify.com.br/kuEkae8';
 
   // WhatsApp — número no formato internacional, só dígitos (ex: 5511999999999).
   var WHATSAPP_NUMERO = '5548988430812';
@@ -116,14 +129,16 @@
     }
 
     function loadVideo() {
-      if (!VSL_VIDEO_URL || loaded) return;
+      if (loaded) return;
+      var videoUrl = getVslVideoUrl();
+      if (!videoUrl) return;
       loaded = true;
 
-      var isYouTube = VSL_VIDEO_URL.indexOf('youtube.com') !== -1;
-      var isVimeo = VSL_VIDEO_URL.indexOf('vimeo.com') !== -1;
+      var isYouTube = videoUrl.indexOf('youtube.com') !== -1;
+      var isVimeo = videoUrl.indexOf('vimeo.com') !== -1;
 
       if (isYouTube) {
-        var videoId = extractYouTubeId(VSL_VIDEO_URL);
+        var videoId = extractYouTubeId(videoUrl);
         if (videoId) {
           createYouTubePlayer(videoId);
           return;
@@ -133,13 +148,13 @@
       var el;
       if (isYouTube || isVimeo) {
         el = document.createElement('iframe');
-        el.src = VSL_VIDEO_URL + (VSL_VIDEO_URL.indexOf('?') === -1 ? '?' : '&') + 'autoplay=1&rel=0';
+        el.src = videoUrl + (videoUrl.indexOf('?') === -1 ? '?' : '&') + 'autoplay=1&rel=0';
         el.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
         el.setAttribute('allowfullscreen', '');
         el.setAttribute('title', 'Vídeo: Método Express');
       } else {
         el = document.createElement('video');
-        el.src = VSL_VIDEO_URL;
+        el.src = videoUrl;
         el.controls = true;
         el.autoplay = true;
         el.playsInline = true;
@@ -162,14 +177,14 @@
 
   /* ============================================================
      Gate de conteúdo — tudo abaixo do vídeo fica escondido até
-     CONTENT_GATE_MINUTES minutos de visita. O horário de liberação
-     é salvo no localStorage, então persiste se a pessoa sair e voltar.
+     CONTENT_GATE_SECONDS de visita. O horário de liberação é salvo
+     no localStorage, então persiste se a pessoa sair e voltar.
      Se o localStorage não estiver disponível, libera direto (fail-open).
      ============================================================ */
 
   function initContentGate() {
     try {
-      var gateMs = CONTENT_GATE_MINUTES * 60 * 1000;
+      var gateMs = CONTENT_GATE_SECONDS * 1000;
       var unlockAt = Number(localStorage.getItem(CONTENT_GATE_STORAGE_KEY));
 
       if (!unlockAt) {
@@ -217,6 +232,9 @@
     ctaButtons.forEach(function (btn) {
       if (btn) btn.href = HOTMART_CHECKOUT_URL;
     });
+
+    var quickOfferBtn = document.getElementById('ctaQuickOffer');
+    if (quickOfferBtn) quickOfferBtn.href = KIWIFY_CHECKOUT_URL;
 
     var whatsappBtn = document.getElementById('whatsappFloat');
     if (whatsappBtn) {

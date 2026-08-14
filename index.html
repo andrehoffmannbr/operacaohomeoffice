@@ -274,16 +274,6 @@ ul {
   position: relative;
 }
 
-.eyebrow {
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--color-accent-dark);
-  margin: 0 0 20px;
-}
-
 .vsl-wrap {
   width: 100%;
   max-width: 960px;
@@ -296,7 +286,13 @@ ul {
   aspect-ratio: 1 / 1;
   width: 100%;
   border-radius: 0;
-  background: linear-gradient(135deg, var(--color-accent-darker), var(--color-accent));
+  background-color: var(--color-accent-darker);
+  background-image:
+    linear-gradient(0deg, rgba(6, 16, 15, 0.45), rgba(6, 16, 15, 0.45)),
+    url('https://i.ytimg.com/vi/zyZgphLLg-Y/maxresdefault.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -411,8 +407,50 @@ ul {
   margin-left: 3px;
 }
 
-.hero-headline {
+.quick-offer {
   margin-top: 30px;
+  margin-bottom: 28px;
+  text-align: center;
+}
+
+.quick-offer-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 4px;
+}
+
+.quick-offer-old {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.quick-offer-new {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--color-accent-dark);
+}
+
+.quick-offer-note {
+  color: var(--color-accent-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0 0 16px;
+}
+
+.quick-offer .btn-cta {
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.hero-headline {
+  margin-top: 0;
   font-size: clamp(1.7rem, 6vw, 2.5rem);
   text-align: center;
 }
@@ -1068,16 +1106,6 @@ ul {
 
 /* ---------- Gate de conteúdo (libera após alguns minutos de visita) ---------- */
 
-.gate-message {
-  display: none;
-  padding: 44px 0 64px;
-  text-align: center;
-}
-
-.content-locked .gate-message {
-  display: block;
-}
-
 .content-locked main,
 .content-locked .whatsapp-float,
 .content-locked .footer,
@@ -1087,40 +1115,6 @@ ul {
 
 .content-locked .sticky-nav {
   display: none !important;
-}
-
-.gate-message-inner {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  max-width: 40ch;
-  margin: 0 auto;
-}
-
-.gate-message p {
-  color: var(--color-text-muted);
-  font-weight: 600;
-  margin: 0;
-}
-
-.gate-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--color-accent-light);
-  border-top-color: var(--color-accent);
-  border-radius: 50%;
-  animation: gate-spin 0.9s linear infinite;
-}
-
-@keyframes gate-spin {
-  to { transform: rotate(360deg); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gate-spinner {
-    animation: none;
-  }
 }
 
 /* ---------- Telas maiores ---------- */
@@ -1135,7 +1129,11 @@ ul {
   }
 
   .vsl-player {
+    aspect-ratio: 16 / 9;
     border-radius: var(--radius-xl);
+    background-image:
+      linear-gradient(0deg, rgba(6, 16, 15, 0.45), rgba(6, 16, 15, 0.45)),
+      url('https://i.ytimg.com/vi/a4tbLBVzkOs/maxresdefault.jpg');
   }
 
   .section {
@@ -1223,13 +1221,12 @@ ul {
   <!-- ============ 1. VSL + HEADLINE ============ -->
   <header class="hero">
     <div class="hero-grain" aria-hidden="true"></div>
-    <div class="container">
-      <p class="eyebrow">Operação Home Office</p>
-    </div>
 
     <!--
-      PLAYER DE VÍDEO — URL definida em VSL_VIDEO_URL no topo do script.js
-      (hoje: embed do YouTube, vídeo não listado).
+      PLAYER DE VÍDEO — dois vídeos diferentes, um por dispositivo. As URLs
+      ficam em VSL_VIDEO_URL_MOBILE / VSL_VIDEO_URL_DESKTOP no topo do
+      script.js; a escolha entre um e outro usa o mesmo breakpoint de
+      640px do CSS (ver getVslVideoUrl em script.js).
 
       Fica num wrapper próprio (.vsl-wrap), mais largo que o .container do
       resto do herói, então o vídeo aparece maior sem alargar o texto.
@@ -1240,10 +1237,11 @@ ul {
       Vimeo/vídeo próprio continuam com o fallback simples de iframe/<video>
       (ver initVsl em script.js).
 
-      O card (.vsl-player) usa aspect-ratio 1:1 porque o vídeo atual foi
-      exportado quadrado — combinando com o formato real não precisa
-      cortar nem sobra barra preta. Se trocar de vídeo de novo com outra
-      proporção, ajuste o aspect-ratio aqui pra bater com o novo arquivo.
+      O card (.vsl-player) usa aspect-ratio 1:1 no mobile (vídeo mobile é
+      quadrado) e 16:9 a partir de 640px (vídeo desktop é 16:9) — bate
+      exato com o formato real de cada arquivo, sem cortar nem sobrar
+      barra preta. A imagem de fundo antes do clique é a própria
+      thumbnail do YouTube de cada vídeo (uma por breakpoint).
     -->
     <div class="vsl-wrap">
       <div class="vsl-player" id="vslPlayer" role="button" tabindex="0" aria-label="Reproduzir vídeo de apresentação do Método Express">
@@ -1255,12 +1253,29 @@ ul {
     </div>
 
     <!--
-      Headline, subtítulo e selos ficam escondidos enquanto o gate de
-      conteúdo estiver ativo (mesma classe .content-locked no <body> que
-      esconde o <main>) — na primeira tela só aparece o vídeo, sem cara
-      de página de vendas. Ver CONTENT_GATE_MINUTES em script.js.
+      Oferta rápida, headline, subtítulo e selos ficam escondidos enquanto
+      o gate de conteúdo estiver ativo (mesma classe .content-locked no
+      <body> que esconde o <main>) — na primeira tela só aparece o vídeo,
+      sem cara de página de vendas. Ver CONTENT_GATE_SECONDS em script.js.
     -->
     <div class="container hero-copy">
+      <!--
+        Oferta rápida — aparece junto com o resto do .hero-copy quando o
+        gate libera (CONTENT_GATE_SECONDS em script.js). Link do botão
+        definido pela constante KIWIFY_CHECKOUT_URL.
+      -->
+      <div class="quick-offer">
+        <p class="quick-offer-price">
+          <span class="quick-offer-old">R$197</span>
+          <span class="quick-offer-new">R$97</span>
+        </p>
+        <p class="quick-offer-note">Apenas neste momento</p>
+        <a href="#" class="btn btn-primary btn-cta" id="ctaQuickOffer" target="_blank" rel="noopener">
+          <span>Quero começar agora</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </a>
+      </div>
+
       <h1 class="hero-headline">Sua primeira renda extra em 7 dias — só com o celular que você já tem</h1>
       <p class="hero-subheadline">Sem anúncio pago, sem CNPJ, sem computador. Assista o vídeo acima e entenda como funciona.</p>
 
@@ -1283,18 +1298,11 @@ ul {
 
   <!--
     GATE DE CONTEÚDO — tudo abaixo do vídeo fica escondido até passarem
-    CONTENT_GATE_MINUTES minutos de visita (constante no topo do script.js).
+    CONTENT_GATE_SECONDS de visita (constante no topo do script.js).
     Controlado via classe .content-locked no <body>, adicionada/removida
-    pelo initContentGate() em script.js.
+    pelo initContentGate() em script.js. De propósito, sem nenhum indicador
+    visual de espera (nem spinner, nem texto) — fica em branco até liberar.
   -->
-  <div class="gate-message" id="gateMessage">
-    <div class="container">
-      <div class="gate-message-inner">
-        <span class="gate-spinner" aria-hidden="true"></span>
-        <p>Continue assistindo — o conteúdo completo libera em instantes.</p>
-      </div>
-    </div>
-  </div>
 
   <main>
 
