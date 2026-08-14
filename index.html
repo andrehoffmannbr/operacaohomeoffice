@@ -301,32 +301,23 @@ ul {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Thumbnail do vídeo com zoom lento em loop — dá uma sensação de "vida"
-   na tela antes do clique, sem custar nada de JS/performance (é só CSS).
-   Some sozinho quando o player real substitui esse HTML (ver initVsl em
-   script.js). Uma imagem por dispositivo, trocada na media query abaixo. */
-.vsl-player::before {
-  content: '';
+/* Preview em loop (mudo, ~5s, assets/videos/vsl-loop.mp4) — dá a sensação
+   de "vídeo já ligado" antes do clique, sem o peso da API do YouTube (só
+   um arquivo de mídia, sem JS extra). Some quando o player real entra no
+   clique (ver createYouTubePlayer em script.js). object-fit:cover porque
+   o clipe é quadrado e o card muda de proporção por breakpoint. */
+.vsl-preview {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(0deg, rgba(6, 16, 15, 0.45), rgba(6, 16, 15, 0.45)),
-    url('https://i.ytimg.com/vi/zyZgphLLg-Y/maxresdefault.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  animation: vsl-thumb-life 9s ease-in-out infinite alternate;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-@keyframes vsl-thumb-life {
-  from { transform: scale(1); }
-  to { transform: scale(1.09); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .vsl-player::before {
-    animation: none;
-  }
+.vsl-preview-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(6, 16, 15, 0.45), rgba(6, 16, 15, 0.45));
 }
 
 .vsl-player:hover {
@@ -1173,12 +1164,6 @@ body.content-locked {
     border-radius: var(--radius-xl);
   }
 
-  .vsl-player::before {
-    background-image:
-      linear-gradient(0deg, rgba(6, 16, 15, 0.45), rgba(6, 16, 15, 0.45)),
-      url('https://i.ytimg.com/vi/a4tbLBVzkOs/maxresdefault.jpg');
-  }
-
   .section {
     padding: 72px 0;
   }
@@ -1288,6 +1273,11 @@ body.content-locked {
     -->
     <div class="vsl-wrap">
       <div class="vsl-player" id="vslPlayer" role="button" tabindex="0" aria-label="Reproduzir vídeo de apresentação do Método Express">
+        <!-- Preview em loop (mudo, ~5s) — sensação de "vídeo já ligado" sem
+             o peso da API do YouTube. Some quando o player real entra, no
+             clique (ver createYouTubePlayer em script.js). -->
+        <video class="vsl-preview" src="assets/videos/vsl-loop.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+        <div class="vsl-preview-overlay" aria-hidden="true"></div>
         <div class="vsl-play-btn" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </div>
