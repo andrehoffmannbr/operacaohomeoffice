@@ -387,6 +387,10 @@ ul {
 }
 
 .vsl-toggle-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -405,6 +409,40 @@ ul {
 
 .vsl-toggle-icon svg {
   margin-left: 3px;
+}
+
+/* Balão "Clique para ouvir" — aparece por cima do vídeo enquanto ele
+   toca mudo (autoplay só funciona sem som). Some assim que a pessoa
+   toca na tela, aí vira o botão normal de pausar/retomar. */
+.vsl-unmute-box {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 78%;
+  padding: 18px 22px;
+  border-radius: var(--radius-md);
+  background: rgba(15, 118, 110, 0.94);
+  color: #FFFFFF;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.vsl-toggle-overlay[data-state="muted"] .vsl-unmute-box {
+  display: flex;
+}
+
+.vsl-toggle-overlay[data-state="muted"] .vsl-toggle-icon {
+  opacity: 0;
+}
+
+.vsl-unmute-line {
+  font-weight: 700;
+  font-size: 0.95rem;
 }
 
 .quick-offer {
