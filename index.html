@@ -287,12 +287,6 @@ ul {
   width: 100%;
   border-radius: 0;
   background-color: var(--color-accent-darker);
-  background-image:
-    linear-gradient(0deg, rgba(6, 16, 15, 0.45), rgba(6, 16, 15, 0.45)),
-    url('https://i.ytimg.com/vi/zyZgphLLg-Y/maxresdefault.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -307,6 +301,34 @@ ul {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Thumbnail do vídeo com zoom lento em loop — dá uma sensação de "vida"
+   na tela antes do clique, sem custar nada de JS/performance (é só CSS).
+   Some sozinho quando o player real substitui esse HTML (ver initVsl em
+   script.js). Uma imagem por dispositivo, trocada na media query abaixo. */
+.vsl-player::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(0deg, rgba(6, 16, 15, 0.45), rgba(6, 16, 15, 0.45)),
+    url('https://i.ytimg.com/vi/zyZgphLLg-Y/maxresdefault.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: vsl-thumb-life 9s ease-in-out infinite alternate;
+}
+
+@keyframes vsl-thumb-life {
+  from { transform: scale(1); }
+  to { transform: scale(1.09); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vsl-player::before {
+    animation: none;
+  }
+}
+
 .vsl-player:hover {
   transform: translateY(-2px);
   box-shadow: 0 24px 60px rgba(11, 60, 55, 0.22);
@@ -318,6 +340,8 @@ ul {
 }
 
 .vsl-play-btn {
+  position: relative;
+  z-index: 1;
   width: 68px;
   height: 68px;
   border-radius: 50%;
@@ -340,6 +364,8 @@ ul {
 }
 
 .vsl-player-label {
+  position: relative;
+  z-index: 1;
   color: #FFFFFF;
   font-weight: 600;
   font-size: 0.95rem;
@@ -409,40 +435,6 @@ ul {
 
 .vsl-toggle-icon svg {
   margin-left: 3px;
-}
-
-/* Balão "Clique para ouvir" — aparece por cima do vídeo enquanto ele
-   toca mudo (autoplay só funciona sem som). Some assim que a pessoa
-   toca na tela, aí vira o botão normal de pausar/retomar. */
-.vsl-unmute-box {
-  display: none;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  max-width: 78%;
-  padding: 18px 22px;
-  border-radius: var(--radius-md);
-  background: rgba(15, 118, 110, 0.94);
-  color: #FFFFFF;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
-  text-align: center;
-}
-
-.vsl-toggle-overlay[data-state="muted"] .vsl-unmute-box {
-  display: flex;
-}
-
-.vsl-toggle-overlay[data-state="muted"] .vsl-toggle-icon {
-  opacity: 0;
-}
-
-.vsl-unmute-line {
-  font-weight: 700;
-  font-size: 0.95rem;
 }
 
 .quick-offer {
@@ -1179,6 +1171,9 @@ body.content-locked {
   .vsl-player {
     aspect-ratio: 16 / 9;
     border-radius: var(--radius-xl);
+  }
+
+  .vsl-player::before {
     background-image:
       linear-gradient(0deg, rgba(6, 16, 15, 0.45), rgba(6, 16, 15, 0.45)),
       url('https://i.ytimg.com/vi/a4tbLBVzkOs/maxresdefault.jpg');

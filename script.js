@@ -38,20 +38,25 @@
   var WHATSAPP_MENSAGEM = 'Oi! Vi a página do Método Express e queria saber mais.';
 
   /* ============================================================
-     VSL — autoplay mudo depois de VSL_AUTOPLAY_DELAY_MS (dá tempo da
-     página assentar antes do vídeo começar a se mexer). Também carrega
-     na hora se a pessoa clicar antes disso. Muted é obrigatório pro
-     autoplay funcionar em qualquer navegador sem gesto do usuário —
-     por isso aparece "Clique para ouvir" até a pessoa tocar na tela.
+     VSL — carrega o player somente após o clique do usuário. Evita
+     baixar a API pesada do YouTube (~500KB) na carga inicial — testamos
+     autoplay mudo por JS e o custo de performance foi grande demais
+     (Total Blocking Time e "Práticas recomendadas" do PageSpeed caíram
+     bastante, e adiar o autoplay só piorava outras métricas).
+
+     Sensação de "vídeo já ligado" fica por conta só da animação leve
+     (zoom lento) na thumbnail, via CSS puro — ver .vsl-player::before
+     mais abaixo no <style>. Se um clipe curto em loop (mudo, poucos
+     segundos) for gravado depois, dá pra trocar essa animação por um
+     <video autoplay muted loop> de verdade, ainda mais convincente e
+     tão leve quanto (sem JavaScript pesado, só um arquivo de mídia).
 
      Para YouTube especificamente, usa a IFrame Player API (em vez de
      um <iframe> comum) para desligar os controles nativos — sem barra
      de progresso, só dá pra pausar/retomar pelo botão que cobre o
      vídeo, nunca avançar o tempo. Vimeo e vídeo próprio (self-hosted)
-     continuam com o fallback simples de iframe/<video>, sem autoplay.
+     continuam com o fallback simples de iframe/<video>.
      ============================================================ */
-
-  var VSL_AUTOPLAY_DELAY_MS = 1200;
 
   function initVsl() {
     var player = document.getElementById('vslPlayer');
@@ -91,14 +96,9 @@
     function createYouTubePlayer(videoId) {
       player.innerHTML =
         '<div class="vsl-yt-target" id="ytTarget"></div>' +
-        '<button type="button" class="vsl-toggle-overlay" id="vslToggle" data-state="muted" aria-label="Clique para ouvir o áudio">' +
+        '<button type="button" class="vsl-toggle-overlay" id="vslToggle" data-state="playing" aria-label="Pausar vídeo">' +
           '<span class="vsl-toggle-icon" aria-hidden="true">' +
             '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>' +
-          '</span>' +
-          '<span class="vsl-unmute-box" aria-hidden="true">' +
-            '<span class="vsl-unmute-line">Seu vídeo já começou</span>' +
-            '<svg class="vsl-unmute-icon" viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>' +
-            '<span class="vsl-unmute-line">Clique para ouvir</span>' +
           '</span>' +
         '</button>';
       player.removeAttribute('role');
@@ -106,18 +106,9 @@
 
       var toggle = document.getElementById('vslToggle');
       var ytPlayer = null;
-      var isMuted = true;
 
       toggle.addEventListener('click', function (event) {
         event.stopPropagation();
-        if (!ytPlayer) return;
-        if (isMuted) {
-          isMuted = false;
-          ytPlayer.unMute();
-          toggle.setAttribute('data-state', 'playing');
-          toggle.setAttribute('aria-label', 'Pausar vídeo');
-          return;
-        }
         togglePlayback(ytPlayer);
       });
 
@@ -126,7 +117,6 @@
           videoId: videoId,
           playerVars: {
             autoplay: 1,
-            mute: 1,
             controls: 0,
             disablekb: 1,
             fs: 0,
@@ -138,7 +128,6 @@
           },
           events: {
             onStateChange: function (event) {
-              if (isMuted) return;
               var isPaused = event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.CUED;
               toggle.setAttribute('data-state', isPaused ? 'paused' : 'playing');
               toggle.setAttribute('aria-label', isPaused ? 'Retomar vídeo' : 'Pausar vídeo');
@@ -193,8 +182,6 @@
         loadVideo();
       }
     });
-
-    setTimeout(loadVideo, VSL_AUTOPLAY_DELAY_MS);
   }
 
   /* ============================================================
