@@ -27,10 +27,8 @@
   var CONTENT_GATE_SECONDS = 415;
   var CONTENT_GATE_STORAGE_KEY = 'mex_content_unlock_at';
 
-  // Link de checkout do Hotmart (seção Investimento, mais abaixo na página).
-  var HOTMART_CHECKOUT_URL = 'https://pay.hotmart.com/SEU_CODIGO_AQUI';
-
-  // Link de checkout do Kiwify — botão de oferta rápida logo abaixo do vídeo.
+  // Link de checkout do Kiwify — usado em todos os botões de compra da
+  // página (oferta rápida, Investimento e chamada final).
   var KIWIFY_CHECKOUT_URL = 'https://pay.kiwify.com.br/kuEkae8';
 
   // WhatsApp — número no formato internacional, só dígitos (ex: 5511999999999).
@@ -237,13 +235,14 @@
      ============================================================ */
 
   function initLinks() {
-    var ctaButtons = [document.getElementById('ctaInvestimento'), document.getElementById('ctaFinal')];
+    var ctaButtons = [
+      document.getElementById('ctaQuickOffer'),
+      document.getElementById('ctaInvestimento'),
+      document.getElementById('ctaFinal')
+    ];
     ctaButtons.forEach(function (btn) {
-      if (btn) btn.href = HOTMART_CHECKOUT_URL;
+      if (btn) btn.href = KIWIFY_CHECKOUT_URL;
     });
-
-    var quickOfferBtn = document.getElementById('ctaQuickOffer');
-    if (quickOfferBtn) quickOfferBtn.href = KIWIFY_CHECKOUT_URL;
 
     var whatsappBtn = document.getElementById('whatsappFloat');
     if (whatsappBtn) {

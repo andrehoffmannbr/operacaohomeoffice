@@ -908,6 +908,17 @@ ul {
   color: var(--color-text-muted);
 }
 
+.price-old {
+  display: inline-block;
+  margin-right: 8px;
+  font-family: var(--font-body);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  vertical-align: middle;
+}
+
 .price-alt {
   color: var(--color-text-muted);
   margin-bottom: 24px;
@@ -1566,12 +1577,12 @@ body.content-locked {
       <div class="container">
         <h2 id="investimento-titulo">Investimento</h2>
         <div class="price-card">
-          <p class="price">R$97 <span>à vista</span></p>
+          <p class="price"><span class="price-old">R$197</span>R$97 <span>à vista</span></p>
           <p class="price-alt">ou 3x de R$37</p>
 
           <!--
-            BOTÃO DE COMPRA — checkout do Hotmart.
-            Troque a constante HOTMART_CHECKOUT_URL no topo do script.js.
+            BOTÃO DE COMPRA — checkout do Kiwify.
+            Troque a constante KIWIFY_CHECKOUT_URL no topo do script.js.
           -->
           <a href="#" class="btn btn-primary btn-cta" id="ctaInvestimento" target="_blank" rel="noopener">
             <span>Quero começar meu Método Express</span>
