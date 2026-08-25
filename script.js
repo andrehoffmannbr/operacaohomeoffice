@@ -46,58 +46,66 @@
     return isDesktop ? CONTENT_GATE_SECONDS_DESKTOP : CONTENT_GATE_SECONDS_MOBILE;
   }
 
-  // Link de checkout do Kiwify — usado em todos os botões de compra da
+  // Link de checkout da Hotmart — usado em todos os botões de compra da
   // página (oferta rápida, Investimento e chamada final). O mesmo link já
   // está fixo no href de cada botão no HTML; aqui ele só é reescrito para
   // carregar os parâmetros de aquisição junto (ver withTrackingParams).
-  var KIWIFY_CHECKOUT_URL = 'https://pay.kiwify.com.br/kuEkae8';
+  var HOTMART_CHECKOUT_URL = 'https://pay.hotmart.com/G106758643C';
 
   // Host do checkout — usado pra decidir a quais links o rastreamento se
-  // aplica. Só links da Kiwify recebem os parâmetros; WhatsApp e qualquer
+  // aplica. Só links da Hotmart recebem os parâmetros; WhatsApp e qualquer
   // outro link externo ficam intocados.
-  var KIWIFY_CHECKOUT_HOST = 'pay.kiwify.com.br';
+  var HOTMART_CHECKOUT_HOST = 'pay.hotmart.com';
 
-  // Um link só é checkout da Kiwify quando o hostname bate exatamente.
+  // Um link só é checkout da Hotmart quando o hostname bate exatamente.
   // indexOf() na URL inteira aceitaria coisas como
-  // "pay.kiwify.com.br.outrodominio.com" ou "outro.com/?ref=pay.kiwify.com.br";
-  // comparar hostname elimina esses casos. URL inválida devolve false.
-  function ehCheckoutKiwify(href) {
+  // "pay.hotmart.com.outrodominio.com" ou "outro.com/?ref=pay.hotmart.com";
+  // comparar hostname elimina esses casos — e também deixa de fora
+  // hotmart.com e www.hotmart.com, que não são checkout.
+  // URL inválida devolve false.
+  function ehCheckoutHotmart(href) {
     try {
       if (typeof window.URL !== 'function') return false;
-      return new window.URL(href, window.location.href).hostname === KIWIFY_CHECKOUT_HOST;
+      return new window.URL(href, window.location.href).hostname === HOTMART_CHECKOUT_HOST;
     } catch (e) {
       return false;
     }
   }
 
   // Parâmetros de aquisição capturados da URL da landing e repassados ao
-  // checkout. Sem isso a venda chega no Kiwify sem origem e não dá pra
+  // checkout. Sem isso a venda chega na Hotmart sem origem e não dá pra
   // atribuir faturamento a campanha/criativo.
   //
-  // São exatamente os 10 parâmetros de rastreamento que a Kiwify documenta.
-  // Nada além disso é capturado.
+  // São os 7 parâmetros de rastreamento da Hotmart. Nada além disso é
+  // capturado. s1/s2/s3 saíram na migração — eram da estratégia da Kiwify;
+  // os IDs do Meta agora vão concatenados dentro de sck.
   //
   // Só dados de atribuição de marketing — nada de PII. Nunca acrescentar
-  // nome, e-mail, telefone ou documento a esta lista.
+  // nome, e-mail, telefone, documento, fbclid, _fbc ou _fbp a esta lista.
   var TRACKING_PARAMS = [
     'src', 'sck',
-    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
-    's1', 's2', 's3'
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
   ];
 
   // Só estes parâmetros caracterizam uma origem de campanha. A atribuição
   // salva só é substituída quando a URL traz pelo menos um deles — assim um
   // retorno direto não apaga a campanha paga anterior (last paid touch).
   //
-  // s1/s2/s3 ficam de fora de propósito: sozinhos são só IDs numéricos do
-  // Meta, sem origem declarada. Na prática o Meta sempre manda os utm_*
-  // junto, então isso nunca separa uma campanha real.
+  // Hoje é igual a TRACKING_PARAMS, porque todos os 7 declaram origem.
+  // Segue como lista própria pra que um parâmetro futuro que não seja de
+  // campanha não vire gatilho de substituição sem querer.
   var TRACKING_CAMPAIGN_PARAMS = [
     'src', 'sck',
     'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
   ];
 
   var TRACKING_STORAGE_KEY = 'metodoexpress_tracking';
+
+  // Versão do formato salvo. Subiu de 1 pra 2 na migração Kiwify -> Hotmart:
+  // registros v1 podiam conter s1/s2/s3, que não existem mais. Qualquer
+  // registro com versão diferente é descartado na leitura, então nenhum dado
+  // legado chega ao checkout da Hotmart.
+  var TRACKING_STORAGE_VERSION = 2;
   var TRACKING_TTL_MS = 30 * 24 * 60 * 60 * 1000;   // 30 dias
   var TRACKING_VALUE_MAX = 200;                     // corta valor absurdo
 
@@ -122,13 +130,29 @@
       var data = JSON.parse(raw);
       if (!data || typeof data !== 'object' || !data.params) return null;
 
+      // Formato antigo (v1, era da Kiwify): descarta em vez de migrar.
+      if (data.v !== TRACKING_STORAGE_VERSION) {
+        window.localStorage.removeItem(TRACKING_STORAGE_KEY);
+        return null;
+      }
+
       var ts = Number(data.ts);
       if (!isFinite(ts) || ts <= 0 || (Date.now() - ts) > TRACKING_TTL_MS) {
         window.localStorage.removeItem(TRACKING_STORAGE_KEY);
         return null;
       }
 
-      return data.params;
+      // Segunda linha de defesa: mesmo num registro com a versão certa, só
+      // devolve chaves da whitelist atual. Se um s1/s2/s3 sobrar de qualquer
+      // forma, ele morre aqui e nunca chega à Hotmart.
+      var limpo = {};
+      for (var i = 0; i < TRACKING_PARAMS.length; i++) {
+        var nome = TRACKING_PARAMS[i];
+        var valor = data.params[nome];
+        if (typeof valor === 'string' && valor) limpo[nome] = valor;
+      }
+
+      return limpo;
     } catch (e) {
       return null;
     }
@@ -140,7 +164,7 @@
   function writeStoredTracking(params) {
     try {
       window.localStorage.setItem(TRACKING_STORAGE_KEY, JSON.stringify({
-        v: 1,
+        v: TRACKING_STORAGE_VERSION,
         ts: Date.now(),
         params: params
       }));
@@ -190,7 +214,7 @@
   }
 
   // Acrescenta a atribuição em uso à URL do checkout, sem nunca sobrescrever
-  // um parâmetro que já venha no próprio link do Kiwify. É idempotente: se a
+  // um parâmetro que já venha no próprio link da Hotmart. É idempotente: se a
   // URL já tiver os parâmetros, nada é duplicado.
   //
   // Qualquer falha devolve a URL original — o CTA jamais quebra por causa de
@@ -582,15 +606,20 @@
   }
 
   /* ============================================================
-     Links dinâmicos — checkout do Kiwify e WhatsApp.
+     Links dinâmicos — checkout da Hotmart e WhatsApp.
 
      Os dois já nascem com o href real no HTML: se este arquivo falhar,
      os botões continuam levando pro lugar certo. Aqui só acrescentamos
-     os parâmetros de aquisição e os eventos do Meta Pixel.
+     os parâmetros de aquisição e o evento Contact do Meta Pixel.
+
+     Os CTAs de compra NÃO disparam InitiateCheckout. Quem é fonte oficial
+     desse evento é a própria Hotmart, quando a página de pagamento carrega
+     (configurado lá via WEB + API de Conversões). Disparar aqui também
+     geraria dois eventos para uma única ida ao checkout.
      ============================================================ */
 
   function initLinks() {
-    var checkoutUrl = withTrackingParams(KIWIFY_CHECKOUT_URL);
+    var checkoutUrl = withTrackingParams(HOTMART_CHECKOUT_URL);
 
     var ctaButtons = [
       document.getElementById('ctaQuickOffer'),
@@ -600,9 +629,6 @@
     ctaButtons.forEach(function (btn) {
       if (!btn) return;
       btn.href = checkoutUrl;
-      btn.addEventListener('click', function () {
-        trackPixel('InitiateCheckout');
-      });
     });
 
     var whatsappBtn = document.getElementById('whatsappFloat');
@@ -621,7 +647,7 @@
     // liberada minutos depois, quando o gate destrava.
     //
     // Fase de captura, pra rodar antes da navegação. Só toca em links da
-    // Kiwify: WhatsApp e qualquer outro link externo ficam intocados.
+    // Hotmart: WhatsApp e qualquer outro link externo ficam intocados.
     // withTrackingParams é idempotente, então reaplicar não duplica nada.
     document.addEventListener('click', function (event) {
       try {
@@ -630,7 +656,7 @@
 
         var link = el.closest('a[href]');
         if (!link) return;
-        if (!ehCheckoutKiwify(link.href)) return;
+        if (!ehCheckoutHotmart(link.href)) return;
 
         var atualizado = withTrackingParams(link.href);
         if (atualizado !== link.href) link.href = atualizado;

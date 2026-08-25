@@ -35,7 +35,7 @@ Todas as constantes de JS ficam nas primeiras linhas de `script.js`.
 | `VSL_VIDEO_URL_MOBILE` | `script.js` | `https://www.youtube.com/embed/zyZgphLLg-Y` — corte **quadrado (1:1)**, usado abaixo de 640px |
 | `VSL_VIDEO_URL_DESKTOP` | `script.js` | `https://www.youtube.com/embed/a4tbLBVzkOs` — corte **16:9**, usado a partir de 640px |
 | `VSL_DESKTOP_BREAKPOINT` | `script.js` | `(min-width: 640px)` — precisa bater com o breakpoint do CSS |
-| `KIWIFY_CHECKOUT_URL` | `script.js` | `https://pay.kiwify.com.br/kuEkae8` |
+| `HOTMART_CHECKOUT_URL` | `script.js` | `https://pay.hotmart.com/G106758643C` |
 | `CONTENT_GATE_SECONDS_MOBILE` | `script.js` **e** `index.html` | `415` (6min55s) — ver "Content gate" abaixo |
 | `CONTENT_GATE_SECONDS_DESKTOP` | `script.js` **e** `index.html` | `415` (6min55s) — separado do mobile pra poder ajustar um sem o outro |
 | `WHATSAPP_NUMERO` | `script.js` | `5548988430812` |
@@ -135,43 +135,54 @@ Eventos disparados (`trackPixel()` em `script.js`, sempre sob `typeof fbq === 'f
 | Evento | Quando |
 |---|---|
 | `PageView` | carga da página (snippet do `<head>`) |
-| `InitiateCheckout` | clique em qualquer um dos 3 botões de compra |
 | `Contact` | clique no botão flutuante de WhatsApp |
 
-`Purchase` **não** é disparado aqui — quem registra a compra é o Kiwify.
+`InitiateCheckout` e `Purchase` **não** são disparados aqui — quem registra os dois é a Hotmart, que está configurada com o mesmo Pixel/Dataset (`3401433073361667`) via WEB + API de Conversões. A landing disparava `InitiateCheckout` no clique dos CTAs; isso foi removido na migração, porque a Hotmart já dispara o evento quando a página de pagamento carrega e os dois juntos contariam duas vezes a mesma ida ao checkout.
 
 ### Atribuição e repasse de UTMs para o checkout
 
-A landing captura os parâmetros de aquisição da URL de entrada, guarda no `localStorage` e anexa ao link do Kiwify no momento do clique — pra venda não chegar lá sem origem mesmo quando a pessoa assiste 7 minutos de VSL, recarrega a página ou volta dias depois.
+A landing captura os parâmetros de aquisição da URL de entrada, guarda no `localStorage` e anexa ao link da Hotmart no momento do clique — pra venda não chegar lá sem origem mesmo quando a pessoa assiste 7 minutos de VSL, recarrega a página ou volta dias depois.
 
 Parâmetros capturados (`TRACKING_PARAMS` em `script.js`):
 
 ```
 utm_source  utm_medium  utm_campaign  utm_term  utm_content
-src  sck  s1  s2  s3
+src  sck
 ```
 
-São exatamente os 10 parâmetros de rastreamento que a Kiwify documenta — nada além disso é capturado. É o mesmo conjunto configurado em **Parâmetros da URL** do Meta Ads; os placeholders (`{{campaign.name}}` etc.) ficam **só lá**, o site nunca os tem hardcoded e apenas recebe os valores já resolvidos.
+São os 7 parâmetros de rastreamento da Hotmart — nada além disso é capturado. `s1`/`s2`/`s3` saíram na migração Kiwify → Hotmart; os IDs do Meta agora vão concatenados dentro de `sck`.
+
+É o mesmo conjunto configurado em **Parâmetros da URL** do Meta Ads, algo como:
+
+```
+utm_source={{site_source_name}}&utm_medium=paid_social&utm_campaign={{campaign.name}}
+&utm_term={{adset.name}}&utm_content={{ad.name}}
+&src=meta_ads&sck={{campaign.id}}_{{adset.id}}_{{ad.id}}
+```
+
+Os placeholders ficam **só lá** — o site nunca os tem hardcoded, apenas recebe os valores já resolvidos. As UTMs carregam os nomes legíveis para análise; `sck` carrega os três IDs para auditoria precisa.
 
 `fbclid` **não** faz parte deste módulo. Quem cuida do clique identificado do Facebook é o próprio Meta Pixel, via cookies `_fbc`/`_fbp` — fora do escopo daqui.
 
 > Só dados de atribuição de marketing. **Nunca acrescentar PII** (nome, e-mail, telefone, documento) a essa lista nem a URLs de rastreamento.
 
-**Persistência** — chave `metodoexpress_tracking`, validade de **30 dias**:
+**Persistência** — chave `metodoexpress_tracking`, versão **2**, validade de **30 dias**:
 
 ```json
-{ "v": 1, "ts": 1770000000000, "params": { "utm_source": "facebook", "…": "…" } }
+{ "v": 2, "ts": 1770000000000, "params": { "utm_source": "facebook", "…": "…" } }
 ```
 
 Passada a validade, a chave é descartada na leitura seguinte e o checkout volta a ser a URL limpa.
 
-**Atribuição — last paid touch.** A URL só substitui o que está salvo quando traz pelo menos um parâmetro de campanha (`TRACKING_CAMPAIGN_PARAMS`: os cinco `utm_*`, `src`, `sck`). A troca é **atômica** — o conjunto inteiro de uma vez, nunca mesclado — pra não misturar `utm_source` de uma campanha com `utm_content` de outra. Retorno direto e reload **não apagam** a campanha anterior. `s1`/`s2`/`s3` ficam fora dos gatilhos de propósito: sozinhos são só IDs numéricos do Meta, sem origem declarada.
+A versão subiu de 1 para 2 na migração: registros `v1` podiam conter `s1`/`s2`/`s3`, que não existem mais. Qualquer registro com versão diferente de 2 é **descartado** na leitura, e mesmo num registro `v2` só as chaves da whitelist atual são devolvidas — dupla garantia de que nada legado chega à Hotmart.
 
-**Anexação ao checkout** (`withTrackingParams()`): usa `URL`/`URLSearchParams`, então o encoding é correto por construção e não há `??` nem `&&`. Nunca sobrescreve um parâmetro que já venha no link do Kiwify, e é idempotente — reaplicar não duplica nada. Qualquer erro devolve a URL original intacta: o CTA nunca quebra por causa de rastreamento.
+**Atribuição — last paid touch.** A URL só substitui o que está salvo quando traz pelo menos um parâmetro de campanha (`TRACKING_CAMPAIGN_PARAMS`: os cinco `utm_*`, `src`, `sck`). A troca é **atômica** — o conjunto inteiro de uma vez, nunca mesclado — pra não misturar `utm_source` de uma campanha com `utm_content` de outra. Retorno direto e reload **não apagam** a campanha anterior.
 
-Além do `href` definido na carga, um listener delegado em fase de captura reaplica a atribuição no instante do clique. O filtro compara `new URL(href).hostname === 'pay.kiwify.com.br'` — hostname exato, não `indexOf`, pra que domínios como `pay.kiwify.com.br.outrodominio.com` não sejam aceitos. WhatsApp, redes sociais e qualquer outro link externo ficam intocados.
+**Anexação ao checkout** (`withTrackingParams()`): usa `URL`/`URLSearchParams`, então o encoding é correto por construção e não há `??` nem `&&`. Nunca sobrescreve um parâmetro que já venha no link da Hotmart, e é idempotente — reaplicar não duplica nada. Qualquer erro devolve a URL original intacta: o CTA nunca quebra por causa de rastreamento.
 
-Pra testar, abra a página com `?src=meta_ads&sck=teste01&utm_source=teste&utm_campaign=x&s1=123` e confira o `href` dos botões e a chave `metodoexpress_tracking` no DevTools.
+Além do `href` definido na carga, um listener delegado em fase de captura reaplica a atribuição no instante do clique. O filtro compara `new URL(href).hostname === 'pay.hotmart.com'` — hostname exato, não `indexOf`, pra que domínios como `pay.hotmart.com.outrodominio.com` não sejam aceitos (e `hotmart.com`/`www.hotmart.com` também ficam de fora, já que não são checkout). WhatsApp, redes sociais e qualquer outro link externo ficam intocados.
+
+Pra testar, abra a página com `?src=meta_ads&sck=111_222_333&utm_source=teste&utm_campaign=x` e confira o `href` dos botões e a chave `metodoexpress_tracking` no DevTools.
 
 ## Performance
 
@@ -209,6 +220,6 @@ Não é necessário `vercel.json`, a menos que você precise de redirects espec�
   solicitar o reembolso." Não condicionar o reembolso a completar missões nem a qualquer outra tarefa —
   o direito de arrependimento do CDC (art. 49) é incondicional. Não prometer garantia de resultado,
   devolução depois dos 7 dias, "sem perguntas" ou "sem burocracia".
-- **Não adicionar contador regressivo, "vagas limitadas", preço riscado sem lastro ou qualquer urgência artificial.** A oferta mostra só `R$97 à vista` + "Parcelamento disponível no checkout." — sem âncora de preço anterior e sem número de parcelas na página, porque o parcelamento exato não foi confirmado contra o Kiwify.
+- **Não adicionar contador regressivo, "vagas limitadas", preço riscado sem lastro ou qualquer urgência artificial.** A oferta mostra só `R$97 à vista` + "Parcelamento disponível no checkout." — sem âncora de preço anterior e sem número de parcelas na página, porque o parcelamento exato não foi confirmado contra a Hotmart.
 - Usar linguagem de processo ("aprende", "monta", "faz abordagens"), nunca de resultado garantido ("fecha cliente", "primeira renda", "receita recorrente").
 - Antes de rodar tráfego pago no Meta, revisar o texto contra a política de categoria especial de Emprego.
