@@ -52,13 +52,57 @@
   // carregar os parâmetros de aquisição junto (ver withTrackingParams).
   var KIWIFY_CHECKOUT_URL = 'https://pay.kiwify.com.br/kuEkae8';
 
-  // Parâmetros de aquisição repassados da URL da landing para o checkout.
-  // Sem isso a venda chega no Kiwify sem origem e não dá pra atribuir
-  // faturamento a campanha/criativo.
-  var CHECKOUT_PASSTHROUGH_PARAMS = [
-    'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
-    'fbclid', 'src'
+  // Host do checkout — usado pra decidir a quais links o rastreamento se
+  // aplica. Só links da Kiwify recebem os parâmetros; WhatsApp e qualquer
+  // outro link externo ficam intocados.
+  var KIWIFY_CHECKOUT_HOST = 'pay.kiwify.com.br';
+
+  // Um link só é checkout da Kiwify quando o hostname bate exatamente.
+  // indexOf() na URL inteira aceitaria coisas como
+  // "pay.kiwify.com.br.outrodominio.com" ou "outro.com/?ref=pay.kiwify.com.br";
+  // comparar hostname elimina esses casos. URL inválida devolve false.
+  function ehCheckoutKiwify(href) {
+    try {
+      if (typeof window.URL !== 'function') return false;
+      return new window.URL(href, window.location.href).hostname === KIWIFY_CHECKOUT_HOST;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Parâmetros de aquisição capturados da URL da landing e repassados ao
+  // checkout. Sem isso a venda chega no Kiwify sem origem e não dá pra
+  // atribuir faturamento a campanha/criativo.
+  //
+  // São exatamente os 10 parâmetros de rastreamento que a Kiwify documenta.
+  // Nada além disso é capturado.
+  //
+  // Só dados de atribuição de marketing — nada de PII. Nunca acrescentar
+  // nome, e-mail, telefone ou documento a esta lista.
+  var TRACKING_PARAMS = [
+    'src', 'sck',
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+    's1', 's2', 's3'
   ];
+
+  // Só estes parâmetros caracterizam uma origem de campanha. A atribuição
+  // salva só é substituída quando a URL traz pelo menos um deles — assim um
+  // retorno direto não apaga a campanha paga anterior (last paid touch).
+  //
+  // s1/s2/s3 ficam de fora de propósito: sozinhos são só IDs numéricos do
+  // Meta, sem origem declarada. Na prática o Meta sempre manda os utm_*
+  // junto, então isso nunca separa uma campanha real.
+  var TRACKING_CAMPAIGN_PARAMS = [
+    'src', 'sck',
+    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
+  ];
+
+  var TRACKING_STORAGE_KEY = 'metodoexpress_tracking';
+  var TRACKING_TTL_MS = 30 * 24 * 60 * 60 * 1000;   // 30 dias
+  var TRACKING_VALUE_MAX = 200;                     // corta valor absurdo
+
+  // Atribuição em uso nesta visita. Preenchida no boot por captureTracking().
+  var trackingParams = null;
 
   // WhatsApp — número no formato internacional, só dígitos (ex: 5511999999999).
   var WHATSAPP_NUMERO = '5548988430812';
@@ -68,25 +112,106 @@
      Utilitários de rastreamento.
      ============================================================ */
 
-  // Repassa os parâmetros de aquisição da URL atual para o checkout, sem
-  // nunca sobrescrever um parâmetro que já venha no próprio link do Kiwify.
-  // Qualquer falha devolve a URL original — o CTA jamais quebra por causa
-  // de rastreamento.
+  // Lê a atribuição salva. Devolve null se não existir, estiver corrompida
+  // ou já tiver passado da validade (nesse caso também limpa a chave).
+  function readStoredTracking() {
+    try {
+      var raw = window.localStorage.getItem(TRACKING_STORAGE_KEY);
+      if (!raw) return null;
+
+      var data = JSON.parse(raw);
+      if (!data || typeof data !== 'object' || !data.params) return null;
+
+      var ts = Number(data.ts);
+      if (!isFinite(ts) || ts <= 0 || (Date.now() - ts) > TRACKING_TTL_MS) {
+        window.localStorage.removeItem(TRACKING_STORAGE_KEY);
+        return null;
+      }
+
+      return data.params;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Grava a atribuição junto com o carimbo de tempo que define a validade.
+  // Sem localStorage (aba privada, cota cheia) segue sem persistir: a visita
+  // atual continua funcionando, só não sobrevive ao reload.
+  function writeStoredTracking(params) {
+    try {
+      window.localStorage.setItem(TRACKING_STORAGE_KEY, JSON.stringify({
+        v: 1,
+        ts: Date.now(),
+        params: params
+      }));
+    } catch (e) {
+      // silêncio de propósito
+    }
+  }
+
+  // Captura os parâmetros de rastreamento da URL de entrada.
+  //
+  // Regra de atribuição (last paid touch): a URL só substitui o que está
+  // salvo quando traz pelo menos um parâmetro de campanha. A troca é atômica
+  // — o conjunto inteiro é substituído de uma vez, nunca mesclado — pra não
+  // misturar utm_source de uma campanha com utm_content de outra.
+  //
+  // Sem parâmetro de campanha na URL (retorno direto, reload), a atribuição
+  // anterior é mantida intacta.
+  function captureTracking() {
+    var stored = readStoredTracking();
+
+    try {
+      if (typeof window.URLSearchParams !== 'function') return stored;
+
+      var incoming = new window.URLSearchParams(window.location.search);
+      var found = {};
+      var temCampanha = false;
+
+      for (var i = 0; i < TRACKING_PARAMS.length; i++) {
+        var name = TRACKING_PARAMS[i];
+        var value = incoming.get(name);
+        if (value === null) continue;
+
+        value = String(value).slice(0, TRACKING_VALUE_MAX);
+        if (!value) continue;
+
+        found[name] = value;
+        if (TRACKING_CAMPAIGN_PARAMS.indexOf(name) !== -1) temCampanha = true;
+      }
+
+      if (!temCampanha) return stored;
+
+      writeStoredTracking(found);
+      return found;
+    } catch (e) {
+      return stored;
+    }
+  }
+
+  // Acrescenta a atribuição em uso à URL do checkout, sem nunca sobrescrever
+  // um parâmetro que já venha no próprio link do Kiwify. É idempotente: se a
+  // URL já tiver os parâmetros, nada é duplicado.
+  //
+  // Qualquer falha devolve a URL original — o CTA jamais quebra por causa de
+  // rastreamento.
   function withTrackingParams(baseUrl) {
     try {
       if (typeof window.URL !== 'function' || typeof window.URLSearchParams !== 'function') {
         return baseUrl;
       }
 
-      var incoming = new window.URLSearchParams(window.location.search);
+      var params = trackingParams;
+      if (!params) return baseUrl;
+
       var target = new window.URL(baseUrl, window.location.href);
 
-      for (var i = 0; i < CHECKOUT_PASSTHROUGH_PARAMS.length; i++) {
-        var name = CHECKOUT_PASSTHROUGH_PARAMS[i];
-        var value = incoming.get(name);
-        if (value && !target.searchParams.has(name)) {
-          target.searchParams.set(name, value);
-        }
+      for (var i = 0; i < TRACKING_PARAMS.length; i++) {
+        var name = TRACKING_PARAMS[i];
+        var value = params[name];
+        if (!value) continue;
+        if (target.searchParams.has(name)) continue;
+        target.searchParams.set(name, value);
       }
 
       return target.toString();
@@ -487,6 +612,32 @@
         trackPixel('Contact');
       });
     }
+
+    // Rede de segurança: reaplica a atribuição no instante do clique.
+    //
+    // Os três CTAs já nascem com o href certo (acima), então isto é
+    // redundante no caminho normal — existe pra cobrir o caso de um link de
+    // checkout que apareça ou mude depois da carga, já que a oferta só é
+    // liberada minutos depois, quando o gate destrava.
+    //
+    // Fase de captura, pra rodar antes da navegação. Só toca em links da
+    // Kiwify: WhatsApp e qualquer outro link externo ficam intocados.
+    // withTrackingParams é idempotente, então reaplicar não duplica nada.
+    document.addEventListener('click', function (event) {
+      try {
+        var el = event.target;
+        if (!el || typeof el.closest !== 'function') return;
+
+        var link = el.closest('a[href]');
+        if (!link) return;
+        if (!ehCheckoutKiwify(link.href)) return;
+
+        var atualizado = withTrackingParams(link.href);
+        if (atualizado !== link.href) link.href = atualizado;
+      } catch (e) {
+        // nunca impedir o clique de seguir
+      }
+    }, true);
   }
 
   /* ============================================================
@@ -570,6 +721,9 @@
         isUnlocked: function () { return true; }
       };
     }
+
+    // Precisa rodar antes de initLinks: é quem preenche trackingParams.
+    safeInit('captureTracking', function () { trackingParams = captureTracking(); });
 
     safeInit('initVsl', function () { initVsl(gate); });
     safeInit('initFaq', initFaq);

@@ -140,17 +140,38 @@ Eventos disparados (`trackPixel()` em `script.js`, sempre sob `typeof fbq === 'f
 
 `Purchase` **não** é disparado aqui — quem registra a compra é o Kiwify.
 
-### Repasse de UTMs para o checkout
+### Atribuição e repasse de UTMs para o checkout
 
-`withTrackingParams()` em `script.js` copia os parâmetros de aquisição da URL da landing para o link do Kiwify, pra venda não chegar lá sem origem. Parâmetros repassados:
+A landing captura os parâmetros de aquisição da URL de entrada, guarda no `localStorage` e anexa ao link do Kiwify no momento do clique — pra venda não chegar lá sem origem mesmo quando a pessoa assiste 7 minutos de VSL, recarrega a página ou volta dias depois.
+
+Parâmetros capturados (`TRACKING_PARAMS` em `script.js`):
 
 ```
-utm_source  utm_medium  utm_campaign  utm_content  utm_term  fbclid  src
+utm_source  utm_medium  utm_campaign  utm_term  utm_content
+src  sck  s1  s2  s3
 ```
 
-Regras: nunca sobrescreve um parâmetro que já venha no próprio `KIWIFY_CHECKOUT_URL`, e qualquer erro devolve a URL original intacta — o CTA nunca quebra por causa de rastreamento.
+São exatamente os 10 parâmetros de rastreamento que a Kiwify documenta — nada além disso é capturado. É o mesmo conjunto configurado em **Parâmetros da URL** do Meta Ads; os placeholders (`{{campaign.name}}` etc.) ficam **só lá**, o site nunca os tem hardcoded e apenas recebe os valores já resolvidos.
 
-Pra testar, abra a página com `?utm_source=teste&utm_campaign=x` e confira o `href` dos botões.
+`fbclid` **não** faz parte deste módulo. Quem cuida do clique identificado do Facebook é o próprio Meta Pixel, via cookies `_fbc`/`_fbp` — fora do escopo daqui.
+
+> Só dados de atribuição de marketing. **Nunca acrescentar PII** (nome, e-mail, telefone, documento) a essa lista nem a URLs de rastreamento.
+
+**Persistência** — chave `metodoexpress_tracking`, validade de **30 dias**:
+
+```json
+{ "v": 1, "ts": 1770000000000, "params": { "utm_source": "facebook", "…": "…" } }
+```
+
+Passada a validade, a chave é descartada na leitura seguinte e o checkout volta a ser a URL limpa.
+
+**Atribuição — last paid touch.** A URL só substitui o que está salvo quando traz pelo menos um parâmetro de campanha (`TRACKING_CAMPAIGN_PARAMS`: os cinco `utm_*`, `src`, `sck`). A troca é **atômica** — o conjunto inteiro de uma vez, nunca mesclado — pra não misturar `utm_source` de uma campanha com `utm_content` de outra. Retorno direto e reload **não apagam** a campanha anterior. `s1`/`s2`/`s3` ficam fora dos gatilhos de propósito: sozinhos são só IDs numéricos do Meta, sem origem declarada.
+
+**Anexação ao checkout** (`withTrackingParams()`): usa `URL`/`URLSearchParams`, então o encoding é correto por construção e não há `??` nem `&&`. Nunca sobrescreve um parâmetro que já venha no link do Kiwify, e é idempotente — reaplicar não duplica nada. Qualquer erro devolve a URL original intacta: o CTA nunca quebra por causa de rastreamento.
+
+Além do `href` definido na carga, um listener delegado em fase de captura reaplica a atribuição no instante do clique. O filtro compara `new URL(href).hostname === 'pay.kiwify.com.br'` — hostname exato, não `indexOf`, pra que domínios como `pay.kiwify.com.br.outrodominio.com` não sejam aceitos. WhatsApp, redes sociais e qualquer outro link externo ficam intocados.
+
+Pra testar, abra a página com `?src=meta_ads&sck=teste01&utm_source=teste&utm_campaign=x&s1=123` e confira o `href` dos botões e a chave `metodoexpress_tracking` no DevTools.
 
 ## Performance
 
