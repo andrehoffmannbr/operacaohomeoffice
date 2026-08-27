@@ -40,6 +40,7 @@
   var CONTENT_GATE_SECONDS_DESKTOP = 415;
   var CONTENT_GATE_KEY_WATCHED = 'mex_vsl_watched_seconds';
   var CONTENT_GATE_KEY_UNLOCKED = 'mex_content_unlocked';
+  var VSL_TRACKING_KEY = 'metodoexpress_vsl_events';
 
   function getContentGateSeconds() {
     var isDesktop = window.matchMedia && window.matchMedia(VSL_DESKTOP_BREAKPOINT).matches;
@@ -257,6 +258,228 @@
     }
   }
 
+  // Eventos de consumo da VSL são custom events: ficam separados do helper
+  // de eventos padrão para não haver risco de transformar um milestone em
+  // Purchase, Contact ou qualquer outro evento de otimização da campanha.
+  function trackVslEvent(eventName, params) {
+    try {
+      if (typeof window.fbq === 'function') {
+        window.fbq('trackCustom', eventName, params);
+      }
+    } catch (e) {
+      // Tracking nunca pode afetar player, gate, página ou checkout.
+    }
+  }
+
+  function createVslTracking(gate, getPlayer) {
+    var milestoneDefinitions = [
+      { eventName: 'VSL_25', percent: 25 },
+      { eventName: 'VSL_50', percent: 50 },
+      { eventName: 'VSL_75', percent: 75 },
+      { eventName: 'VSL_90', percent: 90 }
+    ];
+    var allowedEvents = {
+      VSL_Start: true,
+      VSL_25: true,
+      VSL_50: true,
+      VSL_75: true,
+      VSL_Offer: true,
+      VSL_90: true
+    };
+    var sent = {};
+    var effectiveSeconds = 0;
+    var persistedEffectiveSeconds = 0;
+    var playing = false;
+    var countFromOwnClock = false;
+    var ticker = null;
+    var lastSampleAt = 0;
+    var lastGateWatched = getGateWatchedSeconds();
+
+    function getGateWatchedSeconds() {
+      if (!gate || typeof gate.getWatchedSeconds !== 'function') return null;
+      var value = Number(gate.getWatchedSeconds());
+      return isFinite(value) && value >= 0 ? value : null;
+    }
+
+    function readState() {
+      try {
+        var raw = window.sessionStorage.getItem(VSL_TRACKING_KEY);
+        if (!raw) return;
+        var parsed = JSON.parse(raw);
+        var events = parsed && Array.isArray(parsed.events) ? parsed.events : [];
+
+        for (var i = 0; i < events.length; i++) {
+          if (allowedEvents[events[i]]) sent[events[i]] = true;
+        }
+
+        var storedSeconds = Number(parsed && parsed.effective_seconds);
+        if (isFinite(storedSeconds) && storedSeconds > 0) {
+          effectiveSeconds = storedSeconds;
+          persistedEffectiveSeconds = storedSeconds;
+        }
+      } catch (e) {
+        // sessionStorage indisponível: deduplica em memória nesta carga.
+      }
+    }
+
+    function persistState() {
+      try {
+        var events = [];
+        for (var eventName in allowedEvents) {
+          if (allowedEvents.hasOwnProperty(eventName) && sent[eventName]) {
+            events.push(eventName);
+          }
+        }
+        window.sessionStorage.setItem(VSL_TRACKING_KEY, JSON.stringify({
+          events: events,
+          effective_seconds: Math.round(effectiveSeconds * 10) / 10
+        }));
+        persistedEffectiveSeconds = effectiveSeconds;
+      } catch (e) {
+        // O Pixel e a VSL continuam funcionando sem storage.
+      }
+    }
+
+    function playerNumber(methodName) {
+      try {
+        var currentPlayer = getPlayer();
+        if (!currentPlayer || typeof currentPlayer[methodName] !== 'function') return 0;
+        var value = Number(currentPlayer[methodName]());
+        return isFinite(value) && value >= 0 ? value : 0;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    function videoParams(percent) {
+      var params = {
+        video_time: Math.round(playerNumber('getCurrentTime')),
+        video_duration: Math.round(playerNumber('getDuration'))
+      };
+      if (typeof percent === 'number') params.video_percent = percent;
+      return params;
+    }
+
+    function emitOnce(eventName, params) {
+      if (sent[eventName]) return;
+      sent[eventName] = true;
+      // Persiste antes do envio: callbacks repetidos ou um reload imediato não
+      // conseguem enfileirar o mesmo evento duas vezes na mesma aba/sessão.
+      persistState();
+      trackVslEvent(eventName, params);
+    }
+
+    function checkMilestones() {
+      var duration = playerNumber('getDuration');
+      var currentTime = playerNumber('getCurrentTime');
+      if (duration <= 0) return;
+
+      for (var i = 0; i < milestoneDefinitions.length; i++) {
+        var milestone = milestoneDefinitions[i];
+        var threshold = duration * milestone.percent / 100;
+
+        // Exige os dois sinais: playhead no ponto e tempo efetivamente tocado
+        // suficiente. Assim, mesmo um seek externo não fabrica consumo.
+        if (currentTime >= threshold && effectiveSeconds >= threshold) {
+          emitOnce(milestone.eventName, videoParams(milestone.percent));
+        }
+      }
+    }
+
+    function sampleEffectiveTime() {
+      if (!playing) return;
+
+      var now = Date.now();
+      var elapsed = lastSampleAt ? (now - lastSampleAt) / 1000 : 0;
+      var gateWatched = getGateWatchedSeconds();
+      var gateDelta = gateWatched !== null && lastGateWatched !== null
+        ? gateWatched - lastGateWatched
+        : 0;
+
+      // Enquanto o gate está ativo, reaproveita exatamente o contador dele.
+      // Depois de liberado ele para por design; para novas sessões com oferta
+      // já aberta, mantém o mesmo critério PLAYING e relógio plausível.
+      if (gateDelta > 0 && gateDelta <= 5) {
+        effectiveSeconds += gateDelta;
+      } else if ((countFromOwnClock || (gate && gate.isUnlocked())) &&
+                 elapsed > 0 && elapsed <= 5) {
+        effectiveSeconds += elapsed;
+      }
+
+      lastSampleAt = now;
+      lastGateWatched = gateWatched;
+      checkMilestones();
+
+      if (effectiveSeconds - persistedEffectiveSeconds >= 5) persistState();
+    }
+
+    function stop() {
+      if (playing) sampleEffectiveTime();
+      playing = false;
+      if (ticker) {
+        clearInterval(ticker);
+        ticker = null;
+      }
+      if (effectiveSeconds > persistedEffectiveSeconds) persistState();
+    }
+
+    function start() {
+      if (playing) return;
+      playing = true;
+      lastSampleAt = Date.now();
+      lastGateWatched = getGateWatchedSeconds();
+      emitOnce('VSL_Start', videoParams());
+      ticker = setInterval(sampleEffectiveTime, 1000);
+    }
+
+    readState();
+
+    if (gate && typeof gate.onRelease === 'function') {
+      gate.onRelease(function (reason) {
+        // Watchdogs e fallbacks continuam fail-open, mas não representam que
+        // a pessoa chegou efetivamente ao ponto da oferta.
+        if (reason !== 'watched') return;
+        emitOnce('VSL_Offer', { gate_seconds: getContentGateSeconds() });
+      });
+    }
+
+    window.addEventListener('pagehide', stop);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') {
+        stop();
+        return;
+      }
+      if (document.visibilityState !== 'visible') return;
+
+      try {
+        var currentPlayer = getPlayer();
+        if (!currentPlayer || !window.YT || !window.YT.PlayerState ||
+            typeof currentPlayer.getPlayerState !== 'function') return;
+
+        if (currentPlayer.getPlayerState() === window.YT.PlayerState.PLAYING) {
+          // O gate permanece parado. O tracking recomeça deste instante,
+          // sem creditar o tempo em que a aba ficou escondida.
+          countFromOwnClock = true;
+          start();
+        }
+      } catch (e) {
+        // Player/API indisponível nunca pode afetar a VSL.
+      }
+    });
+
+    return {
+      setPlaying: function (isPlaying) {
+        countFromOwnClock = false;
+        if (isPlaying) start();
+        else stop();
+      },
+      ended: function () {
+        stop();
+        checkMilestones();
+      }
+    };
+  }
+
   /* ============================================================
      Gate de conteúdo — parte 2 de 2. A parte 1 é o script síncrono no
      <head> do index.html, que aplica .content-locked no <html> antes do
@@ -280,6 +503,7 @@
     var unlocked = false;
     var ticker = null;
     var lastTick = 0;
+    var releaseListeners = [];
 
     function read(key) {
       try {
@@ -327,13 +551,17 @@
       if (watched > persisted) persist();
     }
 
-    function release() {
+    function release(reason) {
       if (unlocked) return;
       unlocked = true;
       stop();
       write(CONTENT_GATE_KEY_UNLOCKED, '1');
       write(CONTENT_GATE_KEY_WATCHED, String(required));
       root.classList.remove('content-locked');
+
+      for (var i = 0; i < releaseListeners.length; i++) {
+        try { releaseListeners[i](reason); } catch (e) { /* tracking opcional */ }
+      }
     }
 
     function tick() {
@@ -347,7 +575,7 @@
       if (delta > 0 && delta <= 5) watched += delta;
 
       if (watched >= required) {
-        release();
+        release('watched');
         return;
       }
       if (watched - persisted >= 5) persist();
@@ -374,7 +602,11 @@
       // API do YouTube que não subiu). Melhor liberar do que deixar a
       // landing travada pra sempre.
       release: release,
-      isUnlocked: function () { return unlocked; }
+      isUnlocked: function () { return unlocked; },
+      getWatchedSeconds: function () { return watched; },
+      onRelease: function (listener) {
+        if (typeof listener === 'function') releaseListeners.push(listener);
+      }
     };
   }
 
@@ -449,6 +681,7 @@
 
       var toggle = document.getElementById('vslToggle');
       var ytPlayer = null;
+      var vslTracking = createVslTracking(gate, function () { return ytPlayer; });
 
       // Se a API do YouTube não subir (bloqueador, rede corporativa), o gate
       // nunca receberia tempo assistido e a página ficaria travada pra
@@ -468,19 +701,24 @@
       });
 
       loadYouTubeApi(function () {
+        var playerVars = {
+          autoplay: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1,
+          rel: 0,
+          playsinline: 1,
+          iv_load_policy: 3,
+          cc_load_policy: 1
+        };
+        if (window.location.origin && window.location.origin !== 'null') {
+          playerVars.origin = window.location.origin;
+        }
+
         ytPlayer = new window.YT.Player('ytTarget', {
           videoId: videoId,
-          playerVars: {
-            autoplay: 1,
-            controls: 0,
-            disablekb: 1,
-            fs: 0,
-            modestbranding: 1,
-            rel: 0,
-            playsinline: 1,
-            iv_load_policy: 3,
-            cc_load_policy: 1
-          },
+          playerVars: playerVars,
           events: {
             onReady: function (event) {
               clearTimeout(apiWatchdog);
@@ -502,6 +740,8 @@
               setToggleState(isPlaying);
               // O gate só acumula enquanto o vídeo está realmente tocando.
               if (gate) gate.setPlaying(isPlaying);
+              vslTracking.setPlaying(isPlaying);
+              if (event.data === window.YT.PlayerState.ENDED) vslTracking.ended();
             }
           }
         });
