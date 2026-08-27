@@ -256,16 +256,8 @@ ul {
   width: 100%;
   border-radius: 0;
   background-color: var(--color-accent-darker);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  cursor: pointer;
   overflow: hidden;
   border: none;
-  padding: 16px;
-  text-align: center;
   box-shadow: var(--shadow-lg);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -275,42 +267,99 @@ ul {
   box-shadow: 0 24px 60px rgba(11, 60, 55, 0.22);
 }
 
-.vsl-player:focus-visible {
-  outline: 3px solid var(--color-accent-dark);
-  outline-offset: 3px;
+.vsl-poster,
+.vsl-poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.vsl-play-btn {
-  position: relative;
-  z-index: 1;
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.97);
-  color: var(--color-accent-dark);
+.vsl-poster {
+  display: block;
+  pointer-events: none;
+}
+
+.vsl-poster img {
+  object-fit: cover;
+}
+
+.vsl-start-overlay {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 20px;
+  appearance: none;
+  background: linear-gradient(180deg, rgba(1, 8, 8, 0.38), rgba(1, 8, 8, 0.72));
+  color: #FFFFFF;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  transition: transform 0.25s ease;
 }
 
-.vsl-player:hover .vsl-play-btn {
-  transform: scale(1.08);
+.vsl-start-overlay:focus-visible {
+  outline: 3px solid #FFFFFF;
+  outline-offset: -6px;
 }
 
-.vsl-play-btn svg {
-  margin-left: 3px;
+.vsl-start-card {
+  width: min(100%, 360px);
+  padding: 20px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-lg);
+  background: rgba(3, 18, 17, 0.78);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-.vsl-player-label {
-  position: relative;
-  z-index: 1;
-  color: #FFFFFF;
-  font-weight: 600;
-  font-size: 0.95rem;
-  margin: 0;
+.vsl-start-overlay:hover .vsl-start-card {
+  transform: translateY(-2px);
+  background: rgba(3, 18, 17, 0.86);
+}
+
+.vsl-start-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.08rem, 4.8vw, 1.35rem);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.vsl-audio-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: var(--color-accent-darker);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.32);
+  animation: vsl-audio-pulse 1.5s ease-in-out infinite;
+}
+
+.vsl-start-action {
+  font-size: clamp(0.9rem, 3.8vw, 1rem);
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+@keyframes vsl-audio-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.28); }
+  50% { transform: scale(1.045); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
 }
 
 .vsl-player video,
@@ -1242,17 +1291,28 @@ html.content-locked,
       exato com o formato real de cada arquivo, sem cortar nem sobrar
       barra preta.
 
-      Antes do clique NÃO carrega mídia nenhuma: o card é só fundo teal
-      escuro, botão de play e legenda. Quando o clipe de preview real da
-      VSL for gravado, ele volta como <video muted loop playsinline> com
-      poster aqui dentro (ver README, seção "Vídeo (VSL)").
+      Antes do clique carrega somente o thumbnail oficial da VSL escolhida.
+      A API e o player do YouTube continuam sendo criados apenas depois da
+      interação explícita do usuário.
     -->
     <div class="vsl-wrap">
-      <div class="vsl-player" id="vslPlayer" role="button" tabindex="0" aria-label="Reproduzir vídeo de apresentação do Método Express">
-        <div class="vsl-play-btn" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        </div>
-        <p class="vsl-player-label">Assista: como funciona o Método Express</p>
+      <div class="vsl-player" id="vslPlayer">
+        <picture class="vsl-poster" aria-hidden="true">
+          <source media="(min-width: 640px)" srcset="https://i.ytimg.com/vi/a4tbLBVzkOs/maxresdefault.jpg">
+          <img src="https://i.ytimg.com/vi/zyZgphLLg-Y/maxresdefault.jpg" width="1280" height="720" alt="" fetchpriority="high" decoding="async">
+        </picture>
+        <button type="button" class="vsl-start-overlay" id="vslStartOverlay" aria-label="Clique para assistir ao vídeo com áudio">
+          <span class="vsl-start-card" aria-hidden="true">
+            <span class="vsl-start-title">Seu vídeo está pronto</span>
+            <span class="vsl-audio-icon">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z"/>
+                <path d="M17 9.5a4 4 0 0 1 0 5"/>
+              </svg>
+            </span>
+            <span class="vsl-start-action">Clique para assistir com áudio</span>
+          </span>
+        </button>
       </div>
     </div>
 

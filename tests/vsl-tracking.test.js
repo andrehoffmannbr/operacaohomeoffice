@@ -6,7 +6,9 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 
+const INDEX_PATH = path.join(__dirname, '..', 'index.html');
 const SCRIPT_PATH = path.join(__dirname, '..', 'script.js');
+const INDEX_SOURCE = fs.readFileSync(INDEX_PATH, 'utf8');
 const SCRIPT_SOURCE = fs.readFileSync(SCRIPT_PATH, 'utf8');
 const TRACKING_KEY = 'metodoexpress_vsl_events';
 
@@ -77,11 +79,13 @@ function createEnvironment(options) {
     state: -1,
     currentTime: 0,
     duration: options.duration || 500,
+    playCalls: 0,
+    pauseCalls: 0,
     getPlayerState() { return this.state; },
     getCurrentTime() { return this.currentTime; },
     getDuration() { return this.duration; },
-    playVideo() {},
-    pauseVideo() {}
+    playVideo() { this.playCalls += 1; },
+    pauseVideo() { this.pauseCalls += 1; }
   };
 
   function updatePlayerTime(targetTime) {
@@ -157,6 +161,7 @@ function createEnvironment(options) {
     attributes: {},
     setAttribute(name, value) { this.attributes[name] = String(value); }
   });
+  const startOverlay = createEventTarget();
   const vslPlayer = createEventTarget({
     innerHTML: '',
     removeAttribute() {},
@@ -170,6 +175,7 @@ function createEnvironment(options) {
     createElement() { return createEventTarget({ setAttribute() {} }); },
     getElementById(id) {
       if (id === 'vslPlayer') return vslPlayer;
+      if (id === 'vslStartOverlay') return startOverlay;
       if (id === 'vslToggle') return toggle;
       return null;
     },
@@ -234,7 +240,7 @@ function createEnvironment(options) {
   document.dispatch('DOMContentLoaded');
 
   function clickVslWithoutReady() {
-    vslPlayer.dispatch('click');
+    startOverlay.dispatch('click');
     assert.ok(playerConfig, 'YT.Player deve ser criado após o clique');
   }
 
@@ -268,6 +274,7 @@ function createEnvironment(options) {
     pagehide() { window.dispatch('pagehide'); },
     playerConfig: () => playerConfig,
     playerCount: () => playerCount,
+    secondOverlayClick() { startOverlay.dispatch('click'); },
     sessionMap: sessionStorage.values,
     setVisibility(state) {
       document.visibilityState = state;
@@ -287,6 +294,78 @@ function startPlaying(environment) {
   environment.clickVsl();
   environment.emitState(1);
 }
+
+test('Overlay A/B — abre visível sem inicializar player ou VSL_Start', () => {
+  const environment = createEnvironment();
+
+  assert.match(INDEX_SOURCE, /id="vslStartOverlay"/);
+  assert.match(INDEX_SOURCE, />Seu vídeo está pronto</);
+  assert.match(INDEX_SOURCE, />Clique para assistir com áudio</);
+  assert.equal(environment.playerCount(), 0);
+  assert.equal(environment.fakePlayer.playCalls, 0);
+  assert.deepEqual(eventNames(environment), []);
+});
+
+test('Overlay C/F — clique e duplo clique criam somente um player', () => {
+  const environment = createEnvironment();
+
+  environment.clickVslWithoutReady();
+  environment.secondOverlayClick();
+  environment.secondOverlayClick();
+
+  assert.equal(environment.playerCount(), 1);
+  assert.deepEqual(eventNames(environment), []);
+});
+
+test('Overlay D/E — play parte de 0:00 e Start depende de PLAYING real', () => {
+  const environment = createEnvironment();
+
+  environment.clickVsl();
+  assert.equal(environment.fakePlayer.currentTime, 0);
+  assert.equal(environment.fakePlayer.playCalls, 1);
+  assert.deepEqual(eventNames(environment), []);
+
+  environment.emitState(1);
+  environment.emitState(1);
+  assert.deepEqual(eventNames(environment), ['VSL_Start']);
+});
+
+test('Overlay G/H — preserva 1:1 mobile e 16:9 desktop', () => {
+  assert.match(INDEX_SOURCE, /\.vsl-player\s*\{[\s\S]*?aspect-ratio:\s*1\s*\/\s*1;/);
+  assert.match(INDEX_SOURCE, /@media \(min-width: 640px\)[\s\S]*?\.vsl-player\s*\{[\s\S]*?aspect-ratio:\s*16\s*\/\s*9;/);
+  assert.match(INDEX_SOURCE, /\.vsl-start-overlay\s*\{[\s\S]*?inset:\s*0;[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%;/);
+});
+
+test('Overlay I/J/K — gate segue bloqueado e libera com Offer aos 415s', () => {
+  const environment = createEnvironment();
+
+  assert.equal(environment.isContentLocked(), true);
+  startPlaying(environment);
+  assert.equal(environment.isContentLocked(), true);
+  environment.advance(415000);
+
+  assertGateReleased(environment);
+  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
+});
+
+test('Overlay M/N — checkout, UTMs e WhatsApp permanecem intactos', () => {
+  assert.equal((INDEX_SOURCE.match(/https:\/\/pay\.hotmart\.com\/G106758643C/g) || []).length, 3);
+  assert.match(SCRIPT_SOURCE, /var HOTMART_CHECKOUT_URL = 'https:\/\/pay\.hotmart\.com\/G106758643C';/);
+  ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'src', 'sck']
+    .forEach((name) => assert.match(SCRIPT_SOURCE, new RegExp(name)));
+  assert.match(INDEX_SOURCE, /https:\/\/wa\.me\/5548988430812/);
+});
+
+test('Overlay O — interação completa não gera exceção', () => {
+  const environment = createEnvironment();
+
+  assert.doesNotThrow(() => {
+    environment.clickVsl();
+    environment.secondOverlayClick();
+    environment.emitState(1);
+    environment.advance(1000);
+  });
+});
 
 test('A — carregamento e ready não disparam evento VSL', () => {
   const environment = createEnvironment();

@@ -698,10 +698,9 @@
      (Total Blocking Time e "Práticas recomendadas" do PageSpeed caíram
      bastante, e adiar o autoplay só piorava outras métricas).
 
-     Antes do clique o card não carrega mídia nenhuma: é só fundo teal
-     escuro, botão de play e legenda. Quando o clipe de preview real da
-     VSL for gravado, ele volta como <video muted loop playsinline> com
-     poster dentro do .vsl-player no index.html.
+     Antes do clique carrega somente o thumbnail oficial da VSL. A API e o
+     player do YouTube continuam sendo criados apenas depois da interação
+     explícita do usuário no overlay do index.html.
 
      Para YouTube especificamente, usa a IFrame Player API (em vez de
      um <iframe> comum) para desligar os controles nativos — sem barra
@@ -713,6 +712,8 @@
   function initVsl(gate) {
     var player = document.getElementById('vslPlayer');
     if (!player) return;
+    var startOverlay = document.getElementById('vslStartOverlay');
+    if (!startOverlay) return;
 
     var loaded = false;
 
@@ -882,13 +883,9 @@
       player.removeAttribute('tabindex');
     }
 
-    player.addEventListener('click', loadVideo);
-    player.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        loadVideo();
-      }
-    });
+    // Botão nativo: clique, Enter e Espaço convergem para o mesmo evento
+    // sem listeners duplicados. O guard `loaded` impede um segundo player.
+    startOverlay.addEventListener('click', loadVideo);
   }
 
   /* ============================================================
