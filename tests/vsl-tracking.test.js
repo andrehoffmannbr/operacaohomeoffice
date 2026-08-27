@@ -136,7 +136,23 @@ function createEnvironment(options) {
     updatePlayerTime(target);
   }
 
+  // Simula o navegador deixando timers vencidos sem executar enquanto o
+  // player (processo/iframe separado) continua avançando normalmente.
+  function delayTimers(milliseconds) {
+    updatePlayerTime(now + milliseconds);
+    for (const timer of timers.values()) {
+      if (timer.nextAt <= now) timer.nextAt = now;
+    }
+    advance(0);
+  }
+
   const root = { classList: createClassList() };
+  const initialWatched = Number(localStorage.values.get('mex_vsl_watched_seconds') || 0);
+  if (!options.localStorageUnavailable &&
+      localStorage.values.get('mex_content_unlocked') !== '1' &&
+      initialWatched < 415) {
+    root.classList.add('content-locked');
+  }
   const toggle = createEventTarget({
     attributes: {},
     setAttribute(name, value) { this.attributes[name] = String(value); }
@@ -217,9 +233,13 @@ function createEnvironment(options) {
   vm.runInContext(SCRIPT_SOURCE, context, { filename: SCRIPT_PATH });
   document.dispatch('DOMContentLoaded');
 
-  function clickVsl() {
+  function clickVslWithoutReady() {
     vslPlayer.dispatch('click');
     assert.ok(playerConfig, 'YT.Player deve ser criado após o clique');
+  }
+
+  function clickVsl() {
+    clickVslWithoutReady();
     playerConfig.events.onReady({ target: fakePlayer });
   }
 
@@ -237,10 +257,13 @@ function createEnvironment(options) {
   return {
     advance,
     clickVsl,
+    clickVslWithoutReady,
     customEvents,
+    delayTimers,
     document,
     emitState,
     fakePlayer,
+    isContentLocked: () => root.classList.contains('content-locked'),
     localMap: localStorage.values,
     pagehide() { window.dispatch('pagehide'); },
     playerConfig: () => playerConfig,
@@ -420,4 +443,169 @@ test('M — hidden/visible retoma somente se o player continuar PLAYING', () => 
 
   assert.equal(environment.trackingState().effective_seconds, effectiveWhilePaused);
   assert.equal(eventNames(environment).filter((name) => name === 'VSL_25').length, 1);
+});
+
+function assertGateReleased(environment) {
+  assert.equal(environment.isContentLocked(), false);
+  assert.equal(environment.localMap.get('mex_content_unlocked'), '1');
+  assert.equal(environment.localMap.get('mex_vsl_watched_seconds'), '415');
+}
+
+function watchWithDelayedCallbacks(delaySeconds) {
+  const environment = createEnvironment();
+  startPlaying(environment);
+
+  for (let elapsed = 0; elapsed < 420; elapsed += delaySeconds) {
+    environment.delayTimers(delaySeconds * 1000);
+  }
+
+  return environment;
+}
+
+test('Gate 01 — PLAYING contínuo libera em 415s', () => {
+  const environment = createEnvironment();
+  assert.equal(environment.isContentLocked(), true);
+  startPlaying(environment);
+  environment.advance(415000);
+  assertGateReleased(environment);
+});
+
+test('Gate 02 — callback atrasado 6s preserva tempo legítimo', () => {
+  assertGateReleased(watchWithDelayedCallbacks(6));
+});
+
+test('Gate 03 — callback atrasado 10s preserva tempo legítimo', () => {
+  assertGateReleased(watchWithDelayedCallbacks(10));
+});
+
+test('Gate 04 — callback atrasado 30s preserva tempo legítimo', () => {
+  assertGateReleased(watchWithDelayedCallbacks(30));
+});
+
+test('Gate 05 — playhead em 415 libera contador previamente atrasado', () => {
+  const localMap = new Map([['mex_vsl_watched_seconds', '385']]);
+  const environment = createEnvironment({ localMap });
+  environment.fakePlayer.currentTime = 413;
+  startPlaying(environment);
+  environment.delayTimers(2000);
+
+  assert.equal(environment.fakePlayer.currentTime, 415);
+  assertGateReleased(environment);
+  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
+});
+
+test('Gate 06 — ENDED libera mesmo com contador em 395s', () => {
+  const localMap = new Map([['mex_vsl_watched_seconds', '395']]);
+  const environment = createEnvironment({ localMap });
+  startPlaying(environment);
+  environment.fakePlayer.currentTime = 500;
+  environment.emitState(0);
+
+  assertGateReleased(environment);
+  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
+});
+
+test('Gate 07 — PAUSED não conta e depois retoma', () => {
+  const environment = createEnvironment();
+  startPlaying(environment);
+  environment.advance(200000);
+  environment.emitState(2);
+  environment.delayTimers(30000);
+  assert.equal(environment.isContentLocked(), true);
+
+  environment.emitState(1);
+  environment.advance(214000);
+  assert.equal(environment.isContentLocked(), true);
+  environment.advance(1000);
+  assertGateReleased(environment);
+});
+
+test('Gate 08 — BUFFERING não conta e depois retoma', () => {
+  const environment = createEnvironment();
+  startPlaying(environment);
+  environment.advance(200000);
+  environment.emitState(3);
+  environment.delayTimers(30000);
+  assert.equal(environment.isContentLocked(), true);
+
+  environment.emitState(1);
+  environment.advance(214000);
+  assert.equal(environment.isContentLocked(), true);
+  environment.advance(1000);
+  assertGateReleased(environment);
+});
+
+test('Gate 09 — hidden não conta automaticamente', () => {
+  const environment = createEnvironment();
+  startPlaying(environment);
+  environment.advance(100000);
+  environment.setVisibility('hidden');
+  const watchedBeforeHidden = environment.localMap.get('mex_vsl_watched_seconds');
+  environment.delayTimers(30000);
+
+  assert.equal(environment.localMap.get('mex_vsl_watched_seconds'), watchedBeforeHidden);
+  environment.setVisibility('visible');
+  environment.advance(314000);
+  assert.equal(environment.isContentLocked(), true);
+  environment.advance(1000);
+  assertGateReleased(environment);
+});
+
+test('Gate 10 — visible recupera PLAYING sem novo onStateChange', () => {
+  const environment = createEnvironment();
+  startPlaying(environment);
+  environment.advance(100000);
+  environment.setVisibility('hidden');
+  environment.delayTimers(30000);
+  environment.setVisibility('visible');
+
+  // getPlayerState continua PLAYING; nenhum callback do YouTube é emitido.
+  environment.advance(315000);
+  assertGateReleased(environment);
+});
+
+test('Gate 11 — reload preserva 300s e libera após mais 115s', () => {
+  const first = createEnvironment();
+  startPlaying(first);
+  first.advance(300000);
+  first.pagehide();
+
+  const reloaded = createEnvironment({ localMap: first.localMap });
+  assert.equal(reloaded.isContentLocked(), true);
+  startPlaying(reloaded);
+  reloaded.advance(115000);
+  assertGateReleased(reloaded);
+});
+
+test('Gate 12 — localStorage indisponível permanece fail-open', () => {
+  const environment = createEnvironment({ localStorageUnavailable: true });
+  assert.equal(environment.isContentLocked(), false);
+  assert.doesNotThrow(() => {
+    startPlaying(environment);
+    environment.advance(415000);
+  });
+  assert.equal(environment.isContentLocked(), false);
+});
+
+test('Gate 13 — player sem ready preserva watchdog fail-open', () => {
+  const environment = createEnvironment();
+  environment.clickVslWithoutReady();
+  environment.delayTimers(15000);
+  assertGateReleased(environment);
+});
+
+test('Gate 14 — mobile usa vídeo correto e libera em 415s', () => {
+  const environment = createEnvironment({ desktop: false });
+  startPlaying(environment);
+  assert.equal(environment.playerConfig().videoId, 'zyZgphLLg-Y');
+  environment.advance(415000);
+  assertGateReleased(environment);
+});
+
+test('Gate 15 — desktop usa vídeo correto e libera em 415s', () => {
+  const environment = createEnvironment({ desktop: true });
+  startPlaying(environment);
+  assert.equal(environment.playerConfig().videoId, 'a4tbLBVzkOs');
+  environment.advance(415000);
+  assertGateReleased(environment);
 });

@@ -399,7 +399,7 @@
       // Enquanto o gate está ativo, reaproveita exatamente o contador dele.
       // Depois de liberado ele para por design; para novas sessões com oferta
       // já aberta, mantém o mesmo critério PLAYING e relógio plausível.
-      if (gateDelta > 0 && gateDelta <= 5) {
+      if (gateDelta > 0) {
         effectiveSeconds += gateDelta;
       } else if ((countFromOwnClock || (gate && gate.isUnlocked())) &&
                  elapsed > 0 && elapsed <= 5) {
@@ -438,7 +438,7 @@
       gate.onRelease(function (reason) {
         // Watchdogs e fallbacks continuam fail-open, mas não representam que
         // a pessoa chegou efetivamente ao ponto da oferta.
-        if (reason !== 'watched') return;
+        if (reason !== 'watched' && reason !== 'playhead' && reason !== 'ended') return;
         emitOnce('VSL_Offer', { gate_seconds: getContentGateSeconds() });
       });
     }
@@ -504,6 +504,31 @@
     var ticker = null;
     var lastTick = 0;
     var releaseListeners = [];
+    var getPlayer = null;
+    var lastPlayerTime = null;
+    var confirmedPlayerSeconds = 0;
+    var hiddenPlayerTime = null;
+    var ignoredPlayerSeconds = 0;
+
+    function readPlayer() {
+      try {
+        if (typeof getPlayer !== 'function' || !window.YT || !window.YT.PlayerState) {
+          return null;
+        }
+        var currentPlayer = getPlayer();
+        if (!currentPlayer || typeof currentPlayer.getPlayerState !== 'function' ||
+            typeof currentPlayer.getCurrentTime !== 'function') return null;
+
+        var currentTime = Number(currentPlayer.getCurrentTime());
+        if (!isFinite(currentTime) || currentTime < 0) return null;
+        return {
+          currentTime: currentTime,
+          state: currentPlayer.getPlayerState()
+        };
+      } catch (e) {
+        return null;
+      }
+    }
 
     function read(key) {
       try {
@@ -568,14 +593,49 @@
       var now = Date.now();
       var delta = (now - lastTick) / 1000;
       lastTick = now;
+      var player = readPlayer();
+      var playerDelta = 0;
+      var isVisible = document.visibilityState !== 'hidden';
 
-      // Só credita intervalos plausíveis. Um salto grande significa aba em
-      // segundo plano com timer estrangulado, ou máquina que dormiu — nada
-      // disso é vídeo assistido, então não conta.
-      if (delta > 0 && delta <= 5) watched += delta;
+      if (player) {
+        if (lastPlayerTime !== null) playerDelta = player.currentTime - lastPlayerTime;
+        lastPlayerTime = player.currentTime;
+      } else {
+        lastPlayerTime = null;
+      }
+
+      // Evidência independente do contador principal: só aceita avanço do
+      // playhead compatível com o tempo realmente decorrido em PLAYING+visible.
+      // Um seek de centenas de segundos em um callback de 1s credita no máximo 1s.
+      if (isVisible && delta > 0 && player &&
+          player.state === window.YT.PlayerState.PLAYING && playerDelta > 0) {
+        confirmedPlayerSeconds += Math.min(playerDelta, delta);
+      }
+
+      // No caminho normal preserva o contador existente. Se o callback atrasar
+      // mais de 5s, só recupera o tempo confirmado pelo avanço real do player,
+      // limitado ao wall clock: seek artificial nunca credita o salto inteiro.
+      if (isVisible && delta > 0 && delta <= 5 &&
+          (!player || player.state === window.YT.PlayerState.PLAYING)) {
+        watched += delta;
+      } else if (isVisible && delta > 5 && player &&
+                 player.state === window.YT.PlayerState.PLAYING && playerDelta > 0) {
+        watched += Math.min(playerDelta, delta);
+      }
 
       if (watched >= required) {
         release('watched');
+        return;
+      }
+
+      // Segunda fonte de verdade comercial. Como o player não oferece seek
+      // manual, 2s de progressão real observada bastam para rejeitar um salto
+      // instantâneo sem deixar um contador atrasado prender quem chegou a 415s.
+      // Qualquer avanço ocorrido em hidden é descontado do playhead elegível.
+      if (isVisible && player && player.state === window.YT.PlayerState.PLAYING &&
+          (player.currentTime - ignoredPlayerSeconds) >= required &&
+          confirmedPlayerSeconds >= Math.min(required, 2)) {
+        release('playhead');
         return;
       }
       if (watched - persisted >= 5) persist();
@@ -584,13 +644,31 @@
     function start() {
       if (unlocked || ticker) return;
       lastTick = Date.now();
+      var player = readPlayer();
+      lastPlayerTime = player ? player.currentTime : null;
       ticker = setInterval(tick, 1000);
     }
 
     // Fechar/esconder a aba não pode perder os segundos ainda não gravados.
     window.addEventListener('pagehide', stop);
     document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') stop();
+      if (document.visibilityState === 'hidden') {
+        var player = readPlayer();
+        hiddenPlayerTime = player ? player.currentTime : null;
+        stop();
+        return;
+      }
+      if (document.visibilityState !== 'visible') return;
+
+      var player = readPlayer();
+      if (player && hiddenPlayerTime !== null && player.currentTime > hiddenPlayerTime) {
+        ignoredPlayerSeconds += player.currentTime - hiddenPlayerTime;
+      }
+      hiddenPlayerTime = null;
+      lastPlayerTime = player ? player.currentTime : null;
+
+      // Não depende de um novo onStateChange depois que o browser retoma.
+      if (player && player.state === window.YT.PlayerState.PLAYING) start();
     });
 
     return {
@@ -604,6 +682,9 @@
       release: release,
       isUnlocked: function () { return unlocked; },
       getWatchedSeconds: function () { return watched; },
+      setPlayer: function (playerGetter) {
+        if (typeof playerGetter === 'function') getPlayer = playerGetter;
+      },
       onRelease: function (listener) {
         if (typeof listener === 'function') releaseListeners.push(listener);
       }
@@ -739,12 +820,20 @@
               var isPlaying = event.data === window.YT.PlayerState.PLAYING;
               setToggleState(isPlaying);
               // O gate só acumula enquanto o vídeo está realmente tocando.
-              if (gate) gate.setPlaying(isPlaying);
+              if (gate) {
+                gate.setPlaying(isPlaying);
+                // Um ENDED emitido pelo player real é o último fail-safe:
+                // quem terminou a VSL nunca pode continuar preso no gate.
+                if (event.data === window.YT.PlayerState.ENDED) gate.release('ended');
+              }
               vslTracking.setPlaying(isPlaying);
               if (event.data === window.YT.PlayerState.ENDED) vslTracking.ended();
             }
           }
         });
+        if (gate && typeof gate.setPlayer === 'function') {
+          gate.setPlayer(function () { return ytPlayer; });
+        }
       });
     }
 
