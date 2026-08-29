@@ -126,9 +126,7 @@ Pra mudar a duração, altere `CONTENT_GATE_SECONDS_MOBILE` / `_DESKTOP` em `scr
 
 ### Meta Pixel (ativo)
 
-O snippet no `<head>` do `index.html` é uma versão otimizada do oficial: o `fbq()` fica disponível na hora (chamadas antes do carregamento entram na fila), mas o `fbevents.js` só é buscado no primeiro toque/scroll/movimento do visitante — ou depois de 4s, o que vier primeiro. Isso tira ~170 KB do caminho crítico.
-
-> Efeito colateral conhecido: quem sai em menos de 4s **sem nenhuma interação** não gera PageView. Se a subnotificação atrapalhar a otimização de campanha, baixe o `setTimeout(start, 4000)` pra 1500–2000ms.
+O snippet no `<head>` do `index.html` disponibiliza `fbq()`, inicializa o Pixel e enfileira `PageView` imediatamente. O download async de `fbevents.js` começa 250ms depois, sem depender de toque, scroll ou qualquer outra interação. Esse intervalo curto dá ao navegador tempo para descobrir o pôster LCP prioritário sem recriar a antiga janela de perda de 4s.
 
 Eventos disparados (`trackPixel()` em `script.js`, sempre sob `typeof fbq === 'function'` e dentro de `try/catch`, pra nunca impedir a navegação):
 

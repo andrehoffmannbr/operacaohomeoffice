@@ -1207,14 +1207,10 @@ html.content-locked,
   </script>
 
   <!--
-    Meta Pixel — versão otimizada do snippet oficial do Gerenciador de Eventos.
-    fbq() fica disponível na hora (qualquer fbq('track', ...) chamado antes
-    do carregamento real só entra na fila), mas o fbevents.js (script de
-    ~105 KiB + uma chamada extra de config de ~63 KiB, ambos da própria
-    Meta) só é buscado no primeiro toque/scroll/movimento do visitante —
-    ou depois de 4s, o que vier primeiro. Isso tira esse peso do caminho
-    crítico de carregamento (LCP, FCP, TBT) sem perder o PageView de
-    ninguém que realmente interaja com a página.
+    Meta Pixel — o stub, init e PageView ficam disponíveis imediatamente.
+    O fbevents.js começa 250ms depois, sempre async e sem depender de
+    interação. O intervalo curto permite que o navegador descubra primeiro
+    o pôster LCP prioritário, sem manter a antiga janela de perda de 4s.
   -->
   <script>
   !function (f, b, e, v, n, t, s) {
@@ -1225,22 +1221,17 @@ html.content-locked,
     if (!f._fbq) f._fbq = n;
     n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
 
-    var started = false;
-    var triggers = ['scroll', 'touchstart', 'mousemove', 'keydown', 'click'];
-    var fallback;
-
     function start() {
-      if (started) return;
-      started = true;
-      triggers.forEach(function (evt) { f.removeEventListener(evt, start); });
-      clearTimeout(fallback);
-      t = b.createElement(e); t.async = !0; t.src = v;
-      s = b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t, s);
+      try {
+        t = b.createElement(e); t.async = !0; t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      } catch (e) {
+        // Bloqueio/falha do Pixel nunca pode afetar a landing.
+      }
     }
 
-    triggers.forEach(function (evt) { f.addEventListener(evt, start, { passive: true }); });
-    fallback = setTimeout(start, 4000);
+    setTimeout(start, 250);
   }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '3401433073361667');
   fbq('track', 'PageView');
