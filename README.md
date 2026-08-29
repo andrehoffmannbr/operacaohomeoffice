@@ -126,7 +126,7 @@ Pra mudar a duração, altere `CONTENT_GATE_SECONDS_MOBILE` / `_DESKTOP` em `scr
 
 ### Meta Pixel (ativo)
 
-O snippet no `<head>` do `index.html` disponibiliza `fbq()`, inicializa o Pixel e enfileira `PageView` imediatamente. O download async de `fbevents.js` começa 250ms depois, sem depender de toque, scroll ou qualquer outra interação. Esse intervalo curto dá ao navegador tempo para descobrir o pôster LCP prioritário sem recriar a antiga janela de perda de 4s.
+O snippet no `<head>` do `index.html` disponibiliza `fbq()`, inicializa o Pixel e enfileira `PageView` imediatamente. O download async de `fbevents.js` começa 1500ms depois, sem depender de toque, scroll ou qualquer outra interação. Esse intervalo dá ao navegador tempo para concluir a pintura prioritária sem recriar a antiga janela de perda de 4s.
 
 Eventos disparados (`trackPixel()` em `script.js`, sempre sob `typeof fbq === 'function'` e dentro de `try/catch`, pra nunca impedir a navegação):
 

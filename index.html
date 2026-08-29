@@ -1208,7 +1208,7 @@ html.content-locked,
 
   <!--
     Meta Pixel — o stub, init e PageView ficam disponíveis imediatamente.
-    O fbevents.js começa 250ms depois, sempre async e sem depender de
+    O fbevents.js começa 1500ms depois, sempre async e sem depender de
     interação. O intervalo curto permite que o navegador descubra primeiro
     o pôster LCP prioritário, sem manter a antiga janela de perda de 4s.
   -->
@@ -1231,7 +1231,7 @@ html.content-locked,
       }
     }
 
-    setTimeout(start, 250);
+    setTimeout(start, 1500);
   }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '3401433073361667');
   fbq('track', 'PageView');

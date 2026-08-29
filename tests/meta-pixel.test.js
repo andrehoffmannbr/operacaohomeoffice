@@ -155,12 +155,13 @@ test('A/B — stub, init e PageView ficam disponíveis imediatamente sem intera�
   assert.equal(environment.listeners.size, 0);
 });
 
-test('F — saída em 500ms, 1s ou 2s já ocorre após o início do request', () => {
+test('F — saídas em 500ms e 1s precedem o SDK; em 2s o request já iniciou', () => {
   for (const exitAt of [500, 1000, 2000]) {
     const environment = createPixelEnvironment();
     environment.advance(exitAt);
-    assert.equal(environment.requests.length, 1, `request ausente em ${exitAt}ms`);
-    assert.equal(environment.requests[0].at, 250);
+    const expectedRequests = exitAt >= 1500 ? 1 : 0;
+    assert.equal(environment.requests.length, expectedRequests);
+    if (expectedRequests) assert.equal(environment.requests[0].at, 1500);
     assert.equal(pageViewCount(environment), 1);
   }
 });
@@ -173,15 +174,15 @@ test('C/D — interação imediata ou permanência de 5s não duplicam PageView'
   environment.dispatch('touchstart');
   environment.dispatch('mousemove');
   environment.dispatch('visibilitychange');
-  environment.advance(249);
+  environment.advance(1499);
   assert.equal(environment.requests.length, 0);
   environment.advance(1);
   environment.dispatch('keydown');
-  environment.advance(4750);
+  environment.advance(3500);
 
   assert.equal(environment.requests.length, 1);
   assert.deepEqual(environment.requests[0], {
-      at: 250,
+      at: 1500,
       async: true,
       src: 'https://connect.facebook.net/en_US/fbevents.js'
   });
@@ -214,7 +215,7 @@ test('Idempotência — timer e DOMContentLoaded em qualquer ordem inserem um sc
       environment.dispatchDocument('DOMContentLoaded');
     }
     environment.dispatch('click');
-    environment.advance(250);
+    environment.advance(1500);
     if (!scenario.domBeforeTimer) {
       environment.dispatchDocument('DOMContentLoaded');
     }
@@ -225,7 +226,7 @@ test('Idempotência — timer e DOMContentLoaded em qualquer ordem inserem um sc
     assert.equal(environment.documentListeners.size, 0);
     assert.equal(environment.listeners.size, 0);
     assert.equal(environment.requests.length, 1);
-    assert.equal(environment.requests[0].at, 250);
+    assert.equal(environment.requests[0].at, 1500);
     assert.equal(pageViewCount(environment), 1);
   }
 });
@@ -233,7 +234,7 @@ test('Idempotência — timer e DOMContentLoaded em qualquer ordem inserem um sc
 test('G — resposta lenta do fbevents.js mantém a fila e a landing operacional', () => {
   const environment = createPixelEnvironment();
 
-  environment.advance(250);
+  environment.advance(1500);
   environment.callFbq('trackCustom', 'VSL_25', { percent: 25 });
   assert.doesNotThrow(() => {
     environment.pixelQueue();
@@ -246,7 +247,7 @@ test('G — resposta lenta do fbevents.js mantém a fila e a landing operacional
 test('H/I — falha de inserção ou bloqueio do Pixel não lança exceção', () => {
   const environment = createPixelEnvironment({ insertThrows: true });
 
-  assert.doesNotThrow(() => environment.advance(250));
+  assert.doesNotThrow(() => environment.advance(1500));
   assert.equal(environment.requests.length, 1);
   assert.equal(pageViewCount(environment), 1);
 });
