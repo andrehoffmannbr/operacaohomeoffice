@@ -343,7 +343,7 @@ test('Overlay I/J/K — landing segue aberta e Offer ocorre aos 415s', () => {
 });
 
 test('Overlay M/N — checkout, UTMs e WhatsApp permanecem intactos', () => {
-  assert.equal((INDEX_SOURCE.match(/https:\/\/pay\.hotmart\.com\/G106758643C/g) || []).length, 3);
+  assert.equal((INDEX_SOURCE.match(/https:\/\/pay\.hotmart\.com\/G106758643C/g) || []).length, 2);
   assert.match(SCRIPT_SOURCE, /var HOTMART_CHECKOUT_URL = 'https:\/\/pay\.hotmart\.com\/G106758643C';/);
   ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'src', 'sck']
     .forEach((name) => assert.match(SCRIPT_SOURCE, new RegExp(name)));
@@ -369,13 +369,13 @@ test('Página aberta 01 — nenhum mecanismo de content-locked permanece', () =>
   assert.equal(environment.isContentLocked(), false);
 });
 
-test('Página aberta 02 — conteúdo comercial e 3 CTAs existem antes do play', () => {
+test('Página aberta 02 — conteúdo comercial e 2 CTAs existem antes do play', () => {
   const environment = createEnvironment();
 
   assert.match(INDEX_SOURCE, /<main>/);
   assert.match(INDEX_SOURCE, /id="investimento"/);
   assert.match(INDEX_SOURCE, /id="faqList"/);
-  assert.equal((INDEX_SOURCE.match(/https:\/\/pay\.hotmart\.com\/G106758643C/g) || []).length, 3);
+  assert.equal((INDEX_SOURCE.match(/https:\/\/pay\.hotmart\.com\/G106758643C/g) || []).length, 2);
   assert.equal(environment.playerCount(), 0);
   assert.deepEqual(eventNames(environment), []);
 });
