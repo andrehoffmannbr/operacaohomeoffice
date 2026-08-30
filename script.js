@@ -108,7 +108,7 @@
   var trackingParams = null;
 
   // WhatsApp — número no formato internacional, só dígitos (ex: 5511999999999).
-  var WHATSAPP_NUMERO = '5548988430812';
+  var WHATSAPP_NUMERO = '554888742835';
   var WHATSAPP_MENSAGEM = 'Oi! Vi a página do Método Express e queria saber mais.';
 
   /* ============================================================

@@ -38,7 +38,7 @@ Todas as constantes de JS ficam nas primeiras linhas de `script.js`.
 | `HOTMART_CHECKOUT_URL` | `script.js` | `https://pay.hotmart.com/G106758643C` |
 | `VSL_OFFER_SECONDS_MOBILE` | `script.js` | `415` (6min55s) — ponto legítimo do evento `VSL_Offer` no mobile |
 | `VSL_OFFER_SECONDS_DESKTOP` | `script.js` | `415` (6min55s) — ponto legítimo do evento `VSL_Offer` no desktop |
-| `WHATSAPP_NUMERO` | `script.js` | `5548988430812` |
+| `WHATSAPP_NUMERO` | `script.js` | `554888742835` |
 | `WHATSAPP_MENSAGEM` | `script.js` | "Oi! Vi a página do Método Express e queria saber mais." |
 | Meta Pixel | `index.html` (`<head>`) | **ATIVO** — ID `3401433073361667` |
 | TikTok Pixel | `index.html` (`<head>`, bloco comentado) | **não ativado** — cole o snippet do TikTok Ads Manager quando a conta existir |

@@ -347,7 +347,7 @@ test('Overlay M/N — checkout, UTMs e WhatsApp permanecem intactos', () => {
   assert.match(SCRIPT_SOURCE, /var HOTMART_CHECKOUT_URL = 'https:\/\/pay\.hotmart\.com\/G106758643C';/);
   ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'src', 'sck']
     .forEach((name) => assert.match(SCRIPT_SOURCE, new RegExp(name)));
-  assert.match(INDEX_SOURCE, /https:\/\/wa\.me\/5548988430812/);
+  assert.match(INDEX_SOURCE, /https:\/\/wa\.me\/554888742835/);
 });
 
 test('Overlay O — interação completa não gera exceção', () => {
