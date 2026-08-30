@@ -151,12 +151,6 @@ function createEnvironment(options) {
   }
 
   const root = { classList: createClassList() };
-  const initialWatched = Number(localStorage.values.get('mex_vsl_watched_seconds') || 0);
-  if (!options.localStorageUnavailable &&
-      localStorage.values.get('mex_content_unlocked') !== '1' &&
-      initialWatched < 415) {
-    root.classList.add('content-locked');
-  }
   const toggle = createEventTarget({
     attributes: {},
     setAttribute(name, value) { this.attributes[name] = String(value); }
@@ -336,15 +330,15 @@ test('Overlay G/H — preserva 1:1 mobile e 16:9 desktop', () => {
   assert.match(INDEX_SOURCE, /\.vsl-start-overlay\s*\{[\s\S]*?inset:\s*0;[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%;/);
 });
 
-test('Overlay I/J/K — gate segue bloqueado e libera com Offer aos 415s', () => {
+test('Overlay I/J/K — landing segue aberta e Offer ocorre aos 415s', () => {
   const environment = createEnvironment();
 
-  assert.equal(environment.isContentLocked(), true);
+  assert.equal(environment.isContentLocked(), false);
   startPlaying(environment);
-  assert.equal(environment.isContentLocked(), true);
+  assert.equal(environment.isContentLocked(), false);
   environment.advance(415000);
 
-  assertGateReleased(environment);
+  assertOfferReached(environment);
   assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
 });
 
@@ -365,6 +359,54 @@ test('Overlay O — interação completa não gera exceção', () => {
     environment.emitState(1);
     environment.advance(1000);
   });
+});
+
+test('Página aberta 01 — nenhum mecanismo de content-locked permanece', () => {
+  const environment = createEnvironment();
+
+  assert.doesNotMatch(INDEX_SOURCE, /content-locked/);
+  assert.doesNotMatch(SCRIPT_SOURCE, /content-locked/);
+  assert.equal(environment.isContentLocked(), false);
+});
+
+test('Página aberta 02 — conteúdo comercial e 3 CTAs existem antes do play', () => {
+  const environment = createEnvironment();
+
+  assert.match(INDEX_SOURCE, /<main>/);
+  assert.match(INDEX_SOURCE, /id="investimento"/);
+  assert.match(INDEX_SOURCE, /id="faqList"/);
+  assert.equal((INDEX_SOURCE.match(/https:\/\/pay\.hotmart\.com\/G106758643C/g) || []).length, 3);
+  assert.equal(environment.playerCount(), 0);
+  assert.deepEqual(eventNames(environment), []);
+});
+
+test('Página aberta 03 — reload antes de assistir segue aberto e sem Offer', () => {
+  const first = createEnvironment();
+  const reloaded = createEnvironment({ localMap: first.localMap });
+
+  assert.equal(first.isContentLocked(), false);
+  assert.equal(reloaded.isContentLocked(), false);
+  assert.equal(eventNames(reloaded).includes('VSL_Offer'), false);
+});
+
+test('Página aberta 04 — mex_content_unlocked legado não interfere no Offer', () => {
+  const localMap = new Map([['mex_content_unlocked', '1']]);
+  const environment = createEnvironment({ localMap });
+
+  assert.equal(environment.isContentLocked(), false);
+  assert.deepEqual(eventNames(environment), []);
+  startPlaying(environment);
+  environment.advance(415000);
+  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
+  assert.equal(environment.localMap.get('mex_content_unlocked'), '1');
+});
+
+test('Página aberta 05 — ausência de mex_content_unlocked mantém tudo aberto', () => {
+  const environment = createEnvironment();
+
+  assert.equal(environment.localMap.has('mex_content_unlocked'), false);
+  assert.equal(environment.isContentLocked(), false);
+  assert.equal(eventNames(environment).includes('VSL_Offer'), false);
 });
 
 test('A — carregamento e ready não disparam evento VSL', () => {
@@ -413,14 +455,14 @@ test('E — 75% ocorre uma vez', () => {
   assert.equal(eventNames(environment).filter((name) => name === 'VSL_75').length, 1);
 });
 
-test('F — Offer observa a liberação natural do gate de 415s', () => {
+test('F — Offer observa o ponto legítimo de 415s sem controlar a página', () => {
   const environment = createEnvironment();
   startPlaying(environment);
   environment.advance(415000);
 
   const offer = environment.customEvents().find((event) => event.name === 'VSL_Offer');
   assert.equal(offer.params.gate_seconds, 415);
-  assert.equal(environment.localMap.get('mex_content_unlocked'), '1');
+  assert.equal(environment.localMap.has('mex_content_unlocked'), false);
   assert.equal(environment.localMap.get('mex_vsl_watched_seconds'), '415');
 
   environment.advance(20000);
@@ -475,12 +517,13 @@ test('J — nova sessão produz todos os eventos novamente', () => {
   ]);
 });
 
-test('K — gate persistido não dispara Offer no carregamento', () => {
+test('K — storage legado não dispara Offer no carregamento', () => {
   const localMap = new Map([
     ['mex_content_unlocked', '1'],
     ['mex_vsl_watched_seconds', '415']
   ]);
   const environment = createEnvironment({ localMap });
+  assert.equal(environment.isContentLocked(), false);
   assert.deepEqual(eventNames(environment), []);
   startPlaying(environment);
   environment.advance(10000);
@@ -524,9 +567,9 @@ test('M — hidden/visible retoma somente se o player continuar PLAYING', () => 
   assert.equal(eventNames(environment).filter((name) => name === 'VSL_25').length, 1);
 });
 
-function assertGateReleased(environment) {
+function assertOfferReached(environment) {
   assert.equal(environment.isContentLocked(), false);
-  assert.equal(environment.localMap.get('mex_content_unlocked'), '1');
+  assert.equal(environment.localMap.has('mex_content_unlocked'), false);
   assert.equal(environment.localMap.get('mex_vsl_watched_seconds'), '415');
 }
 
@@ -541,27 +584,27 @@ function watchWithDelayedCallbacks(delaySeconds) {
   return environment;
 }
 
-test('Gate 01 — PLAYING contínuo libera em 415s', () => {
+test('Oferta 01 — PLAYING contínuo alcança o ponto em 415s', () => {
   const environment = createEnvironment();
-  assert.equal(environment.isContentLocked(), true);
+  assert.equal(environment.isContentLocked(), false);
   startPlaying(environment);
   environment.advance(415000);
-  assertGateReleased(environment);
+  assertOfferReached(environment);
 });
 
-test('Gate 02 — callback atrasado 6s preserva tempo legítimo', () => {
-  assertGateReleased(watchWithDelayedCallbacks(6));
+test('Oferta 02 — callback atrasado 6s preserva tempo legítimo', () => {
+  assertOfferReached(watchWithDelayedCallbacks(6));
 });
 
-test('Gate 03 — callback atrasado 10s preserva tempo legítimo', () => {
-  assertGateReleased(watchWithDelayedCallbacks(10));
+test('Oferta 03 — callback atrasado 10s preserva tempo legítimo', () => {
+  assertOfferReached(watchWithDelayedCallbacks(10));
 });
 
-test('Gate 04 — callback atrasado 30s preserva tempo legítimo', () => {
-  assertGateReleased(watchWithDelayedCallbacks(30));
+test('Oferta 04 — callback atrasado 30s preserva tempo legítimo', () => {
+  assertOfferReached(watchWithDelayedCallbacks(30));
 });
 
-test('Gate 05 — playhead em 415 libera contador previamente atrasado', () => {
+test('Oferta 05 — playhead em 415 alcança contador previamente atrasado', () => {
   const localMap = new Map([['mex_vsl_watched_seconds', '385']]);
   const environment = createEnvironment({ localMap });
   environment.fakePlayer.currentTime = 413;
@@ -569,52 +612,56 @@ test('Gate 05 — playhead em 415 libera contador previamente atrasado', () => {
   environment.delayTimers(2000);
 
   assert.equal(environment.fakePlayer.currentTime, 415);
-  assertGateReleased(environment);
+  assertOfferReached(environment);
   assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
 });
 
-test('Gate 06 — ENDED libera mesmo com contador em 395s', () => {
+test('Oferta 06 — ENDED confirma o ponto mesmo com contador em 395s', () => {
   const localMap = new Map([['mex_vsl_watched_seconds', '395']]);
   const environment = createEnvironment({ localMap });
   startPlaying(environment);
   environment.fakePlayer.currentTime = 500;
   environment.emitState(0);
 
-  assertGateReleased(environment);
+  assertOfferReached(environment);
   assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
 });
 
-test('Gate 07 — PAUSED não conta e depois retoma', () => {
+test('Oferta 07 — PAUSED não conta e depois retoma', () => {
   const environment = createEnvironment();
   startPlaying(environment);
   environment.advance(200000);
   environment.emitState(2);
   environment.delayTimers(30000);
-  assert.equal(environment.isContentLocked(), true);
+  assert.equal(eventNames(environment).includes('VSL_Offer'), false);
+  assert.equal(environment.isContentLocked(), false);
 
   environment.emitState(1);
   environment.advance(214000);
-  assert.equal(environment.isContentLocked(), true);
+  assert.equal(eventNames(environment).includes('VSL_Offer'), false);
+  assert.equal(environment.isContentLocked(), false);
   environment.advance(1000);
-  assertGateReleased(environment);
+  assertOfferReached(environment);
 });
 
-test('Gate 08 — BUFFERING não conta e depois retoma', () => {
+test('Oferta 08 — BUFFERING não conta e depois retoma', () => {
   const environment = createEnvironment();
   startPlaying(environment);
   environment.advance(200000);
   environment.emitState(3);
   environment.delayTimers(30000);
-  assert.equal(environment.isContentLocked(), true);
+  assert.equal(eventNames(environment).includes('VSL_Offer'), false);
+  assert.equal(environment.isContentLocked(), false);
 
   environment.emitState(1);
   environment.advance(214000);
-  assert.equal(environment.isContentLocked(), true);
+  assert.equal(eventNames(environment).includes('VSL_Offer'), false);
+  assert.equal(environment.isContentLocked(), false);
   environment.advance(1000);
-  assertGateReleased(environment);
+  assertOfferReached(environment);
 });
 
-test('Gate 09 — hidden não conta automaticamente', () => {
+test('Oferta 09 — hidden não conta automaticamente', () => {
   const environment = createEnvironment();
   startPlaying(environment);
   environment.advance(100000);
@@ -625,12 +672,13 @@ test('Gate 09 — hidden não conta automaticamente', () => {
   assert.equal(environment.localMap.get('mex_vsl_watched_seconds'), watchedBeforeHidden);
   environment.setVisibility('visible');
   environment.advance(314000);
-  assert.equal(environment.isContentLocked(), true);
+  assert.equal(eventNames(environment).includes('VSL_Offer'), false);
+  assert.equal(environment.isContentLocked(), false);
   environment.advance(1000);
-  assertGateReleased(environment);
+  assertOfferReached(environment);
 });
 
-test('Gate 10 — visible recupera PLAYING sem novo onStateChange', () => {
+test('Oferta 10 — visible recupera PLAYING sem novo onStateChange', () => {
   const environment = createEnvironment();
   startPlaying(environment);
   environment.advance(100000);
@@ -640,23 +688,23 @@ test('Gate 10 — visible recupera PLAYING sem novo onStateChange', () => {
 
   // getPlayerState continua PLAYING; nenhum callback do YouTube é emitido.
   environment.advance(315000);
-  assertGateReleased(environment);
+  assertOfferReached(environment);
 });
 
-test('Gate 11 — reload preserva 300s e libera após mais 115s', () => {
+test('Oferta 11 — reload preserva 300s e alcança o ponto após mais 115s', () => {
   const first = createEnvironment();
   startPlaying(first);
   first.advance(300000);
   first.pagehide();
 
   const reloaded = createEnvironment({ localMap: first.localMap });
-  assert.equal(reloaded.isContentLocked(), true);
+  assert.equal(reloaded.isContentLocked(), false);
   startPlaying(reloaded);
   reloaded.advance(115000);
-  assertGateReleased(reloaded);
+  assertOfferReached(reloaded);
 });
 
-test('Gate 12 — localStorage indisponível permanece fail-open', () => {
+test('Oferta 12 — localStorage indisponível mantém página aberta', () => {
   const environment = createEnvironment({ localStorageUnavailable: true });
   assert.equal(environment.isContentLocked(), false);
   assert.doesNotThrow(() => {
@@ -666,25 +714,27 @@ test('Gate 12 — localStorage indisponível permanece fail-open', () => {
   assert.equal(environment.isContentLocked(), false);
 });
 
-test('Gate 13 — player sem ready preserva watchdog fail-open', () => {
+test('Oferta 13 — player sem ready mantém página aberta e não fabrica Offer', () => {
   const environment = createEnvironment();
   environment.clickVslWithoutReady();
   environment.delayTimers(15000);
-  assertGateReleased(environment);
+  assert.equal(environment.isContentLocked(), false);
+  assert.equal(eventNames(environment).includes('VSL_Offer'), false);
+  assert.equal(environment.localMap.has('mex_content_unlocked'), false);
 });
 
-test('Gate 14 — mobile usa vídeo correto e libera em 415s', () => {
+test('Oferta 14 — mobile usa vídeo correto e alcança o ponto em 415s', () => {
   const environment = createEnvironment({ desktop: false });
   startPlaying(environment);
   assert.equal(environment.playerConfig().videoId, 'zyZgphLLg-Y');
   environment.advance(415000);
-  assertGateReleased(environment);
+  assertOfferReached(environment);
 });
 
-test('Gate 15 — desktop usa vídeo correto e libera em 415s', () => {
+test('Oferta 15 — desktop usa vídeo correto e alcança o ponto em 415s', () => {
   const environment = createEnvironment({ desktop: true });
   startPlaying(environment);
   assert.equal(environment.playerConfig().videoId, 'a4tbLBVzkOs');
   environment.advance(415000);
-  assertGateReleased(environment);
+  assertOfferReached(environment);
 });

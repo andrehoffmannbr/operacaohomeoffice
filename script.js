@@ -22,29 +22,23 @@
     return isDesktop ? VSL_VIDEO_URL_DESKTOP : VSL_VIDEO_URL_MOBILE;
   }
 
-  // Gate de conteúdo — quantos SEGUNDOS DE VSL EFETIVAMENTE ASSISTIDA até
-  // liberar tudo abaixo do vídeo (headline, oferta rápida, resto da página).
-  // Conta só enquanto o player está de fato em PLAYING: deixar a aba aberta
-  // sem assistir não libera nada. O progresso é acumulado no localStorage,
-  // então recarregar a página continua de onde parou.
+  // Ponto da oferta — quantos SEGUNDOS DE VSL EFETIVAMENTE ASSISTIDA até
+  // emitir VSL_Offer. A landing é sempre visível; este contador existe
+  // somente para preservar a semântica do tracking da apresentação.
   //
   // Um valor por dispositivo, porque são dois cortes diferentes da VSL e
   // eles podem divergir de duração. Hoje os dois são iguais (415s = 6min55s);
   // a separação existe pra dar pra ajustar um sem mexer no outro. A escolha
   // usa o MESMO breakpoint da VSL (VSL_DESKTOP_BREAKPOINT).
   //
-  // ATENÇÃO: os mesmos valores estão no script síncrono do <head> do
-  // index.html (REQUIRED_SECONDS_MOBILE / REQUIRED_SECONDS_DESKTOP).
-  // Se mudar aqui, mude lá também.
-  var CONTENT_GATE_SECONDS_MOBILE = 415;
-  var CONTENT_GATE_SECONDS_DESKTOP = 415;
-  var CONTENT_GATE_KEY_WATCHED = 'mex_vsl_watched_seconds';
-  var CONTENT_GATE_KEY_UNLOCKED = 'mex_content_unlocked';
+  var VSL_OFFER_SECONDS_MOBILE = 415;
+  var VSL_OFFER_SECONDS_DESKTOP = 415;
+  var VSL_OFFER_KEY_WATCHED = 'mex_vsl_watched_seconds';
   var VSL_TRACKING_KEY = 'metodoexpress_vsl_events';
 
-  function getContentGateSeconds() {
+  function getVslOfferSeconds() {
     var isDesktop = window.matchMedia && window.matchMedia(VSL_DESKTOP_BREAKPOINT).matches;
-    return isDesktop ? CONTENT_GATE_SECONDS_DESKTOP : CONTENT_GATE_SECONDS_MOBILE;
+    return isDesktop ? VSL_OFFER_SECONDS_DESKTOP : VSL_OFFER_SECONDS_MOBILE;
   }
 
   // Link de checkout da Hotmart — usado em todos os botões de compra da
@@ -267,11 +261,11 @@
         window.fbq('trackCustom', eventName, params);
       }
     } catch (e) {
-      // Tracking nunca pode afetar player, gate, página ou checkout.
+      // Tracking nunca pode afetar player, página ou checkout.
     }
   }
 
-  function createVslTracking(gate, getPlayer) {
+  function createVslTracking(offerProgress, getPlayer) {
     var milestoneDefinitions = [
       { eventName: 'VSL_25', percent: 25 },
       { eventName: 'VSL_50', percent: 50 },
@@ -293,11 +287,11 @@
     var countFromOwnClock = false;
     var ticker = null;
     var lastSampleAt = 0;
-    var lastGateWatched = getGateWatchedSeconds();
+    var lastOfferWatched = getOfferWatchedSeconds();
 
-    function getGateWatchedSeconds() {
-      if (!gate || typeof gate.getWatchedSeconds !== 'function') return null;
-      var value = Number(gate.getWatchedSeconds());
+    function getOfferWatchedSeconds() {
+      if (!offerProgress || typeof offerProgress.getWatchedSeconds !== 'function') return null;
+      var value = Number(offerProgress.getWatchedSeconds());
       return isFinite(value) && value >= 0 ? value : null;
     }
 
@@ -391,23 +385,23 @@
 
       var now = Date.now();
       var elapsed = lastSampleAt ? (now - lastSampleAt) / 1000 : 0;
-      var gateWatched = getGateWatchedSeconds();
-      var gateDelta = gateWatched !== null && lastGateWatched !== null
-        ? gateWatched - lastGateWatched
+      var offerWatched = getOfferWatchedSeconds();
+      var offerDelta = offerWatched !== null && lastOfferWatched !== null
+        ? offerWatched - lastOfferWatched
         : 0;
 
-      // Enquanto o gate está ativo, reaproveita exatamente o contador dele.
-      // Depois de liberado ele para por design; para novas sessões com oferta
-      // já aberta, mantém o mesmo critério PLAYING e relógio plausível.
-      if (gateDelta > 0) {
-        effectiveSeconds += gateDelta;
-      } else if ((countFromOwnClock || (gate && gate.isUnlocked())) &&
+      // Reaproveita o contador seguro do ponto da oferta. Depois de 415s ele
+      // para por design; os demais milestones continuam pelo mesmo critério
+      // de PLAYING e relógio plausível.
+      if (offerDelta > 0) {
+        effectiveSeconds += offerDelta;
+      } else if ((countFromOwnClock || (offerProgress && offerProgress.hasReached())) &&
                  elapsed > 0 && elapsed <= 5) {
         effectiveSeconds += elapsed;
       }
 
       lastSampleAt = now;
-      lastGateWatched = gateWatched;
+      lastOfferWatched = offerWatched;
       checkMilestones();
 
       if (effectiveSeconds - persistedEffectiveSeconds >= 5) persistState();
@@ -427,19 +421,17 @@
       if (playing) return;
       playing = true;
       lastSampleAt = Date.now();
-      lastGateWatched = getGateWatchedSeconds();
+      lastOfferWatched = getOfferWatchedSeconds();
       emitOnce('VSL_Start', videoParams());
       ticker = setInterval(sampleEffectiveTime, 1000);
     }
 
     readState();
 
-    if (gate && typeof gate.onRelease === 'function') {
-      gate.onRelease(function (reason) {
-        // Watchdogs e fallbacks continuam fail-open, mas não representam que
-        // a pessoa chegou efetivamente ao ponto da oferta.
+    if (offerProgress && typeof offerProgress.onReached === 'function') {
+      offerProgress.onReached(function (reason) {
         if (reason !== 'watched' && reason !== 'playhead' && reason !== 'ended') return;
-        emitOnce('VSL_Offer', { gate_seconds: getContentGateSeconds() });
+        emitOnce('VSL_Offer', { gate_seconds: getVslOfferSeconds() });
       });
     }
 
@@ -457,7 +449,7 @@
             typeof currentPlayer.getPlayerState !== 'function') return;
 
         if (currentPlayer.getPlayerState() === window.YT.PlayerState.PLAYING) {
-          // O gate permanece parado. O tracking recomeça deste instante,
+          // O contador permanece parado. O tracking recomeça deste instante,
           // sem creditar o tempo em que a aba ficou escondida.
           countFromOwnClock = true;
           start();
@@ -481,29 +473,19 @@
   }
 
   /* ============================================================
-     Gate de conteúdo — parte 2 de 2. A parte 1 é o script síncrono no
-     <head> do index.html, que aplica .content-locked no <html> antes do
-     primeiro paint (sem ele, a página de vendas inteira piscava antes de
-     travar).
-
-     Aqui só acumulamos tempo REAL de reprodução da VSL e destravamos
-     quando passa do alvo do dispositivo (getContentGateSeconds()).
-     Deixar a aba aberta não conta.
-
-     Não é antifraude — qualquer pessoa limpa o localStorage e recomeça.
-     É controle de experiência da VSL, só isso.
+     Progresso do ponto da oferta. Acumula tempo REAL de reprodução e avisa
+     o tracking quando a VSL chega a 415s. Não controla visibilidade, acesso
+     ou layout da landing. Deixar a aba aberta não conta.
      ============================================================ */
 
-  function createContentGate() {
-    var root = document.documentElement;
-    var required = getContentGateSeconds();
-    var storageOk = true;
+  function createVslOfferProgress() {
+    var required = getVslOfferSeconds();
     var watched = 0;
     var persisted = 0;
-    var unlocked = false;
+    var reached = false;
     var ticker = null;
     var lastTick = 0;
-    var releaseListeners = [];
+    var reachedListeners = [];
     var getPlayer = null;
     var lastPlayerTime = null;
     var confirmedPlayerSeconds = 0;
@@ -534,7 +516,6 @@
       try {
         return window.localStorage.getItem(key);
       } catch (e) {
-        storageOk = false;
         return null;
       }
     }
@@ -543,29 +524,17 @@
       try {
         window.localStorage.setItem(key, value);
       } catch (e) {
-        storageOk = false;
+        // O tracking continua em memória quando o storage está indisponível.
       }
     }
 
-    // Avisa o <head> que assumimos o gate — desarma o watchdog de fail-open.
-    if (typeof window.__mexGateTakeover === 'function') {
-      window.__mexGateTakeover();
-    }
-
-    if (read(CONTENT_GATE_KEY_UNLOCKED) === '1' || !storageOk) {
-      // Sem localStorage não há como acumular progresso: libera (fail-open).
-      unlocked = true;
-    } else {
-      watched = parseFloat(read(CONTENT_GATE_KEY_WATCHED));
-      if (!isFinite(watched) || watched < 0) watched = 0;
-      persisted = watched;
-      if (watched >= required) unlocked = true;
-    }
-
-    if (unlocked) root.classList.remove('content-locked');
+    watched = parseFloat(read(VSL_OFFER_KEY_WATCHED));
+    if (!isFinite(watched) || watched < 0) watched = 0;
+    persisted = watched;
+    if (watched >= required) reached = true;
 
     function persist() {
-      write(CONTENT_GATE_KEY_WATCHED, String(Math.round(watched)));
+      write(VSL_OFFER_KEY_WATCHED, String(Math.round(watched)));
       persisted = watched;
     }
 
@@ -576,16 +545,14 @@
       if (watched > persisted) persist();
     }
 
-    function release(reason) {
-      if (unlocked) return;
-      unlocked = true;
+    function reach(reason) {
+      if (reached) return;
+      reached = true;
       stop();
-      write(CONTENT_GATE_KEY_UNLOCKED, '1');
-      write(CONTENT_GATE_KEY_WATCHED, String(required));
-      root.classList.remove('content-locked');
+      write(VSL_OFFER_KEY_WATCHED, String(required));
 
-      for (var i = 0; i < releaseListeners.length; i++) {
-        try { releaseListeners[i](reason); } catch (e) { /* tracking opcional */ }
+      for (var i = 0; i < reachedListeners.length; i++) {
+        try { reachedListeners[i](reason); } catch (e) { /* tracking opcional */ }
       }
     }
 
@@ -624,7 +591,7 @@
       }
 
       if (watched >= required) {
-        release('watched');
+        reach('watched');
         return;
       }
 
@@ -635,14 +602,14 @@
       if (isVisible && player && player.state === window.YT.PlayerState.PLAYING &&
           (player.currentTime - ignoredPlayerSeconds) >= required &&
           confirmedPlayerSeconds >= Math.min(required, 2)) {
-        release('playhead');
+        reach('playhead');
         return;
       }
       if (watched - persisted >= 5) persist();
     }
 
     function start() {
-      if (unlocked || ticker) return;
+      if (reached || ticker) return;
       lastTick = Date.now();
       var player = readPlayer();
       lastPlayerTime = player ? player.currentTime : null;
@@ -676,17 +643,14 @@
         if (isPlaying) start();
         else stop();
       },
-      // Usado quando não há como observar a reprodução (player alternativo,
-      // API do YouTube que não subiu). Melhor liberar do que deixar a
-      // landing travada pra sempre.
-      release: release,
-      isUnlocked: function () { return unlocked; },
+      reach: reach,
+      hasReached: function () { return reached; },
       getWatchedSeconds: function () { return watched; },
       setPlayer: function (playerGetter) {
         if (typeof playerGetter === 'function') getPlayer = playerGetter;
       },
-      onRelease: function (listener) {
-        if (typeof listener === 'function') releaseListeners.push(listener);
+      onReached: function (listener) {
+        if (typeof listener === 'function') reachedListeners.push(listener);
       }
     };
   }
@@ -709,7 +673,7 @@
      continuam com o fallback simples de iframe/<video>.
      ============================================================ */
 
-  function initVsl(gate) {
+  function initVsl(offerProgress) {
     var player = document.getElementById('vslPlayer');
     if (!player) return;
     var startOverlay = document.getElementById('vslStartOverlay');
@@ -763,14 +727,7 @@
 
       var toggle = document.getElementById('vslToggle');
       var ytPlayer = null;
-      var vslTracking = createVslTracking(gate, function () { return ytPlayer; });
-
-      // Se a API do YouTube não subir (bloqueador, rede corporativa), o gate
-      // nunca receberia tempo assistido e a página ficaria travada pra
-      // sempre. Depois de 15s sem player pronto, libera o conteúdo.
-      var apiWatchdog = setTimeout(function () {
-        if (gate) gate.release();
-      }, 15000);
+      var vslTracking = createVslTracking(offerProgress, function () { return ytPlayer; });
 
       function setToggleState(isPlaying) {
         toggle.setAttribute('data-state', isPlaying ? 'playing' : 'paused');
@@ -803,8 +760,6 @@
           playerVars: playerVars,
           events: {
             onReady: function (event) {
-              clearTimeout(apiWatchdog);
-
               // O player nasce dentro de um callback assíncrono, ou seja,
               // fora do gesto de clique — Safari/iOS podem recusar o
               // autoplay. Tentamos, e se em ~1,2s não estiver tocando,
@@ -820,20 +775,18 @@
             onStateChange: function (event) {
               var isPlaying = event.data === window.YT.PlayerState.PLAYING;
               setToggleState(isPlaying);
-              // O gate só acumula enquanto o vídeo está realmente tocando.
-              if (gate) {
-                gate.setPlaying(isPlaying);
-                // Um ENDED emitido pelo player real é o último fail-safe:
-                // quem terminou a VSL nunca pode continuar preso no gate.
-                if (event.data === window.YT.PlayerState.ENDED) gate.release('ended');
+              // O ponto da oferta só acumula enquanto o vídeo está tocando.
+              if (offerProgress) {
+                offerProgress.setPlaying(isPlaying);
+                if (event.data === window.YT.PlayerState.ENDED) offerProgress.reach('ended');
               }
               vslTracking.setPlaying(isPlaying);
               if (event.data === window.YT.PlayerState.ENDED) vslTracking.ended();
             }
           }
         });
-        if (gate && typeof gate.setPlayer === 'function') {
-          gate.setPlayer(function () { return ytPlayer; });
+        if (offerProgress && typeof offerProgress.setPlayer === 'function') {
+          offerProgress.setPlayer(function () { return ytPlayer; });
         }
       });
     }
@@ -862,19 +815,16 @@
         el.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
         el.setAttribute('allowfullscreen', '');
         el.setAttribute('title', 'Vídeo: Método Express');
-        // Num iframe genérico não dá pra observar o estado de reprodução,
-        // então o gate não teria como avançar nunca. Libera o conteúdo.
-        if (gate) gate.release();
       } else {
         el = document.createElement('video');
         el.src = videoUrl;
         el.controls = true;
         el.autoplay = true;
         el.playsInline = true;
-        // Vídeo próprio: dá pra alimentar o gate direto pelos eventos nativos.
-        el.addEventListener('play', function () { if (gate) gate.setPlaying(true); });
-        el.addEventListener('pause', function () { if (gate) gate.setPlaying(false); });
-        el.addEventListener('ended', function () { if (gate) gate.setPlaying(false); });
+        // Vídeo próprio: alimenta o contador do ponto da oferta pelos eventos nativos.
+        el.addEventListener('play', function () { if (offerProgress) offerProgress.setPlaying(true); });
+        el.addEventListener('pause', function () { if (offerProgress) offerProgress.setPlaying(false); });
+        el.addEventListener('ended', function () { if (offerProgress) offerProgress.setPlaying(false); });
       }
 
       player.innerHTML = '';
@@ -969,8 +919,7 @@
     //
     // Os três CTAs já nascem com o href certo (acima), então isto é
     // redundante no caminho normal — existe pra cobrir o caso de um link de
-    // checkout que apareça ou mude depois da carga, já que a oferta só é
-    // liberada minutos depois, quando o gate destrava.
+    // checkout que apareça ou mude depois da carga.
     //
     // Fase de captura, pra rodar antes da navegação. Só toca em links da
     // Hotmart: WhatsApp e qualquer outro link externo ficam intocados.
@@ -1061,23 +1010,15 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    var gate;
-    try {
-      gate = createContentGate();
-    } catch (e) {
-      // Um gate quebrado nunca pode deixar a landing travada.
-      document.documentElement.classList.remove('content-locked');
-      gate = {
-        setPlaying: function () {},
-        release: function () {},
-        isUnlocked: function () { return true; }
-      };
-    }
+    var offerProgress = null;
+    safeInit('createVslOfferProgress', function () {
+      offerProgress = createVslOfferProgress();
+    });
 
     // Precisa rodar antes de initLinks: é quem preenche trackingParams.
     safeInit('captureTracking', function () { trackingParams = captureTracking(); });
 
-    safeInit('initVsl', function () { initVsl(gate); });
+    safeInit('initVsl', function () { initVsl(offerProgress); });
     safeInit('initFaq', initFaq);
     safeInit('initLinks', initLinks);
     safeInit('initFooterYear', initFooterYear);

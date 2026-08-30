@@ -7,7 +7,7 @@ HTML5 + CSS + JavaScript vanilla, sem framework e sem nenhuma dependência exter
 
 ```
 /
-├── index.html   (CSS embutido no <head> + script síncrono do content gate)
+├── index.html   (HTML da landing + CSS embutido no <head>)
 ├── script.js
 ├── og-template.html   (template 1200×630 usado pra renderizar assets/images/og-image.jpg)
 ├── /assets
@@ -36,8 +36,8 @@ Todas as constantes de JS ficam nas primeiras linhas de `script.js`.
 | `VSL_VIDEO_URL_DESKTOP` | `script.js` | `https://www.youtube.com/embed/a4tbLBVzkOs` — corte **16:9**, usado a partir de 640px |
 | `VSL_DESKTOP_BREAKPOINT` | `script.js` | `(min-width: 640px)` — precisa bater com o breakpoint do CSS |
 | `HOTMART_CHECKOUT_URL` | `script.js` | `https://pay.hotmart.com/G106758643C` |
-| `CONTENT_GATE_SECONDS_MOBILE` | `script.js` **e** `index.html` | `415` (6min55s) — ver "Content gate" abaixo |
-| `CONTENT_GATE_SECONDS_DESKTOP` | `script.js` **e** `index.html` | `415` (6min55s) — separado do mobile pra poder ajustar um sem o outro |
+| `VSL_OFFER_SECONDS_MOBILE` | `script.js` | `415` (6min55s) — ponto legítimo do evento `VSL_Offer` no mobile |
+| `VSL_OFFER_SECONDS_DESKTOP` | `script.js` | `415` (6min55s) — ponto legítimo do evento `VSL_Offer` no desktop |
 | `WHATSAPP_NUMERO` | `script.js` | `5548988430812` |
 | `WHATSAPP_MENSAGEM` | `script.js` | "Oi! Vi a página do Método Express e queria saber mais." |
 | Meta Pixel | `index.html` (`<head>`) | **ATIVO** — ID `3401433073361667` |
@@ -90,37 +90,23 @@ ffmpeg -i assets/videos/vsl-loop.mp4 -frames:v 1 \
   -c:v libwebp -quality 80 assets/images/vsl-loop-poster.webp
 ```
 
-## Content gate
+## Página aberta e ponto da oferta
 
-Tudo abaixo do vídeo (headline, oferta, seções, rodapé, botão de WhatsApp) fica escondido até a pessoa assistir **415 segundos de VSL**. Na primeira tela só aparece o vídeo, com fundo preto — sem cara de página de vendas.
+A landing inteira nasce visível. Headline, oferta, seções, rodapé, WhatsApp e os três CTAs da Hotmart não dependem do player, de tempo assistido ou de qualquer chave de storage.
 
-São **415 segundos de reprodução efetiva, não de página aberta**: o contador só corre enquanto o player do YouTube está em `PLAYING` e para quando o vídeo é pausado. Deixar a aba aberta não libera nada.
+O marco de **415 segundos de reprodução efetiva** continua existindo somente para o evento `VSL_Offer`. `createVslOfferProgress()` conta enquanto o YouTube está em `PLAYING` e a aba está visível, preserva callbacks atrasados com validação do playhead e não aceita um salto artificial como consumo legítimo.
 
-O alvo é definido **por dispositivo** (`CONTENT_GATE_SECONDS_MOBILE` / `_DESKTOP`), usando o mesmo breakpoint de 640px que escolhe a VSL. Hoje os dois valem 415s; a separação existe porque são dois cortes diferentes do vídeo e podem divergir de duração.
-
-A implementação está em duas partes, de propósito:
-
-1. **`index.html`, `<script>` síncrono no `<head>`** — decide se trava, aplicando `.content-locked` no `<html>` **antes do primeiro paint**. Se isso ficasse a cargo do `script.js` (que é `defer`), o navegador chegaria a pintar a página de vendas inteira antes de escondê-la.
-2. **`script.js`, `createContentGate()`** — acumula o tempo assistido e destrava.
+O alvo é definido por dispositivo (`VSL_OFFER_SECONDS_MOBILE` / `_DESKTOP`) usando o mesmo breakpoint de 640px da VSL. Hoje ambos valem 415s.
 
 Chaves de `localStorage`:
 
-| Chave | O que guarda |
+| Chave | Estado atual |
 |---|---|
-| `mex_vsl_watched_seconds` | segundos de VSL já assistidos (gravado a cada ~5s) |
-| `mex_content_unlocked` | `'1'` depois de liberado — a partir daí a página abre normal, sem flash preto |
-| `mex_content_unlock_at` | **chave antiga**, do gate por relógio. Só é lida pra migração: quem já tinha passado do prazo continua liberado |
+| `mex_vsl_watched_seconds` | preservada para acumular o progresso legítimo até `VSL_Offer` |
+| `mex_content_unlocked` | chave legada ignorada; não controla visibilidade nem tracking |
+| `mex_content_unlock_at` | chave legada ignorada |
 
-**Fail-open em quatro camadas** — uma landing travada não vende nada:
-
-- `localStorage` indisponível (modo privado, cookies bloqueados) → libera;
-- exceção no script do `<head>` ou no `createContentGate()` → libera;
-- **watchdog**: se o `script.js` não assumir o gate em 10s (arquivo não carregou, erro de sintaxe, bloqueador) → libera sozinho;
-- se a API do YouTube não subir em 15s, ou se o player for um iframe genérico cujo estado não dá pra observar → libera.
-
-> Não é antifraude. Qualquer pessoa limpa o `localStorage` e recomeça, e isso está ok — é controle de experiência da VSL, não proteção de conteúdo.
-
-Pra mudar a duração, altere `CONTENT_GATE_SECONDS_MOBILE` / `_DESKTOP` em `script.js` **e** `REQUIRED_SECONDS_MOBILE` / `_DESKTOP` no script do `<head>` do `index.html`. Os dois pares precisam bater.
+O evento `VSL_Offer` não dispara no load, por scroll, CTA, página visível ou storage legado. Ele continua deduplicado em `sessionStorage` junto com os demais eventos da VSL.
 
 ## Rastreamento
 
@@ -184,7 +170,7 @@ Pra testar, abra a página com `?src=meta_ads&sck=111_222_333&utm_source=teste&u
 
 ## Performance
 
-- Fontes self-hosted (`assets/fonts`) com `font-display: swap` — zero conexão externa. Só a Inter tem `preload`: nenhum texto em Sora fica visível antes do gate liberar.
+- Fontes self-hosted (`assets/fonts`) com `font-display: swap` — zero conexão externa. Só a Inter tem `preload`, preservando a prioridade do pôster da VSL no caminho crítico.
 - CSS embutido no `<head>` de `index.html` — elimina a requisição que bloqueava a renderização. Para editar estilos, edite o bloco `<style>` do `index.html`.
 - JS carregado com `defer`.
 - Nenhuma dependência externa.

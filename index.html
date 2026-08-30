@@ -34,8 +34,8 @@
 
   <!-- Fontes variáveis self-hosted (assets/fonts) — sem conexão com o Google Fonts.
        Sora para títulos (mais expressiva), Inter para texto corrido. -->
-  <!-- Só a Inter tem preload: nenhum texto em Sora fica visível antes do gate liberar,
-       então adiantar sora-var.woff2 (25 KB) só disputaria banda no caminho crítico. -->
+  <!-- Só a Inter tem preload: o pôster da VSL continua prioritário no caminho
+       crítico e a Sora usa font-display:swap quando os títulos entram na tela. -->
   <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- CSS inline no <head>: elimina a única requisição que bloqueava a renderização
@@ -1049,35 +1049,6 @@ ul {
   outline-offset: 3px;
 }
 
-/* ---------- Gate de conteúdo (libera após ~415s de VSL assistida) ----------
-   A classe .content-locked fica no <html>, não no <body>, e é aplicada por um
-   script síncrono no <head> — antes do primeiro paint. Se ela ficasse a cargo
-   do script.js (defer + DOMContentLoaded), a página de vendas inteira chegava
-   a ser pintada antes de travar. Ver initContentGate() no script.js. */
-
-.content-locked main,
-.content-locked .whatsapp-float,
-.content-locked .footer,
-.content-locked .hero-copy {
-  display: none;
-}
-
-.content-locked .sticky-nav {
-  display: none !important;
-}
-
-/* Fundo preto enquanto espera o gate liberar — sem gradiente claro atrás
-   do vídeo, fica com cara de player em tela cheia, não de página de vendas.
-   Também no <html> para não haver faixa branca no overscroll do iOS. */
-html.content-locked,
-.content-locked body {
-  background: #000000;
-}
-
-.content-locked .hero {
-  background: #000000;
-}
-
 /* ---------- Âncora sob o header fixo ---------- */
 
 /* O .sticky-nav tem ~60px e position:fixed; sem isso o topo da seção
@@ -1131,80 +1102,6 @@ html.content-locked,
 
   <!-- Sem JS: garante que o conteúdo com fade-in apareça normalmente -->
   <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
-
-  <!--
-    GATE DE CONTEÚDO — parte 1 de 2 (parte 2 é initContentGate() no script.js).
-
-    Este bloco é síncrono e fica no <head> de propósito: ele precisa rodar
-    ANTES DO PRIMEIRO PAINT. Com a trava aplicada só no DOMContentLoaded (como
-    era antes), o navegador chegava a pintar headline, preço e página inteira
-    antes de esconder tudo — flash da página de vendas completa.
-
-    Só decide TRAVAR ou NÃO TRAVAR. Quem destrava é o script.js, conforme os
-    segundos de VSL efetivamente assistidos vão sendo acumulados.
-
-    Fail-open em três camadas, porque uma landing travada não vende nada:
-      1. localStorage indisponível (modo privado, cookies bloqueados) -> libera;
-      2. qualquer exceção aqui dentro -> libera;
-      3. watchdog: se o script.js não assumir o gate em 10s (arquivo não
-         carregou, erro de sintaxe, bloqueador), libera sozinho.
-  -->
-  <script>
-  (function () {
-    var KEY_WATCHED = 'mex_vsl_watched_seconds';
-    var KEY_UNLOCKED = 'mex_content_unlocked';
-
-    // Um alvo por dispositivo, espelhando CONTENT_GATE_SECONDS_MOBILE /
-    // _DESKTOP do script.js. O breakpoint é o mesmo que escolhe a VSL
-    // (VSL_DESKTOP_BREAKPOINT). Se mudar lá, mude aqui.
-    var REQUIRED_SECONDS_MOBILE = 415;
-    var REQUIRED_SECONDS_DESKTOP = 415;
-    var REQUIRED_SECONDS = (window.matchMedia && window.matchMedia('(min-width: 640px)').matches)
-      ? REQUIRED_SECONDS_DESKTOP
-      : REQUIRED_SECONDS_MOBILE;
-
-    var root = document.documentElement;
-
-    function unlock() { root.classList.remove('content-locked'); }
-
-    try {
-      // Já liberou antes: abre normal, sem piscar preto.
-      if (window.localStorage.getItem(KEY_UNLOCKED) === '1') return;
-
-      // Migração do gate antigo (baseado em relógio, não em tempo assistido):
-      // quem já tinha cumprido o prazo continua liberado, não volta pra estaca zero.
-      var legacy = Number(window.localStorage.getItem('mex_content_unlock_at'));
-      if (legacy && Date.now() >= legacy) {
-        window.localStorage.setItem(KEY_UNLOCKED, '1');
-        return;
-      }
-
-      var watched = parseFloat(window.localStorage.getItem(KEY_WATCHED));
-      if (!isFinite(watched) || watched < 0) watched = 0;
-
-      if (watched >= REQUIRED_SECONDS) {
-        window.localStorage.setItem(KEY_UNLOCKED, '1');
-        return;
-      }
-
-      root.classList.add('content-locked');
-    } catch (e) {
-      unlock();
-      return;
-    }
-
-    var watchdog = setTimeout(unlock, 10000);
-
-    function onError() { clearTimeout(watchdog); unlock(); }
-    window.addEventListener('error', onError);
-
-    // O script.js chama isto assim que assume o controle do gate.
-    window.__mexGateTakeover = function () {
-      clearTimeout(watchdog);
-      window.removeEventListener('error', onError);
-    };
-  })();
-  </script>
 
   <!--
     Meta Pixel — o stub, init e PageView ficam disponíveis imediatamente.
@@ -1307,18 +1204,8 @@ html.content-locked,
       </div>
     </div>
 
-    <!--
-      Oferta rápida, headline, subtítulo e selos ficam escondidos enquanto
-      o gate de conteúdo estiver ativo (mesma classe .content-locked no
-      <body> que esconde o <main>) — na primeira tela só aparece o vídeo,
-      sem cara de página de vendas. Ver CONTENT_GATE_SECONDS em script.js.
-    -->
     <div class="container hero-copy">
-      <!--
-        Oferta rápida — aparece junto com o resto do .hero-copy quando o
-        gate libera (CONTENT_GATE_SECONDS em script.js). Link do botão
-        definido pela constante HOTMART_CHECKOUT_URL.
-      -->
+      <!-- Oferta rápida. Link definido pela constante HOTMART_CHECKOUT_URL. -->
       <div class="quick-offer">
         <p class="quick-offer-price">
           <span class="quick-offer-new">R$97</span>
@@ -1348,14 +1235,6 @@ html.content-locked,
       </ul>
     </div>
   </header>
-
-  <!--
-    GATE DE CONTEÚDO — tudo abaixo do vídeo fica escondido até passarem
-    CONTENT_GATE_SECONDS de visita (constante no topo do script.js).
-    Controlado via classe .content-locked no <body>, adicionada/removida
-    pelo initContentGate() em script.js. De propósito, sem nenhum indicador
-    visual de espera (nem spinner, nem texto) — fica em branco até liberar.
-  -->
 
   <main>
 
