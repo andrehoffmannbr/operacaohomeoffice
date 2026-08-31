@@ -76,7 +76,10 @@
   // os IDs do Meta agora vão concatenados dentro de sck.
   //
   // Só dados de atribuição de marketing — nada de PII. Nunca acrescentar
-  // nome, e-mail, telefone, documento, fbclid, _fbc ou _fbp a esta lista.
+  // nome, e-mail, telefone, documento, _fbc ou _fbp a esta lista.
+  //
+  // fbclid também NÃO entra aqui: ele é volátil e vive em
+  // TRACKING_VOLATILE_PARAMS (logo abaixo), fora do storage.
   var TRACKING_PARAMS = [
     'src', 'sck',
     'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
@@ -93,6 +96,22 @@
     'src', 'sck',
     'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'
   ];
+
+  // fbclid — o clique identificado do Facebook. Fica FORA de TRACKING_PARAMS
+  // de propósito: é volátil, lido da URL da visita atual, propagado ao
+  // checkout e NUNCA gravado no localStorage.
+  //
+  // Por que separado:
+  //   1. Persistir por 30 dias devolveria um fbclid velho numa visita nova.
+  //   2. Se entrasse na lista de campanha, uma chegada com só ?fbclid=...
+  //      (link orgânico do Facebook/Instagram) substituiria atomicamente a
+  //      atribuição paga anterior por um registro sem nenhuma UTM — quebrando
+  //      a regra de last paid touch.
+  // Fora do storage, ele acompanha a visita sem tocar na atribuição salva.
+  var TRACKING_VOLATILE_PARAMS = ['fbclid'];
+
+  // Valores voláteis desta visita. Preenchidos no boot por captureVolatile().
+  var volatileParams = null;
 
   var TRACKING_STORAGE_KEY = 'metodoexpress_tracking';
 
@@ -208,6 +227,30 @@
     }
   }
 
+  // Lê da URL da visita atual os parâmetros voláteis (hoje só o fbclid).
+  // Não toca no localStorage: nada aqui sobrevive ao fim da visita.
+  function captureVolatile() {
+    var found = {};
+    try {
+      if (typeof window.URLSearchParams !== 'function') return found;
+      var incoming = new window.URLSearchParams(window.location.search);
+
+      for (var i = 0; i < TRACKING_VOLATILE_PARAMS.length; i++) {
+        var name = TRACKING_VOLATILE_PARAMS[i];
+        var value = incoming.get(name);
+        if (value === null) continue;
+
+        value = String(value).slice(0, TRACKING_VALUE_MAX);
+        if (!value) continue;
+
+        found[name] = value;
+      }
+    } catch (e) {
+      // silêncio de propósito
+    }
+    return found;
+  }
+
   // Acrescenta a atribuição em uso à URL do checkout, sem nunca sobrescrever
   // um parâmetro que já venha no próprio link da Hotmart. É idempotente: se a
   // URL já tiver os parâmetros, nada é duplicado.
@@ -221,16 +264,29 @@
       }
 
       var params = trackingParams;
-      if (!params) return baseUrl;
+      var volateis = volatileParams;
+      if (!params && !volateis) return baseUrl;
 
       var target = new window.URL(baseUrl, window.location.href);
 
-      for (var i = 0; i < TRACKING_PARAMS.length; i++) {
-        var name = TRACKING_PARAMS[i];
-        var value = params[name];
-        if (!value) continue;
-        if (target.searchParams.has(name)) continue;
-        target.searchParams.set(name, value);
+      if (params) {
+        for (var i = 0; i < TRACKING_PARAMS.length; i++) {
+          var name = TRACKING_PARAMS[i];
+          var value = params[name];
+          if (!value) continue;
+          if (target.searchParams.has(name)) continue;
+          target.searchParams.set(name, value);
+        }
+      }
+
+      if (volateis) {
+        for (var v = 0; v < TRACKING_VOLATILE_PARAMS.length; v++) {
+          var vName = TRACKING_VOLATILE_PARAMS[v];
+          var vValue = volateis[vName];
+          if (!vValue) continue;
+          if (target.searchParams.has(vName)) continue;
+          target.searchParams.set(vName, vValue);
+        }
       }
 
       return target.toString();
@@ -897,8 +953,9 @@
   function initLinks() {
     var checkoutUrl = withTrackingParams(HOTMART_CHECKOUT_URL);
 
+    // Dois CTAs de compra na V2: o da oferta e o da chamada final. A antiga
+    // "oferta rápida" (ctaQuickOffer) não existe mais e não deve voltar.
     var ctaButtons = [
-      document.getElementById('ctaQuickOffer'),
       document.getElementById('ctaInvestimento'),
       document.getElementById('ctaFinal')
     ];
@@ -907,7 +964,10 @@
       btn.href = checkoutUrl;
     });
 
-    var whatsappBtn = document.getElementById('whatsappFloat');
+    // Suporte por WhatsApp. Na V2 não existe mais botão flutuante: é um link
+    // discreto no fim da página, pra não competir com o CTA de compra. O
+    // evento Contact continua saindo daqui — e só daqui, num clique real.
+    var whatsappBtn = document.getElementById('whatsappSuporte');
     if (whatsappBtn) {
       whatsappBtn.href = 'https://wa.me/' + WHATSAPP_NUMERO + '?text=' + encodeURIComponent(WHATSAPP_MENSAGEM);
       whatsappBtn.addEventListener('click', function () {
@@ -917,7 +977,7 @@
 
     // Rede de segurança: reaplica a atribuição no instante do clique.
     //
-    // Os três CTAs já nascem com o href certo (acima), então isto é
+    // Os dois CTAs já nascem com o href certo (acima), então isto é
     // redundante no caminho normal — existe pra cobrir o caso de um link de
     // checkout que apareça ou mude depois da carga.
     //
@@ -977,21 +1037,43 @@
   }
 
   /* ============================================================
-     Mini-header fixo — aparece só depois que passa do herói.
+     Pôsteres dos depoimentos — carregados só perto da viewport.
+
+     O atributo `poster` de um <video> NÃO é lazy: o navegador busca a
+     imagem com prioridade Medium já na carga, mesmo com o vídeo no fim da
+     página. Os dois pôsteres juntos (~61KB) disputavam banda com as fontes
+     no caminho crítico e atrasavam o LCP do herói.
+
+     Por isso eles nascem em data-poster e só viram poster de verdade quando
+     a seção se aproxima da tela. Sem IntersectionObserver, promove na hora:
+     melhor uma imagem cedo do que um retângulo preto.
      ============================================================ */
 
-  function initStickyNav() {
-    var nav = document.getElementById('stickyNav');
-    var hero = document.querySelector('.hero');
-    if (!nav || !hero || !('IntersectionObserver' in window)) return;
+  function initLazyPosters() {
+    var videos = document.querySelectorAll('video[data-poster]');
+    if (!videos.length) return;
+
+    function promote(video) {
+      var src = video.getAttribute('data-poster');
+      if (!src) return;
+      video.setAttribute('poster', src);
+      video.removeAttribute('data-poster');
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      Array.prototype.forEach.call(videos, promote);
+      return;
+    }
 
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        nav.classList.toggle('is-visible', !entry.isIntersecting);
+        if (!entry.isIntersecting) return;
+        promote(entry.target);
+        observer.unobserve(entry.target);
       });
-    }, { threshold: 0, rootMargin: '-1px 0px 0px 0px' });
+    }, { rootMargin: '400px 0px' });
 
-    observer.observe(hero);
+    Array.prototype.forEach.call(videos, function (video) { observer.observe(video); });
   }
 
   /* ============================================================
@@ -1016,13 +1098,16 @@
     });
 
     // Precisa rodar antes de initLinks: é quem preenche trackingParams.
-    safeInit('captureTracking', function () { trackingParams = captureTracking(); });
+    safeInit('captureTracking', function () {
+      trackingParams = captureTracking();
+      volatileParams = captureVolatile();
+    });
 
     safeInit('initVsl', function () { initVsl(offerProgress); });
     safeInit('initFaq', initFaq);
     safeInit('initLinks', initLinks);
+    safeInit('initLazyPosters', initLazyPosters);
     safeInit('initFooterYear', initFooterYear);
     safeInit('initScrollReveal', initScrollReveal);
-    safeInit('initStickyNav', initStickyNav);
   });
 })();

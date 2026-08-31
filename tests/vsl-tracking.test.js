@@ -293,8 +293,11 @@ test('Overlay A/B — abre visível sem inicializar player ou VSL_Start', () => 
   const environment = createEnvironment();
 
   assert.match(INDEX_SOURCE, /id="vslStartOverlay"/);
-  assert.match(INDEX_SOURCE, />Seu vídeo está pronto</);
-  assert.match(INDEX_SOURCE, />Clique para assistir com áudio</);
+  // V2: o overlay virou "Ver o método funcionando" + microtexto "Com áudio".
+  // O triângulo de play é um SVG, não o caractere U+25B6 — que está fora do
+  // unicode-range das fontes locais e cairia numa fonte de sistema.
+  assert.match(INDEX_SOURCE, />Ver o método funcionando</);
+  assert.match(INDEX_SOURCE, /Com áudio\s*<\/span>/);
   assert.equal(environment.playerCount(), 0);
   assert.equal(environment.fakePlayer.playCalls, 0);
   assert.deepEqual(eventNames(environment), []);

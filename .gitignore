@@ -4,6 +4,7 @@ node_modules/
 .vercel
 .env
 *.log
+screenshots/
 
 # Master local do antes/depois — usado só pra gerar os WebP responsivos
 # (perfil-depois-480.webp / perfil-depois-320.webp). Não é servido pela

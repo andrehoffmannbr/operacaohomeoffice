@@ -13,10 +13,39 @@ HTML5 + CSS + JavaScript vanilla, sem framework e sem nenhuma dependência exter
 ├── /assets
 │   ├── /images
 │   ├── /icons      (favicon.svg)
-│   └── /fonts      (inter-var.woff2, sora-var.woff2)
+│   ├── /fonts      (inter-var.woff2, sora-var.woff2)
+│   └── /videos     (depoimento-naldo.mp4, depoimento-amanda.mp4)
+├── /tests          (vsl-tracking, meta-pixel, landing-v2)
 ├── README.md
 └── .gitignore
 ```
+
+## Arquitetura da página (V2)
+
+A V2 vende o **mecanismo**, não um calendário de estudo. A ordem é fixa:
+
+1. Herói — `1 celular + 1 print + 1 prompt = uma transformação para mostrar`
+2. Antes/depois (a demonstração)
+3. VSL
+4. Como funciona em 20 segundos (mapa `ENCONTRE → PRINT → PROMPT → CRIE → MOSTRE`)
+5. Por que isso é diferente (duas abordagens)
+6. Você não precisa dominar IA
+7. Você não recebe só aulas (mapa visual de **processo**)
+8. Depoimento 1
+9. Autoridade
+10. Depoimento 2
+11. Oferta
+12. Garantia
+13. FAQ
+14. CTA final
+15. Suporte discreto
+
+> **A estrutura interna por dias (Dia 1…Dia 7) não é mais comunicação comercial.**
+> Ela pode continuar existindo dentro do treinamento, mas não aparece na landing.
+> `tests/landing-v2.test.js` falha se ela voltar.
+
+A narrativa é linear: não há mini-header fixo nem navegação permanente. O suporte por
+WhatsApp continua restrito ao fim da página, sem botão flutuante.
 
 ## Rodar localmente
 
@@ -52,7 +81,9 @@ São **dois vídeos**, um por dispositivo, porque o corte de mobile é quadrado 
 
 O player do YouTube só carrega **depois do clique do usuário** — evita baixar a IFrame API (~500 KB) na primeira carga.
 
-**Antes do clique não carrega mídia nenhuma.** O card é só fundo teal escuro (`--color-accent-darker`), botão de play e a legenda "Assista: como funciona o Método Express". Já existiu ali um clipe curto em loop, mas o arquivo era um placeholder inadequado (abertura de estúdio de cinema) e foi removido junto com o poster extraído dele.
+**Antes do clique não carrega mídia nenhuma** além do pôster local. O overlay traz o botão de play, o título "Ver o método funcionando" e o microtexto "Com áudio". O triângulo de play é um **SVG**, não o caractere `▶` (U+25B6) — ele está fora do `unicode-range` das fontes locais e cairia numa fonte de sistema.
+
+Já existiu ali um clipe curto em loop, mas o arquivo era um placeholder inadequado (abertura de estúdio de cinema) e foi removido junto com o poster extraído dele.
 
 Depois do clique, o player usa a **IFrame Player API** com `controls: 0`, `disablekb: 1` e `fs: 0` — sem barra de progresso, sem seek. Dá pra pausar e retomar só pelo botão transparente que cobre o vídeo. Legendas do YouTube ficam ligadas (`cc_load_policy: 1`) quando o vídeo tiver legenda cadastrada.
 
@@ -90,9 +121,31 @@ ffmpeg -i assets/videos/vsl-loop.mp4 -frames:v 1 \
   -c:v libwebp -quality 80 assets/images/vsl-loop-poster.webp
 ```
 
+## Depoimentos em vídeo
+
+Dois depoimentos reais de alunos, em `assets/videos/`:
+
+| Arquivo | Origem | Duração | Formato | Peso |
+|---|---|---|---|---|
+| `depoimento-naldo.mp4` | `NALDOSEMMARCA (1).mp4` | 23,1 s | 576×1024 (9:16) | 4,9 MB |
+| `depoimento-amanda.mp4` | `amandasemmarca.mp4` | 32,0 s | 464×832 (9:16) | 6,7 MB |
+
+Os arquivos foram **copiados sem recodificar** — os dois já vêm com `moov` no início
+(`faststart`), então o navegador começa a tocar sem baixar o arquivo inteiro.
+
+Os pôsteres (`assets/images/depoimento-*-poster.webp`, ~30 KB cada) foram extraídos de um
+frame do próprio vídeo pelo Chrome (canvas → WebP q82), sem ffmpeg. Para regerar, mude o
+timestamp e repita o processo — o frame do Naldo é de 16 s e o da Amanda de 2 s.
+
+> **Pendente de revisão humana:** qual vídeo pertence a qual seção. Hoje Naldo está no
+> depoimento 1 ("Mas isso funciona para quem está começando?") e Amanda no depoimento 2
+> ("Quando o processo sai da teoria"), na ordem em que foram informados — a atribuição
+> não foi verificada contra o conteúdo falado. Nenhuma frase, número de clientes ou valor
+> é atribuído a eles na página.
+
 ## Página aberta e ponto da oferta
 
-A landing inteira nasce visível. Headline, oferta, seções, rodapé, WhatsApp e os três CTAs da Hotmart não dependem do player, de tempo assistido ou de qualquer chave de storage.
+A landing inteira nasce visível. Herói, demonstração, oferta, seções, rodapé, suporte e os dois CTAs da Hotmart não dependem do player, de tempo assistido ou de qualquer chave de storage.
 
 O marco de **415 segundos de reprodução efetiva** continua existindo somente para o evento `VSL_Offer`. `createVslOfferProgress()` conta enquanto o YouTube está em `PLAYING` e a aba está visível, preserva callbacks atrasados com validação do playhead e não aceita um salto artificial como consumo legítimo.
 
@@ -119,7 +172,7 @@ Eventos disparados (`trackPixel()` em `script.js`, sempre sob `typeof fbq === 'f
 | Evento | Quando |
 |---|---|
 | `PageView` | carga da página (snippet do `<head>`) |
-| `Contact` | clique no botão flutuante de WhatsApp |
+| `Contact` | clique no link de suporte por WhatsApp (fim da página) |
 
 `InitiateCheckout` e `Purchase` **não** são disparados aqui — quem registra os dois é a Hotmart, que está configurada com o mesmo Pixel/Dataset (`3401433073361667`) via WEB + API de Conversões. A landing disparava `InitiateCheckout` no clique dos CTAs; isso foi removido na migração, porque a Hotmart já dispara o evento quando a página de pagamento carrega e os dois juntos contariam duas vezes a mesma ida ao checkout.
 
@@ -146,7 +199,21 @@ utm_source={{site_source_name}}&utm_medium=paid_social&utm_campaign={{campaign.n
 
 Os placeholders ficam **só lá** — o site nunca os tem hardcoded, apenas recebe os valores já resolvidos. As UTMs carregam os nomes legíveis para análise; `sck` carrega os três IDs para auditoria precisa.
 
-`fbclid` **não** faz parte deste módulo. Quem cuida do clique identificado do Facebook é o próprio Meta Pixel, via cookies `_fbc`/`_fbp` — fora do escopo daqui.
+### `fbclid` — parâmetro volátil
+
+`fbclid` é propagado ao checkout, mas fica **fora** de `TRACKING_PARAMS`. Ele vive em
+`TRACKING_VOLATILE_PARAMS`: lido da URL da visita atual, anexado ao link da Hotmart e
+**nunca gravado no `localStorage`**.
+
+Dois motivos para não persistir:
+
+1. guardado por 30 dias, um `fbclid` velho voltaria numa visita nova;
+2. se entrasse na lista de campanha, uma chegada com só `?fbclid=…` (link orgânico do
+   Facebook/Instagram) substituiria atomicamente a atribuição paga anterior por um
+   registro sem nenhuma UTM — quebrando o *last paid touch*.
+
+O clique identificado continua sendo responsabilidade principal do Meta Pixel, via
+cookies `_fbc`/`_fbp`.
 
 > Só dados de atribuição de marketing. **Nunca acrescentar PII** (nome, e-mail, telefone, documento) a essa lista nem a URLs de rastreamento.
 
@@ -170,12 +237,45 @@ Pra testar, abra a página com `?src=meta_ads&sck=111_222_333&utm_source=teste&u
 
 ## Performance
 
-- Fontes self-hosted (`assets/fonts`) com `font-display: swap` — zero conexão externa. Só a Inter tem `preload`, preservando a prioridade do pôster da VSL no caminho crítico.
+- Fontes self-hosted (`assets/fonts`) com `font-display: swap` — zero conexão externa. **As duas têm `preload`**: na V2 o herói é só texto e o LCP é o `<h1>`/subheadline, então a Sora entrou no caminho crítico junto com a Inter. (Na V1 só a Inter era pré-carregada, para não competir com o pôster da VSL, que era o LCP.)
 - CSS embutido no `<head>` de `index.html` — elimina a requisição que bloqueava a renderização. Para editar estilos, edite o bloco `<style>` do `index.html`.
 - JS carregado com `defer`.
 - Nenhuma dependência externa.
-- Player do YouTube carregado sob demanda; herói sem mídia antes do clique.
+- Player do YouTube carregado sob demanda; **nenhuma mídia acima da dobra** — a VSL desceu para a terceira seção e o pôster dela é `loading="lazy"`, sem `fetchpriority`.
 - Imagens em **WebP** com `srcset`, `width`/`height` explícitos e `loading="lazy"` abaixo da primeira dobra.
+- **Pôsteres dos depoimentos em `data-poster`, não `poster`.** O atributo `poster` não é lazy: o navegador busca a imagem com prioridade *Medium* já na carga, mesmo com o vídeo no fim da página. Os dois juntos (~61 KB) disputavam banda com as fontes e custavam ~120 ms de LCP. `initLazyPosters()` promove `data-poster` → `poster` via `IntersectionObserver` (`rootMargin: 400px`).
+- Vídeos de depoimento com `preload="none"` e `width`/`height` explícitos — nenhum byte de vídeo no caminho crítico e nenhum CLS.
+
+### Medições (Lighthouse mobile, mediana de 3 execuções, servidor local)
+
+| Métrica | V1 (HEAD) | V2 (lapidação CRO final) |
+|---|---|---|
+| Performance | 97 | **97** |
+| FCP | 1386 ms | **1418 ms** |
+| LCP | 2406 ms | **2436 ms** |
+| CLS | 0.001 | **0.000** |
+| TBT | 117 ms | **118 ms** |
+| Speed Index | 1386 ms | **1418 ms** |
+
+Medição final em Lighthouse 12.8.2, mediana de três execuções mobile após o
+cross-review. O elemento de LCP mudou de `img.vsl-poster` (V1) para o texto do
+herói (V2). A auditoria final de acessibilidade marcou **100** e SEO marcou **100**.
+
+## Testes
+
+```bash
+node --check script.js
+node --test tests/vsl-tracking.test.js    # 40
+node --test tests/meta-pixel.test.js      #  8
+node --test tests/landing-v2.test.js      # 28
+```
+
+`tests/landing-v2.test.js` trava as decisões comerciais da V2: um único `<h1>`, a ordem
+das seções, "7 dias" só na garantia, ausência da estrutura por dias, só Prompt Raiz 1 e 2
+como material entregue, mapas de execução na ordem aprovada, oferta detalhada antes do
+preço, 2 CTAs da Hotmart, ausência do mini-header e do botão flutuante, suporte presente,
+antes/depois vertical no mobile, blocos de transformação e oportunidades, `Contact` só no
+clique do suporte e nenhuma dependência/CDN nova.
 
 ## Deploy (GitHub + Vercel)
 
@@ -204,6 +304,9 @@ Não é necessário `vercel.json`, a menos que você precise de redirects espec�
   solicitar o reembolso." Não condicionar o reembolso a completar missões nem a qualquer outra tarefa —
   o direito de arrependimento do CDC (art. 49) é incondicional. Não prometer garantia de resultado,
   devolução depois dos 7 dias, "sem perguntas" ou "sem burocracia".
-- **Não adicionar contador regressivo, "vagas limitadas", preço riscado sem lastro ou qualquer urgência artificial.** A oferta mostra só `R$97 à vista` + "Parcelamento disponível no checkout." — sem âncora de preço anterior e sem número de parcelas na página, porque o parcelamento exato não foi confirmado contra a Hotmart.
+- **Não adicionar contador regressivo, "vagas limitadas", preço riscado sem lastro ou qualquer urgência artificial.** A oferta mostra só `R$97` + "Preço atual de acesso" + "Parcelamento disponível no checkout." — sem âncora de preço anterior e sem número de parcelas na página, porque o parcelamento exato não foi confirmado contra a Hotmart.
 - Usar linguagem de processo ("aprende", "monta", "faz abordagens"), nunca de resultado garantido ("fecha cliente", "primeira renda", "receita recorrente").
+- **"7 dias" só pode aparecer como prazo de reembolso.** Nunca como tempo de aprendizado, de execução ou de resultado ("aprenda em 7 dias", "7 dias de missões").
+- **Material entregue ≠ processo ensinado.** Os únicos materiais que a página anuncia como entregues são o **Prompt Raiz 1** e o **Prompt Raiz 2**. Tudo o mais (encontrar, criar, mostrar, abordar, oferecer, entregar) é **processo ensinado** e deve ser descrito como tal. Não chamar de "template", "PDF", "modelo", "checklist", "planilha" ou "bônus" nada que não exista como arquivo.
+- **Depoimentos:** não atribuir fala, número de clientes ou valor a um aluno sem que isso esteja dito no vídeo e aprovado. As legendas atuais são neutras ("Resultados individuais variam").
 - Antes de rodar tráfego pago no Meta, revisar o texto contra a política de categoria especial de Emprego.

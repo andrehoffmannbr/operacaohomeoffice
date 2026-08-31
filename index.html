@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Método Express — Crie e ofereça um serviço digital com IA em 7 dias | Operação Home Office</title>
-  <meta name="description" content="Um processo prático de 7 dias para encontrar negócios, criar uma transformação visual, apresentar seu serviço e fazer suas primeiras abordagens — começando com o celular.">
+  <title>Método Express — Um print, um prompt e uma transformação para mostrar | Operação Home Office</title>
+  <meta name="description" content="Com um celular, um print e o prompt certo você cria uma transformação visual com IA e tem algo concreto para apresentar a um pequeno negócio — mesmo sem saber design.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://operacaohomeoffice.vercel.app/">
 
@@ -12,8 +12,8 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
   <meta property="og:site_name" content="Operação Home Office">
-  <meta property="og:title" content="Método Express — Crie e ofereça um serviço digital com IA em 7 dias">
-  <meta property="og:description" content="Um processo prático para encontrar negócios, criar uma transformação visual, apresentar seu serviço e fazer suas primeiras abordagens — começando com o celular.">
+  <meta property="og:title" content="Método Express — Um print, um prompt e uma transformação para mostrar">
+  <meta property="og:description" content="Com um celular, um print e o prompt certo você cria uma transformação visual com IA e tem algo concreto para apresentar a um pequeno negócio.">
   <meta property="og:image" content="https://operacaohomeoffice.vercel.app/assets/images/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -21,8 +21,8 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Método Express — Crie e ofereça um serviço digital com IA em 7 dias">
-  <meta name="twitter:description" content="Um processo prático para encontrar negócios, criar uma transformação visual, apresentar seu serviço e fazer suas primeiras abordagens — começando com o celular.">
+  <meta name="twitter:title" content="Método Express — Um print, um prompt e uma transformação para mostrar">
+  <meta name="twitter:description" content="Com um celular, um print e o prompt certo você cria uma transformação visual com IA e tem algo concreto para apresentar a um pequeno negócio.">
   <meta name="twitter:image" content="https://operacaohomeoffice.vercel.app/assets/images/og-image.jpg">
 
 
@@ -33,18 +33,26 @@
   <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
 
   <!-- Fontes variáveis self-hosted (assets/fonts) — sem conexão com o Google Fonts.
-       Sora para títulos (mais expressiva), Inter para texto corrido. -->
-  <!-- Só a Inter tem preload: o pôster da VSL continua prioritário no caminho
-       crítico e a Sora usa font-display:swap quando os títulos entram na tela. -->
+       Sora para títulos (mais expressiva), Inter para texto corrido.
+
+       V2: as DUAS têm preload. Na V1 só a Inter era pré-carregada, pra não
+       competir com o pôster da VSL, que era o elemento LCP no topo da página.
+       Na V2 o herói é só texto (a VSL desceu pra terceira seção, com o pôster
+       em lazy), então o LCP passou a ser o <h1> — que é Sora. Pré-carregar a
+       Sora tirou o swap tardio do caminho crítico. -->
   <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/sora-var.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- CSS inline no <head>: elimina a única requisição que bloqueava a renderização
        (item "Solicitações que bloqueiam a renderização" do Lighthouse). Este bloco É a
        folha de estilos do site — edite o CSS aqui. -->
   <style>
 /* ==========================================================================
-   Método Express — Landing Page
-   Mobile-first. Sem framework, sem dependências pesadas.
+   Método Express — Landing Page V2
+   Mobile-first. Sem framework, sem dependências, sem CDN.
+
+   A V2 vende o mecanismo, não o calendário: 1 celular + 1 print + 1 prompt
+   = uma transformação visual pra mostrar a um pequeno negócio.
    ========================================================================== */
 
 /* Fontes variáveis servidas localmente (subset latin) — zero conexão externa */
@@ -71,12 +79,20 @@
   --color-accent-dark: #0B5C56;
   --color-accent-darker: #083F3B;
   --color-accent-light: #E6F4F2;
+  --color-accent-soft: #F2F9F8;
   --color-bg: #FFFFFF;
-  --color-bg-alt: #F7F7F5;
+  --color-bg-alt: #F6F8F7;
   --color-text: #14181A;
   --color-text-muted: #52605E;
+  --color-text-soft: #6B7A77;
   --color-border: #E2E8E6;
+  --color-border-strong: #CFDCD9;
   --color-whatsapp: #25D366;
+
+  /* Texto sobre as seções escuras */
+  --color-on-dark: #FFFFFF;
+  --color-on-dark-muted: #C9E8E4;
+  --color-on-dark-accent: #7DD8CE;
 
   --font-display: 'Sora', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -86,7 +102,9 @@
   --radius-lg: 20px;
   --radius-xl: 28px;
 
-  --container-width: 720px;
+  --container-width: 1080px;
+  --measure: 62ch;
+
   --shadow-sm: 0 2px 8px rgba(15, 23, 22, 0.06);
   --shadow-md: 0 10px 30px rgba(11, 60, 55, 0.10);
   --shadow-lg: 0 20px 50px rgba(11, 60, 55, 0.16);
@@ -106,12 +124,12 @@ body {
   font-family: var(--font-body);
   color: var(--color-text);
   background: var(--color-bg);
-  line-height: 1.55;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
-img, svg {
+img, svg, video {
   max-width: 100%;
   display: block;
 }
@@ -125,25 +143,89 @@ img, svg {
 
 h1, h2, h3 {
   font-family: var(--font-display);
-  line-height: 1.2;
+  line-height: 1.18;
   margin: 0 0 16px;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
 }
 
 h2 {
-  font-size: clamp(1.6rem, 4.5vw, 2.1rem);
+  font-size: clamp(1.5rem, 4.6vw, 2.15rem);
   text-align: center;
+  max-width: 22ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+h3 {
+  font-size: 1.02rem;
+  letter-spacing: -0.005em;
 }
 
 p {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
-ul {
+ul, ol {
   padding: 0;
   margin: 0;
   list-style: none;
+}
+
+a {
+  color: var(--color-accent-dark);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Bloco de texto corrido: largura de leitura confortável e centrado. */
+.prose {
+  max-width: var(--measure);
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--color-text-muted);
+  font-size: 1.02rem;
+}
+
+.prose strong {
+  color: var(--color-text);
+}
+
+.accent-text {
+  color: var(--color-accent-dark);
+}
+
+.section-dark .on-dark-accent {
+  color: var(--color-on-dark-accent);
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-accent-dark);
+  margin: 0 0 14px;
+}
+
+/* Frase de fechamento em destaque — usada no fim de várias seções. */
+.pull {
+  max-width: 30ch;
+  margin: 26px auto 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.12rem, 3.8vw, 1.45rem);
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  color: var(--color-accent-darker);
+  text-wrap: balance;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -175,58 +257,66 @@ ul {
   }
 }
 
-/* ---------- Sticky mini-header ---------- */
+/* ---------- Seções genéricas ---------- */
 
-.sticky-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 200;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--color-border);
-  transform: translateY(-100%);
-  transition: transform 0.3s ease;
+.section {
+  padding: 50px 0;
 }
 
-.sticky-nav.is-visible {
-  transform: translateY(0);
+.section-alt {
+  background: var(--color-bg-alt);
 }
 
-.sticky-nav-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 10px;
-  padding-bottom: 10px;
+.section-dark {
+  background:
+    radial-gradient(60% 80% at 85% 0%, rgba(20, 184, 169, 0.18), transparent 60%),
+    linear-gradient(160deg, #083F3B 0%, #062E2B 100%);
+  color: var(--color-on-dark);
 }
 
-.sticky-brand {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--color-accent-darker);
+.section-dark h2,
+.section-dark h3 {
+  color: var(--color-on-dark);
 }
 
-.btn-sm {
-  /* padding vertical dimensionado pra o alvo de toque fechar 44px (WCAG 2.5.5)
-     sem mudar a altura visual do header. */
-  padding: 12px 16px;
-  border-radius: 999px;
-  font-size: 0.85rem;
+.section-dark .prose {
+  color: var(--color-on-dark-muted);
 }
 
-/* ---------- Hero / VSL ---------- */
+.section-dark .prose strong {
+  color: var(--color-on-dark);
+}
+
+.section-dark .eyebrow {
+  color: var(--color-on-dark-accent);
+}
+
+.section-dark .pull {
+  color: var(--color-on-dark);
+}
+
+.section-head {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.section-head .prose {
+  margin-top: 12px;
+}
+
+/* ==========================================================================
+   1. HERO
+   Só texto acima da dobra: o LCP é o <h1>, não uma imagem. A VSL desceu
+   pra terceira seção justamente por isso.
+   ========================================================================== */
 
 .hero {
   position: relative;
-  padding: 32px 0 44px;
+  padding: 30px 0 40px;
   background:
     radial-gradient(60% 50% at 15% 0%, rgba(15, 118, 110, 0.16), transparent 60%),
-    radial-gradient(50% 40% at 100% 10%, rgba(15, 118, 110, 0.12), transparent 60%),
-    linear-gradient(180deg, var(--color-accent-light) 0%, var(--color-bg) 75%);
+    radial-gradient(50% 40% at 100% 6%, rgba(15, 118, 110, 0.12), transparent 60%),
+    linear-gradient(180deg, var(--color-accent-light) 0%, var(--color-bg) 82%);
   overflow: hidden;
 }
 
@@ -243,6 +333,309 @@ ul {
   position: relative;
 }
 
+.hero-inner {
+  text-align: center;
+}
+
+.hero-headline {
+  margin: 0 0 14px;
+  font-size: clamp(1.6rem, 5.6vw, 2.7rem);
+  line-height: 1.16;
+  max-width: 19ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-headline-accent {
+  color: var(--color-accent-darker);
+}
+
+.hero-sub {
+  color: var(--color-text-muted);
+  font-size: 1.02rem;
+  max-width: 54ch;
+  margin: 0 auto 22px;
+}
+
+.hero-sub strong {
+  color: var(--color-accent-darker);
+  font-weight: 700;
+}
+
+.hero-kicker {
+  margin: 20px auto 0;
+  max-width: 30ch;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 3.6vw, 1.3rem);
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--color-accent-darker);
+  text-wrap: balance;
+}
+
+.hero-cta {
+  margin-top: 18px;
+}
+
+/* ---------- Componente "1 celular / 1 print / 1 prompt / transformação" ----------
+   Mobile: os três insumos numa linha de 3 colunas + o resultado embaixo,
+   ligado por uma seta pra baixo — lê como uma equação.
+   Desktop (>=720px): tudo numa linha horizontal, com setas entre os passos. */
+
+.flow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.flow-item,
+.flow-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 16px 6px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  box-shadow: 0 8px 22px rgba(11, 60, 55, 0.09);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  color: var(--color-accent-darker);
+  text-align: center;
+}
+
+.flow-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+  flex-shrink: 0;
+}
+
+/* O resultado ocupa a linha inteira no mobile e nasce preenchido de teal:
+   é o único item da equação com peso visual de "saída". */
+.flow-result {
+  grid-column: 1 / -1;
+  position: relative;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 0.92rem;
+  box-shadow: 0 14px 30px rgba(15, 118, 110, 0.32);
+}
+
+.flow-result .flow-icon {
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFFFF;
+  width: 30px;
+  height: 30px;
+}
+
+/* Seta pra baixo entre os insumos e o resultado (só no layout mobile). */
+.flow-result::before {
+  content: '';
+  position: absolute;
+  top: -19px;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* ==========================================================================
+   2. ANTES / DEPOIS — o protagonista visual da página
+   ========================================================================== */
+
+.ba {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  margin: 0 auto 14px;
+}
+
+.ba-shot {
+  width: min(100%, 260px);
+  margin: 0;
+  min-width: 0;
+}
+
+.ba-label {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-text-muted); /* 6.1:1 sobre #F6F8F7 (WCAG AA) */
+  margin: 0 0 8px;
+}
+
+.ba-shot-after .ba-label {
+  color: var(--color-accent-dark);
+}
+
+.ba-shot img {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.ba-shot-after img {
+  border-color: rgba(15, 118, 110, 0.68);
+  box-shadow: 0 18px 44px rgba(11, 60, 55, 0.18);
+}
+
+/* Coluna do meio: o "motor" da transformação. */
+.ba-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  padding-top: 0;
+}
+
+.ba-mid-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.35);
+  flex-shrink: 0;
+}
+
+.ba-mid-badge svg {
+  transform: rotate(90deg);
+}
+
+.ba-mid-label {
+  margin: 0;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--color-accent-dark);
+}
+
+.ba-mid::after {
+  content: '';
+  width: 9px;
+  height: 9px;
+  margin-top: -2px;
+  border-right: 2px solid var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+  transform: rotate(45deg);
+}
+
+.ba-disclaimer {
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--color-text-soft);
+  max-width: 44ch;
+  margin: 0 auto 22px;
+}
+
+.portfolio-note {
+  max-width: 720px;
+  margin: 24px auto 0;
+  padding: 16px 18px;
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+.portfolio-note strong {
+  color: var(--color-accent-darker);
+}
+
+.transform-details {
+  max-width: 900px;
+  margin: 26px auto 0;
+  padding: 22px 18px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.transform-details h3 {
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+  color: var(--color-accent-darker);
+}
+
+.transform-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.transform-item {
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(15, 118, 110, 0.12);
+}
+
+.transform-name {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.76rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--color-accent-dark);
+}
+
+.transform-item p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.transform-closing {
+  max-width: 62ch;
+  margin: 18px auto 0;
+  text-align: center;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* ==========================================================================
+   3. VSL
+   O player, os IDs e o tracking são os mesmos da V1 — só a moldura mudou.
+   ========================================================================== */
+
 .vsl-wrap {
   width: 100%;
   max-width: 960px;
@@ -254,17 +647,11 @@ ul {
   position: relative;
   aspect-ratio: 1 / 1;
   width: 100%;
-  border-radius: 0;
+  border-radius: var(--radius-lg);
   background-color: var(--color-accent-darker);
   overflow: hidden;
   border: none;
   box-shadow: var(--shadow-lg);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.vsl-player:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 24px 60px rgba(11, 60, 55, 0.22);
 }
 
 .vsl-poster,
@@ -294,7 +681,7 @@ ul {
   margin: 0;
   padding: 20px;
   appearance: none;
-  background: linear-gradient(180deg, rgba(1, 8, 8, 0.38), rgba(1, 8, 8, 0.72));
+  background: linear-gradient(180deg, rgba(1, 8, 8, 0.34), rgba(1, 8, 8, 0.7));
   color: #FFFFFF;
   font: inherit;
   text-align: center;
@@ -310,37 +697,32 @@ ul {
 }
 
 .vsl-start-card {
-  width: min(100%, 360px);
-  padding: 20px 18px;
+  width: min(100%, 340px);
+  padding: 22px 18px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--radius-lg);
-  background: rgba(3, 18, 17, 0.78);
+  background: rgba(3, 18, 17, 0.76);
   box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
   backdrop-filter: blur(7px);
   -webkit-backdrop-filter: blur(7px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .vsl-start-overlay:hover .vsl-start-card {
   transform: translateY(-2px);
-  background: rgba(3, 18, 17, 0.86);
+  background: rgba(3, 18, 17, 0.85);
 }
 
-.vsl-start-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.08rem, 4.8vw, 1.35rem);
-  line-height: 1.2;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-}
-
-.vsl-audio-icon {
-  width: 64px;
-  height: 64px;
+/* Círculo branco com o triângulo de play: é o "▶" da chamada, desenhado
+   em SVG em vez do caractere U+25B6 — que está fora do unicode-range das
+   fontes locais e cairia numa fonte de sistema. */
+.vsl-start-play {
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   background: #FFFFFF;
   color: var(--color-accent-darker);
@@ -348,16 +730,32 @@ ul {
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.32);
-  animation: vsl-audio-pulse 1.5s ease-in-out infinite;
+  animation: vsl-play-pulse 1.6s ease-in-out infinite;
+}
+
+.vsl-start-play svg {
+  margin-left: 4px;
+}
+
+.vsl-start-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 4.6vw, 1.3rem);
+  line-height: 1.22;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .vsl-start-action {
-  font-size: clamp(0.9rem, 3.8vw, 1rem);
-  line-height: 1.35;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  line-height: 1.3;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.86);
 }
 
-@keyframes vsl-audio-pulse {
+@keyframes vsl-play-pulse {
   0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.28); }
   50% { transform: scale(1.045); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
 }
@@ -427,482 +825,579 @@ ul {
   margin-left: 3px;
 }
 
-/* Fecha o vão entre a VSL e a headline: .hero-copy é o primeiro bloco
-   depois do player e .hero-headline nasce com margin-top: 0. */
-.hero-copy {
-  margin-top: 30px;
-}
-
-.hero-headline {
-  margin-top: 0;
-  font-size: clamp(1.7rem, 6vw, 2.5rem);
+/* Faixa curta entre a demonstração em vídeo e o mapa de execução. */
+.opportunity-strip {
+  padding: 24px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-accent-soft);
   text-align: center;
 }
 
-.hero-subheadline {
-  text-align: center;
-  color: var(--color-text-muted);
-  font-size: 1.05rem;
-  max-width: 52ch;
-  margin-left: auto;
-  margin-right: auto;
+.opportunity-strip h2 {
+  max-width: 34ch;
+  margin-bottom: 14px;
+  font-size: clamp(1.25rem, 4vw, 1.65rem);
 }
 
-.badge-row {
+.opportunity-chips {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-  margin-top: 24px;
+  gap: 8px;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
-.badge-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid var(--color-border);
-  color: var(--color-accent-darker);
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 7px 14px;
+.opportunity-chips li {
+  padding: 7px 11px;
+  border: 1px solid rgba(15, 118, 110, 0.22);
   border-radius: 999px;
+  background: var(--color-bg);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-accent-dark);
+}
+
+.opportunity-micro {
+  max-width: 48ch;
+  margin: 14px auto 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   4. COMO FUNCIONA EM 20 SEGUNDOS
+   ========================================================================== */
+
+.explain-flow {
+  display: grid;
+  gap: 18px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.explain-step {
+  position: relative;
+  padding: 18px 18px 20px;
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
   box-shadow: var(--shadow-sm);
 }
 
-/* ---------- Seções genéricas ---------- */
-
-.section {
-  padding: 52px 0;
+.explain-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+  transform: translateX(-50%) rotate(45deg);
 }
 
-.section-alt {
-  background: var(--color-bg-alt);
+.explain-step-number {
+  display: block;
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--color-accent);
 }
 
-.lead-text {
-  text-align: center;
+.explain-step h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent-darker);
+}
+
+.explain-step p {
+  margin: 0 0 7px;
   color: var(--color-text-muted);
-  max-width: 56ch;
-  margin-left: auto;
-  margin-right: auto;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
-/* ---------- Lista "isso é pra você se" ---------- */
+.explain-step p:last-child {
+  margin-bottom: 0;
+}
 
-.check-list {
+.explain-step .explain-beat {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.explain-highlight {
+  max-width: 620px;
+  margin: 18px auto 0;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-light);
+  text-align: center;
+}
+
+.explain-highlight p {
+  margin: 0;
+}
+
+.explain-highlight-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 3.6vw, 1.3rem);
+  letter-spacing: -0.015em;
+  color: var(--color-accent-darker);
+}
+
+.explain-highlight-note {
+  margin-top: 6px !important;
+  font-size: 0.86rem;
+  color: var(--color-accent-dark);
+}
+
+/* ==========================================================================
+   5. POR QUE ISSO É DIFERENTE — duas abordagens lado a lado
+   ========================================================================== */
+
+.msg-grid {
   display: grid;
+  gap: 14px;
+  max-width: 860px;
+  margin: 0 auto 26px;
+}
+
+.msg-card {
+  padding: 18px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.check-list li {
+.msg-card-strong {
+  border-color: rgba(15, 118, 110, 0.42);
+  background: var(--color-accent-soft);
+  box-shadow: var(--shadow-md);
+}
+
+.msg-tag {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-soft);
+}
+
+.msg-card-strong .msg-tag {
+  color: var(--color-accent-dark);
+}
+
+/* Balão de mensagem genérico — deliberadamente NÃO imita o WhatsApp. */
+.msg-bubble {
   position: relative;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 4px 16px 16px 16px;
+  background: #EEF1F0;
+  color: var(--color-text);
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.msg-card-strong .msg-bubble {
+  background: var(--color-accent);
+  color: #FFFFFF;
+}
+
+.msg-note {
+  margin: 0;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+
+.msg-card-strong .msg-note {
+  color: var(--color-accent-dark);
+  font-weight: 600;
+}
+
+.msg-note svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* ==========================================================================
+   7. VOCÊ NÃO RECEBE SÓ AULAS — cards de PROCESSO (não de arquivo)
+   ========================================================================== */
+
+.process-grid {
+  display: grid;
+  gap: 18px;
+  margin: 0 auto;
+  max-width: 1040px;
+}
+
+.process-card {
+  position: relative;
+  padding: 18px;
   border-radius: var(--radius-md);
-  font-weight: 500;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-strong);
   box-shadow: var(--shadow-sm);
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-.check-list li:hover {
+.process-card:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.process-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
   border-color: rgba(15, 118, 110, 0.3);
 }
 
-.icon-circle {
-  flex-shrink: 0;
+.process-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.process-icon {
   width: 38px;
   height: 38px;
-  border-radius: 50%;
+  border-radius: 12px;
   background: var(--color-accent-light);
   color: var(--color-accent-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* ---------- Antes/Depois (screenshots reais em WebP) ---------- */
-
-.ba-wrap {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 10px;
-  margin: 28px auto 12px;
-  max-width: 520px;
-}
-
-.ba-shot {
-  flex: 1 1 0;
-  min-width: 0;
-  margin: 0;
-}
-
-.ba-label {
-  text-align: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted); /* 6.1:1 sobre #F7F7F5 (WCAG AA) */
-  margin: 0 0 8px;
-}
-
-.ba-shot-after .ba-label {
-  color: var(--color-accent-dark);
-}
-
-.ba-shot img {
-  width: 100%;
-  height: auto;
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-  display: block;
-}
-
-.ba-shot-after img {
-  border-color: rgba(15, 118, 110, 0.5);
-  box-shadow: var(--shadow-md);
-}
-
-.ba-arrow {
-  display: flex;
-  align-items: center;
-  align-self: center;
-  color: var(--color-accent);
   flex-shrink: 0;
 }
 
-.ba-caption {
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--color-text-muted); /* 6.1:1 sobre #F7F7F5 (WCAG AA) */
-  margin: 0 0 20px;
+.process-number {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--color-accent);
 }
 
-/* ---------- Quem vai te guiar (seção escura) ---------- */
-
-.section-dark {
-  background:
-    radial-gradient(60% 80% at 85% 0%, rgba(20, 184, 169, 0.18), transparent 60%),
-    linear-gradient(160deg, #083F3B 0%, #062E2B 100%);
-  color: #FFFFFF;
+.process-card h3 {
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-accent-darker);
 }
 
-.section-dark h2 {
-  color: #FFFFFF;
+.process-card p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
 }
 
-.mentor-card {
-  display: flex;
-  flex-direction: column;
+/* ==========================================================================
+   8 / 10. DEPOIMENTOS EM VÍDEO
+   preload="none": nenhum byte de vídeo entra no caminho crítico.
+   ========================================================================== */
+
+.testimonial {
+  display: grid;
+  gap: 22px;
   align-items: center;
-  text-align: center;
-  max-width: 560px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
-.mentor-photo {
-  width: 168px;
-  height: 168px;
+.testimonial-video {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--radius-lg);
+  background: #0A1615;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.testimonial-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #0A1615;
+}
+
+.testimonial-caption {
+  margin: 10px auto 0;
+  max-width: 300px;
+  text-align: center;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--color-text-soft);
+}
+
+.section-dark .testimonial-caption {
+  color: var(--color-on-dark-muted);
+}
+
+.section-dark .testimonial-video {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Aviso de asset ausente — some sozinho quando o vídeo existe. */
+.asset-missing {
+  max-width: 520px;
+  margin: 16px auto 0;
+  padding: 14px 16px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  color: var(--color-text-soft);
+  text-align: center;
+}
+
+/* ==========================================================================
+   9. AUTORIDADE
+   ========================================================================== */
+
+.author-card {
+  display: grid;
+  gap: 20px;
+  justify-items: center;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.author-photo {
+  width: 132px;
+  height: 132px;
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-  margin-bottom: 20px;
 }
 
-.mentor-name {
+.author-name {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   margin: 0;
+  color: var(--color-on-dark);
 }
 
-.mentor-role {
-  color: #7DD8CE;
-  font-size: 0.85rem;
+.author-role {
+  color: var(--color-on-dark-accent);
+  font-size: 0.82rem;
   font-weight: 600;
-  margin: 6px 0 16px;
+  margin: 4px 0 0;
 }
 
-.mentor-quote {
-  color: #C9E8E4;
-  font-size: 1.02rem;
-  margin: 0;
+.author-body {
+  text-align: left;
 }
 
-/* ---------- Lista "o que você constrói" ---------- */
+/* ==========================================================================
+   11. OFERTA
+   ========================================================================== */
 
-.build-list {
+.offer-card {
   position: relative;
-}
-
-.build-list li {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 14px 0;
-}
-
-.build-list li:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  left: 15px;
-  top: 46px;
-  bottom: -4px;
-  width: 2px;
-  background: var(--color-border);
-}
-
-.build-number {
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  color: #FFFFFF;
-  font-family: var(--font-display);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 10px rgba(15, 118, 110, 0.35);
-}
-
-.build-list li span:last-child {
-  padding-top: 4px;
-}
-
-.build-outcomes strong {
-  display: block;
-  margin-bottom: 3px;
-  color: var(--color-text);
-}
-
-.build-outcomes li span:last-child {
-  padding-top: 0;
-  color: var(--color-text-muted);
-  line-height: 1.55;
-}
-
-/* ---------- Como funciona: stats ---------- */
-
-.stats-row {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  flex: 1 1 100px;
-  min-width: 100px;
-  background: var(--color-accent-light);
-  border-radius: var(--radius-md);
-  padding: 20px 8px;
-  text-align: center;
-  transition: transform 0.25s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-3px);
-}
-
-.stat-icon {
-  color: var(--color-accent);
-  margin: 0 auto 8px;
-}
-
-.stat-number {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--color-accent-dark);
-}
-
-.stat-label {
-  display: block;
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-  margin-top: 2px;
-}
-
-/* ---------- "O que isso não é" ---------- */
-
-.cross-list li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  margin-bottom: 10px;
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-}
-
-.cross-badge {
-  flex-shrink: 0;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #EEF1F0;
-  color: #8A9591;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.cross-badge-positive {
-  background: var(--color-accent);
-  color: #FFFFFF;
-}
-
-.cross-list-highlight {
-  background: var(--color-accent-light) !important;
-  color: var(--color-text) !important;
-  font-weight: 600;
-  border-color: transparent !important;
-}
-
-/* ---------- Investimento ---------- */
-
-.price-card {
-  position: relative;
-  background: var(--color-bg);
+  background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-accent-soft) 100%);
+  border: 2px solid rgba(15, 118, 110, 0.44);
   border-radius: var(--radius-xl);
-  padding: 36px 24px;
+  padding: 30px 22px;
   text-align: center;
-  max-width: 420px;
-  margin: 0 auto;
-  box-shadow: var(--shadow-lg);
+  max-width: 720px;
+  margin: 22px auto 0;
+  box-shadow: 0 28px 70px rgba(11, 60, 55, 0.19);
 }
 
-.price {
+.offer-brand {
+  margin: 0 0 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--color-text-soft);
+}
+
+.offer-product {
+  margin: 0 0 20px;
   font-family: var(--font-display);
-  font-size: 2.6rem;
   font-weight: 800;
-  color: var(--color-accent-dark);
-  margin-bottom: 4px;
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  letter-spacing: -0.015em;
+  color: var(--color-accent-darker);
 }
 
-.price span {
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--color-text-muted);
+.offer-value-line {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-light);
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-accent-darker);
 }
 
-.price-alt {
-  color: var(--color-text-muted);
-  margin-bottom: 24px;
+.offer-includes {
+  display: grid;
+  gap: 10px;
+  text-align: left;
+  margin: 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--color-border-strong);
 }
 
-.guarantee {
-  margin-top: 22px;
+.offer-includes li {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  text-align: left;
-  font-size: 0.88rem;
+  padding: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.13);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  font-size: 0.92rem;
   color: var(--color-text-muted);
 }
 
-.guarantee svg {
+.offer-includes .offer-include-primary {
+  border-color: rgba(15, 118, 110, 0.35);
+  background: var(--color-accent-light);
+}
+
+.offer-includes strong {
+  color: var(--color-text);
+}
+
+.offer-check {
   flex-shrink: 0;
-  margin-top: 2px;
-  color: var(--color-accent);
-}
-
-/* ---------- Botões / CTA ---------- */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-decoration: none;
-  font-family: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.btn-primary {
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
   background: var(--color-accent);
   color: #FFFFFF;
-  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.32);
-}
-
-.btn-primary:hover {
-  background: var(--color-accent-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(15, 118, 110, 0.4);
-}
-
-.btn-primary:active {
-  transform: scale(0.98);
-}
-
-.btn-cta {
-  width: 100%;
-  padding: 17px 24px;
-  border-radius: var(--radius-md);
-  font-size: 1.05rem;
-  text-align: center;
-}
-
-.btn-cta svg {
-  transition: transform 0.2s ease;
-}
-
-.btn-cta:hover svg {
-  transform: translateX(3px);
-}
-
-/* ---------- Linha de confiança sob os CTAs ---------- */
-
-.cta-trust {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 18px;
-  margin-top: 16px;
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
-}
-
-.cta-trust li {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
 }
 
-.cta-trust li::before {
-  content: '✓';
-  color: var(--color-accent);
+.offer-price-block {
+  margin: 26px 0 0;
+  padding: 24px 0 0;
+  border-top: 2px solid rgba(15, 118, 110, 0.2);
+}
+
+.offer-price {
+  font-family: var(--font-display);
+  font-size: 3rem;
   font-weight: 800;
+  line-height: 1;
+  color: var(--color-accent-dark);
+  margin: 0 0 6px;
 }
 
-/* ---------- FAQ / Acordeão ---------- */
+.offer-price-note {
+  font-size: 0.86rem;
+  color: var(--color-text-muted);
+  margin: 0 0 4px;
+}
+
+.offer-price-alt {
+  font-size: 0.86rem;
+  color: var(--color-text-soft);
+  margin: 0 0 22px;
+}
+
+.offer-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  color: var(--color-text-soft);
+}
+
+.offer-secure svg {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+/* ==========================================================================
+   12. GARANTIA
+   ========================================================================== */
+
+.guarantee-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.guarantee-badge {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guarantee-card h2 {
+  text-align: left;
+  margin: 0 0 8px;
+  max-width: none;
+  font-size: clamp(1.15rem, 3.6vw, 1.4rem);
+}
+
+.guarantee-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.96rem;
+}
+
+/* ==========================================================================
+   13. FAQ
+   ========================================================================== */
 
 .faq-list {
-  max-width: 640px;
+  max-width: 660px;
   margin: 0 auto;
 }
 
@@ -951,7 +1446,9 @@ ul {
   margin: 0;
 }
 
-/* ---------- Chamada final ---------- */
+/* ==========================================================================
+   14. CTA FINAL
+   ========================================================================== */
 
 .section-final {
   position: relative;
@@ -966,8 +1463,25 @@ ul {
   position: relative;
 }
 
-.section-final h2 {
-  margin-bottom: 28px;
+.final-copy {
+  max-width: 40ch;
+  margin: 0 auto 26px;
+  color: var(--color-text-muted);
+  font-size: 1.02rem;
+}
+
+.final-copy p {
+  margin: 0 0 8px;
+}
+
+.final-question {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.05rem, 3.6vw, 1.28rem);
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--color-accent-darker);
+  margin-top: 16px !important;
 }
 
 .section-final .btn-cta {
@@ -975,73 +1489,134 @@ ul {
   margin: 0 auto;
 }
 
-/* ---------- Footer ---------- */
+/* ==========================================================================
+   Botões
+   ========================================================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: #FFFFFF;
+  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.32);
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(15, 118, 110, 0.4);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* CTA secundário do herói: leva pra demonstração, não pro checkout. */
+.btn-ghost {
+  padding: 13px 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-accent-dark);
+  font-size: 0.92rem;
+}
+
+.btn-ghost:hover {
+  background: #FFFFFF;
+  border-color: var(--color-accent);
+}
+
+.btn-cta {
+  width: 100%;
+  padding: 17px 22px;
+  border-radius: var(--radius-md);
+  font-size: clamp(0.95rem, 3.4vw, 1.05rem);
+  text-align: center;
+  line-height: 1.25;
+}
+
+.btn-cta svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.btn-cta:hover svg {
+  transform: translateX(3px);
+}
+
+/* ==========================================================================
+   15. SUPORTE DISCRETO + rodapé
+   Não existe mais botão flutuante: o suporte é um link de texto no fim
+   da página, pra não competir com o CTA de compra.
+   ========================================================================== */
+
+.support {
+  padding: 30px 0 6px;
+  text-align: center;
+}
+
+.support-text {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+}
+
+.support-link {
+  /* linha própria: a frase não quebra no meio e o alvo de toque fica limpo */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 4px;
+  font-weight: 700;
+  color: var(--color-accent-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.support-text > span {
+  display: block;
+}
+
+.support-link svg {
+  color: var(--color-whatsapp);
+  flex-shrink: 0;
+}
 
 .footer {
-  padding: 24px 0 90px;
+  padding: 18px 0 34px;
   text-align: center;
   font-size: 0.8rem;
   color: var(--color-text-muted);
 }
 
-/* ---------- WhatsApp flutuante ---------- */
-
-.whatsapp-float {
-  position: fixed;
-  /* Mobile: 48px encostado na borda (ainda acima dos 44px de alvo de toque).
-     Reduz a faixa de texto que o botão cobre — não elimina, porque um botão
-     fixo sempre sobrepõe algo, mas encolhe a área afetada. As env() mantêm
-     ele fora da barra de gestos do iPhone. Volta a 56px no desktop (ver
-     media query de 640px), onde não há sobreposição nenhuma. */
-  right: max(12px, env(safe-area-inset-right));
-  bottom: max(12px, env(safe-area-inset-bottom));
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--color-whatsapp);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  z-index: 100;
-}
-
-.whatsapp-pulse {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: var(--color-whatsapp);
-  opacity: 0.55;
-  animation: whatsapp-pulse 2.4s ease-out infinite;
-}
-
-@keyframes whatsapp-pulse {
-  0% { transform: scale(1); opacity: 0.5; }
-  100% { transform: scale(1.9); opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .whatsapp-pulse { animation: none; display: none; }
-}
-
-.whatsapp-float:focus-visible {
-  outline: 3px solid var(--color-accent-dark);
-  outline-offset: 3px;
-}
-
-/* ---------- Âncora sob o header fixo ---------- */
-
-/* O .sticky-nav tem ~60px e position:fixed; sem isso o topo da seção
-   Investimento para embaixo dele quando o link do header é clicado. */
-#investimento {
-  scroll-margin-top: 76px;
-}
-
-/* ---------- Telas maiores ---------- */
+/* ==========================================================================
+   Telas maiores
+   ========================================================================== */
 
 @media (min-width: 640px) {
   .hero {
-    padding: 60px 0 68px;
+    padding: 48px 0 54px;
+  }
+
+  .section {
+    padding: 68px 0;
+  }
+
+  #demonstracao {
+    padding-top: 60px;
+    padding-bottom: 60px;
   }
 
   .vsl-wrap {
@@ -1053,29 +1628,257 @@ ul {
     border-radius: var(--radius-xl);
   }
 
-  .section {
-    padding: 72px 0;
+  .ba {
+    grid-template-columns: 1fr auto 1fr;
+    justify-items: stretch;
+    gap: 18px;
+    max-width: 820px;
   }
 
-  .price-card {
-    padding: 44px 40px;
+  .ba-shot {
+    width: auto;
   }
 
-  .stats-row {
-    flex-wrap: nowrap;
+  .ba-mid {
+    width: 90px;
+    padding-top: 24px;
   }
 
-  .check-list {
+  .ba-mid-badge svg {
+    transform: none;
+  }
+
+  .ba-mid::after {
+    display: none;
+  }
+
+  .ba-mid-badge {
+    width: 44px;
+    height: 44px;
+  }
+
+  .ba-mid-label {
+    font-size: 0.72rem;
+  }
+
+  .transform-details {
+    padding: 26px;
+  }
+
+  .transform-grid {
     grid-template-columns: 1fr 1fr;
   }
 
-  /* No desktop a coluna de texto é estreita e centrada: o botão não encosta
-     em nada, então volta ao tamanho e à margem originais. */
-  .whatsapp-float {
-    right: 18px;
-    bottom: 18px;
-    width: 56px;
-    height: 56px;
+  .opportunity-strip {
+    padding: 28px 0;
+  }
+
+  .msg-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .process-grid {
+    max-width: 720px;
+  }
+
+  .offer-card {
+    padding: 40px 34px;
+  }
+
+  .offer-includes {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .offer-includes .offer-include-primary {
+    grid-column: 1 / -1;
+  }
+
+  .testimonial {
+    grid-template-columns: 1fr 300px;
+    gap: 40px;
+  }
+
+  .testimonial-body {
+    text-align: left;
+  }
+
+  .testimonial-body h2 {
+    text-align: left;
+    margin-left: 0;
+    max-width: 18ch;
+  }
+
+  .testimonial-body .prose {
+    margin-left: 0;
+  }
+
+  .author-card {
+    grid-template-columns: 132px 1fr;
+    justify-items: start;
+    text-align: left;
+    gap: 28px;
+    max-width: 720px;
+  }
+
+  .author-photo {
+    grid-row: span 2;
+  }
+}
+
+/* A partir de 720px o componente do herói vira uma linha horizontal:
+   1 celular → 1 print → 1 prompt → transformação. */
+@media (min-width: 720px) {
+  .flow {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: center;
+    gap: 12px;
+    max-width: 920px;
+  }
+
+  .flow-item,
+  .flow-result {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    font-size: 0.92rem;
+  }
+
+  .flow-result {
+    flex-direction: column;
+    margin-top: 0;
+    padding: 20px 10px;
+    font-size: 0.92rem;
+  }
+
+  .flow-result .flow-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  /* Seta pra baixo é só do layout empilhado. */
+  .flow-result::before {
+    display: none;
+  }
+
+  /* Setas horizontais entre os passos, desenhadas em CSS (o caractere
+     U+2192 está fora do unicode-range das fontes locais). */
+  .flow-item::after {
+    content: '';
+    flex-shrink: 0;
+    align-self: center;
+    width: 9px;
+    height: 9px;
+    margin: 0 -4px 0 0;
+    border-top: 2px solid var(--color-accent);
+    border-right: 2px solid var(--color-accent);
+    transform: rotate(45deg);
+  }
+
+  .flow-item {
+    position: relative;
+    padding-right: 24px;
+  }
+
+  .flow-item::after {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    margin: 0;
+    transform: translateY(-50%) rotate(45deg);
+  }
+}
+
+@media (min-width: 960px) {
+  .explain-flow {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+
+  .explain-step:not(:last-child)::after {
+    left: auto;
+    right: -12px;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  .process-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 18px;
+    max-width: 1040px;
+  }
+
+  .process-card {
+    padding: 18px;
+  }
+
+  .process-card:nth-child(1)::after,
+  .process-card:nth-child(2)::after {
+    left: auto;
+    right: -13px;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  .process-card:nth-child(3)::after {
+    left: 50%;
+    right: auto;
+    bottom: -15px;
+    top: auto;
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  .process-card:nth-child(4) { grid-column: 3; grid-row: 2; }
+  .process-card:nth-child(5) { grid-column: 2; grid-row: 2; }
+  .process-card:nth-child(6) { grid-column: 1; grid-row: 2; }
+
+  .process-card:nth-child(4)::after,
+  .process-card:nth-child(5)::after {
+    left: -13px;
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%) rotate(135deg);
+  }
+
+  .process-card p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .msg-grid {
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1120px) {
+  .process-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+  }
+
+  .process-card {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    padding: 16px 14px 18px;
+  }
+
+  .process-card:not(:last-child)::after {
+    left: auto;
+    right: -11px;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%) rotate(-45deg);
+  }
+
+  .process-card p {
+    font-size: 0.84rem;
   }
 }
   </style>
@@ -1127,359 +1930,668 @@ ul {
 </head>
 <body>
 
-  <!-- Mini-header fixo, aparece só depois que rola além do herói -->
-  <div class="sticky-nav" id="stickyNav">
-    <div class="container sticky-nav-inner">
-      <span class="sticky-brand">Método Express</span>
-      <a href="#investimento" class="btn btn-primary btn-sm">Quero começar</a>
-    </div>
-  </div>
-
-  <!-- ============ 1. VSL + HEADLINE ============ -->
+  <!-- ============ 1. HERO ============
+       Sem preço, sem VSL, sem WhatsApp e sem CTA de checkout: a primeira
+       dobra existe só pra pessoa entender o mecanismo. O único CTA é uma
+       âncora interna pra demonstração. -->
   <header class="hero">
     <div class="hero-grain" aria-hidden="true"></div>
 
-    <!--
-      PLAYER DE VÍDEO — dois vídeos diferentes, um por dispositivo. As URLs
-      ficam em VSL_VIDEO_URL_MOBILE / VSL_VIDEO_URL_DESKTOP no topo do
-      script.js; a escolha entre um e outro usa o mesmo breakpoint de
-      640px do CSS (ver getVslVideoUrl em script.js).
+    <div class="container hero-inner">
+      <p class="eyebrow">Método Express</p>
 
-      Fica num wrapper próprio (.vsl-wrap), mais largo que o .container do
-      resto do herói, então o vídeo aparece maior sem alargar o texto.
+      <h1 class="hero-headline">Pegue um print de um Instagram. Use um prompt. <span class="hero-headline-accent">Mostre ao dono como o perfil dele poderia ficar.</span></h1>
 
-      Depois do clique, o player do YouTube carrega via IFrame API com os
-      controles nativos desligados — sem barra de progresso, só dá pra
-      pausar/retomar pelo botão que cobre o vídeo, não dá pra avançar.
-      Vimeo/vídeo próprio continuam com o fallback simples de iframe/<video>
-      (ver initVsl em script.js).
+      <p class="hero-sub">Com <strong>um celular, um print e o prompt certo</strong>, você consegue criar uma transformação visual com IA e ter <strong>algo concreto</strong> para apresentar a um pequeno negócio — mesmo sem saber design ou dominar inteligência artificial.</p>
 
-      O card (.vsl-player) usa aspect-ratio 1:1 no mobile (vídeo mobile é
-      quadrado) e 16:9 a partir de 640px (vídeo desktop é 16:9) — bate
-      exato com o formato real de cada arquivo, sem cortar nem sobrar
-      barra preta.
-
-      Antes do clique carrega somente o thumbnail oficial da VSL escolhida.
-      A API e o player do YouTube continuam sendo criados apenas depois da
-      interação explícita do usuário.
-    -->
-    <div class="vsl-wrap">
-      <div class="vsl-player" id="vslPlayer">
-        <picture class="vsl-poster" aria-hidden="true">
-          <source media="(min-width: 640px)" srcset="assets/images/vsl-poster-desktop-960.webp">
-          <img src="assets/images/vsl-poster-mobile-480.webp" width="480" height="480" alt="" fetchpriority="high" decoding="async">
-        </picture>
-        <button type="button" class="vsl-start-overlay" id="vslStartOverlay" aria-label="Clique para assistir ao vídeo com áudio">
-          <span class="vsl-start-card" aria-hidden="true">
-            <span class="vsl-start-title">Seu vídeo está pronto</span>
-            <span class="vsl-audio-icon">
-              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z"/>
-                <path d="M17 9.5a4 4 0 0 1 0 5"/>
-              </svg>
-            </span>
-            <span class="vsl-start-action">Clique para assistir com áudio</span>
+      <!-- A equação do método. Mobile: 3 insumos + resultado embaixo.
+           Desktop (>=720px): uma linha horizontal com setas. -->
+      <div class="flow">
+        <div class="flow-item">
+          <span class="flow-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
           </span>
-        </button>
+          1 celular
+        </div>
+        <div class="flow-item">
+          <span class="flow-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8"/><path d="M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8"/><path d="M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16"/><path d="M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/></svg>
+          </span>
+          1 print
+        </div>
+        <div class="flow-item">
+          <span class="flow-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.7 10.4 11.2 6 9.6 10.4 8Z"/><path d="M18.5 15.5 19.2 17.4 21 18.1 19.2 18.8 18.5 20.7 17.8 18.8 16 18.1 17.8 17.4Z"/></svg>
+          </span>
+          1 prompt
+        </div>
+        <div class="flow-result">
+          <span class="flow-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15.5-4.5-4.5L8 19.5"/></svg>
+          </span>
+          Uma transformação para mostrar
+        </div>
       </div>
-    </div>
 
-    <div class="container hero-copy">
-      <h1 class="hero-headline">Aprenda em 7 dias a criar e oferecer um serviço digital usando IA.</h1>
-      <p class="hero-subheadline">Um processo prático para encontrar negócios, criar uma transformação visual, apresentar seu serviço e fazer suas primeiras abordagens — começando com o celular.</p>
+      <p class="hero-kicker">Você não começa tentando convencer alguém. Começa mostrando.</p>
 
-      <ul class="badge-row">
-        <li class="badge-pill">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M17 9.5a4 4 0 0 1 0 5"/><line x1="3" y1="21" x2="21" y2="3"/></svg>
-          Sem anúncio pago
-        </li>
-        <li class="badge-pill">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
-          Sem CNPJ
-        </li>
-        <li class="badge-pill">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-          Sem computador
-        </li>
-      </ul>
+      <p class="hero-cta">
+        <a href="#demonstracao" class="btn btn-ghost">Ver como funciona</a>
+      </p>
     </div>
   </header>
 
   <main>
 
-    <!-- ============ O SERVIÇO QUE VOCÊ VAI APRENDER ============ -->
-    <section class="section section-alt reveal" aria-labelledby="servico-titulo">
+    <!-- ============ 2. ANTES / DEPOIS ============ -->
+    <section class="section section-alt reveal" id="demonstracao" aria-labelledby="demo-titulo">
       <div class="container">
-        <h2 id="servico-titulo">O serviço que você vai aprender</h2>
-        <p class="lead-text">Organizar o Instagram de pequenos negócios usando ferramentas de IA gratuitas — o tipo de serviço que barbearias, salões e hamburguerias de bairro podem contratar.</p>
+        <div class="section-head">
+          <h2 id="demo-titulo">O cliente não precisa imaginar o seu trabalho. <strong class="accent-text">Ele consegue ver.</strong></h2>
+        </div>
 
-        <!-- Antes/depois real — WebP otimizado, lazy load, dimensões fixas (sem CLS) -->
-        <div class="ba-wrap">
+        <!-- Antes/depois real do projeto — WebP com srcset, dimensões
+             explícitas (sem CLS) e lazy load: fica abaixo da dobra. -->
+        <div class="ba">
           <figure class="ba-shot">
             <figcaption class="ba-label">Antes</figcaption>
-            <img src="assets/images/perfil-antes-480.webp" srcset="assets/images/perfil-antes-320.webp 320w, assets/images/perfil-antes-480.webp 480w" sizes="(min-width: 562px) 239px, calc((100vw - 82px) / 2)" alt="Perfil de barbearia no Instagram antes da organização: poucas publicações e feed desorganizado" width="480" height="853" loading="lazy" decoding="async">
+            <img src="assets/images/perfil-antes-480.webp" srcset="assets/images/perfil-antes-320.webp 320w, assets/images/perfil-antes-480.webp 480w" sizes="(min-width: 900px) 347px, (min-width: 640px) calc((100vw - 170px) / 2), (min-width: 300px) 260px, calc(100vw - 40px)" alt="Perfil de barbearia no Instagram antes: feed desorganizado e apresentação fraca" width="480" height="853" loading="lazy" decoding="async">
           </figure>
-          <div class="ba-arrow" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="14 6 20 12 14 18"/></svg>
+
+          <div class="ba-mid" aria-hidden="true">
+            <span class="ba-mid-badge">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+            </span>
+            <p class="ba-mid-label">1 prompt + IA</p>
           </div>
+
           <figure class="ba-shot ba-shot-after">
             <figcaption class="ba-label">Depois</figcaption>
-            <img src="assets/images/perfil-depois-480.webp" srcset="assets/images/perfil-depois-320.webp 320w, assets/images/perfil-depois-480.webp 480w" sizes="(min-width: 562px) 239px, calc((100vw - 82px) / 2)" alt="Perfil da mesma barbearia depois da organização: bio completa, destaques e feed profissional" width="480" height="853" loading="lazy" decoding="async">
+            <img src="assets/images/perfil-depois-480.webp" srcset="assets/images/perfil-depois-320.webp 320w, assets/images/perfil-depois-480.webp 480w" sizes="(min-width: 900px) 347px, (min-width: 640px) calc((100vw - 170px) / 2), (min-width: 300px) 260px, calc(100vw - 40px)" alt="O mesmo perfil depois: bio organizada, destaques e feed com apresentação profissional" width="480" height="853" loading="lazy" decoding="async">
           </figure>
         </div>
-        <p class="ba-caption">Exemplo ilustrativo do tipo de transformação que o serviço entrega.</p>
 
-        <p class="lead-text">Você aprende do zero, direto no celular, e monta exemplos prontos pra mostrar.</p>
-      </div>
-    </section>
+        <p class="ba-disclaimer">Simulação visual. Não representa crescimento de seguidores, vendas ou faturamento.</p>
 
-    <!-- ============ 2. ISSO É PRA VOCÊ SE... ============ -->
-    <section class="section reveal" aria-labelledby="qualifica-titulo">
-      <div class="container">
-        <h2 id="qualifica-titulo">Isso é pra você se...</h2>
-        <ul class="check-list">
-          <li>
-            <span class="icon-circle" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
-            </span>
-            <span>Você quer ter mais controle do seu tempo, sem depender só de um emprego fixo</span>
-          </li>
-          <li>
-            <span class="icon-circle" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.5 1 1.3 1 2.1V16h6v-.4c0-.8.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg>
-            </span>
-            <span>Você tem vontade de aprender algo novo, mas não sabe por onde começar</span>
-          </li>
-          <li>
-            <span class="icon-circle" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.5a16.5 16.5 0 0 1 20 0"/><path d="M5.5 12.5a11.5 11.5 0 0 1 13 0"/><path d="M9 16.5a6.5 6.5 0 0 1 6 0"/><circle cx="12" cy="20" r="1"/></svg>
-            </span>
-            <span>Você já pensou em trabalhar com internet, mas achou que precisava saber muito de tecnologia</span>
-          </li>
-          <li>
-            <span class="icon-circle" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="7.5" cy="14.5" r="1"/></svg>
-            </span>
-            <span>Você não tem dinheiro pra investir em computador, anúncio ou ferramenta paga agora</span>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- ============ 3. OS 7 DIAS ============ -->
-    <section class="section section-alt reveal" aria-labelledby="constroi-titulo">
-      <div class="container">
-        <h2 id="constroi-titulo">Os 7 dias, um por um</h2>
-        <p class="lead-text">Você assiste, executa e passa pro próximo.</p>
-        <ul class="build-list build-outcomes">
-          <li>
-            <span class="build-number">1</span>
-            <span>
-              <strong>Dia 1 — Encontre o perfil certo</strong>
-              Como escolher o negócio local que faz sentido abordar primeiro.
-            </span>
-          </li>
-          <li>
-            <span class="build-number">2</span>
-            <span>
-              <strong>Dia 2 — Crie a transformação visual</strong>
-              Você aplica o primeiro Prompt Raiz e monta a nova cara do perfil.
-            </span>
-          </li>
-          <li>
-            <span class="build-number">3</span>
-            <span>
-              <strong>Dia 3 — Monte a apresentação</strong>
-              O antes e depois organizado num formato pronto pra mostrar.
-            </span>
-          </li>
-          <li>
-            <span class="build-number">4</span>
-            <span>
-              <strong>Dia 4 — Prepare e envie as abordagens</strong>
-              O texto da abordagem e o caminho até quem decide no negócio.
-            </span>
-          </li>
-          <li>
-            <span class="build-number">5</span>
-            <span>
-              <strong>Dia 5 — Organize pacote e preço</strong>
-              O que está incluso, o prazo e como combinar o valor.
-            </span>
-          </li>
-          <li>
-            <span class="build-number">6</span>
-            <span>
-              <strong>Dia 6 — Produza a entrega</strong>
-              Com o segundo Prompt Raiz, você gera as peças do serviço.
-            </span>
-          </li>
-          <li>
-            <span class="build-number">7</span>
-            <span>
-              <strong>Dia 7 — Entrega e próximos passos</strong>
-              Como organizar os arquivos, preparar a entrega e definir os próximos passos.
-            </span>
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- ============ 4. COMO FUNCIONA O MÉTODO ============ -->
-    <section class="section reveal" aria-labelledby="como-funciona-titulo">
-      <div class="container">
-        <h2 id="como-funciona-titulo">Como funciona o método</h2>
-        <div class="stats-row">
-          <div class="stat-card">
-            <svg class="stat-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="14" width="16" height="6" rx="1.5"/></svg>
-            <span class="stat-number">7</span>
-            <span class="stat-label">dias de missões</span>
-          </div>
-          <div class="stat-card">
-            <svg class="stat-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-            <span class="stat-number">1</span>
-            <span class="stat-label">missão por dia</span>
-          </div>
-          <div class="stat-card">
-            <svg class="stat-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><polyline points="14 3 14 8 19 8"/><path d="M9 13.5 10.6 15 9 16.5"/><line x1="12.5" y1="16.5" x2="15" y2="16.5"/></svg>
-            <span class="stat-number">2</span>
-            <span class="stat-label">Prompts Raiz prontos para usar</span>
-          </div>
+        <div class="prose">
+          <p>Quando você chega dizendo “eu consigo melhorar seu Instagram”, o proprietário precisa acreditar na sua palavra.</p>
+          <p>Quando você chega mostrando uma transformação do próprio negócio dele...</p>
+          <p><strong>a conversa começa de outro lugar.</strong></p>
         </div>
-        <p class="lead-text">Aulas práticas e curtas, feitas pra assistir e executar no mesmo dia.</p>
-        <p class="lead-text">Não é curso pra só assistir — é pra fazer.</p>
-      </div>
-    </section>
 
-    <!-- ============ 5. O QUE ISSO NÃO É ============ -->
-    <section class="section section-alt reveal" aria-labelledby="nao-e-titulo">
-      <div class="container">
-        <h2 id="nao-e-titulo">O que isso não é</h2>
-        <ul class="cross-list">
-          <li>
-            <span class="cross-badge" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
-            </span>
-            Não é promessa de renda garantida
-          </li>
-          <li>
-            <span class="cross-badge" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
-            </span>
-            Não é fórmula mágica nem trabalho sem esforço
-          </li>
-          <li>
-            <span class="cross-badge" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
-            </span>
-            Não é curso de programação nem de design avançado
-          </li>
-          <li class="cross-list-highlight">
-            <span class="cross-badge cross-badge-positive" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
-            </span>
-            É um processo prático e guiado — a execução depende de você
-          </li>
-        </ul>
-      </div>
-    </section>
+        <p class="portfolio-note"><strong>Você não precisa esperar ter um portfólio completo para começar a mostrar do que é capaz.</strong> O próprio perfil do negócio pode virar a base da sua demonstração.</p>
 
-    <!-- ============ QUEM VAI TE GUIAR ============ -->
-    <section class="section section-dark reveal" aria-labelledby="mentor-titulo">
-      <div class="container">
-        <h2 id="mentor-titulo">Quem vai te guiar</h2>
-        <div class="mentor-card">
-          <img class="mentor-photo" src="assets/images/andre-hoffmann-480.webp" srcset="assets/images/andre-hoffmann-320.webp 320w, assets/images/andre-hoffmann-480.webp 480w" sizes="168px" alt="André Hoffmann, criador do Método Express" width="480" height="480" loading="lazy" decoding="async">
-          <p class="mentor-name">André Hoffmann</p>
-          <p class="mentor-role">Criador do Método Express · Operação Home Office</p>
-          <p class="mentor-quote">"Eu ensino jovens sem nenhuma experiência a construir um serviço simples, usando inteligência artificial, começando só com o celular. Não é sobre ser gênio de tecnologia — é sobre seguir um caminho que já foi testado."</p>
+        <div class="transform-details" aria-labelledby="transformacao-titulo">
+          <h3 id="transformacao-titulo">O que muda nessa transformação?</h3>
+          <ul class="transform-grid">
+            <li class="transform-item">
+              <strong class="transform-name">Bio mais clara</strong>
+              <p>Uma apresentação mais organizada do negócio e do que ele oferece.</p>
+            </li>
+            <li class="transform-item">
+              <strong class="transform-name">Identidade visual mais consistente</strong>
+              <p>Uma direção de cores, estilo e apresentação com mais unidade.</p>
+            </li>
+            <li class="transform-item">
+              <strong class="transform-name">Destaques mais organizados</strong>
+              <p>Uma estrutura visual que ajuda o perfil a parecer mais cuidado e fácil de entender.</p>
+            </li>
+            <li class="transform-item">
+              <strong class="transform-name">Feed com aparência mais profissional</strong>
+              <p>Uma direção visual que apresenta melhor os produtos ou serviços.</p>
+            </li>
+          </ul>
+          <p class="transform-closing">Você não precisa reconstruir o negócio. Você mostra como a apresentação dele poderia melhorar.</p>
         </div>
       </div>
     </section>
 
-    <!-- ============ 6. INVESTIMENTO ============ -->
-    <section class="section section-alt reveal" aria-labelledby="investimento-titulo" id="investimento">
+    <!-- ============ 3. VSL ============
+         O player, os IDs do YouTube, o overlay de clique e todo o tracking
+         (VSL_Start / 25 / 50 / 75 / Offer / 90) são os mesmos da V1.
+         Só a moldura e o texto do overlay mudaram.
+
+         Dois vídeos, um por dispositivo: o corte de mobile é quadrado e o de
+         desktop é 16:9. As URLs ficam em VSL_VIDEO_URL_MOBILE /
+         VSL_VIDEO_URL_DESKTOP no topo do script.js e a escolha usa o mesmo
+         breakpoint de 640px do CSS (ver getVslVideoUrl em script.js).
+
+         Antes do clique carrega só o pôster local. A IFrame API do YouTube
+         (~500KB) e o player continuam sendo criados apenas depois da
+         interação explícita do usuário. Sem autoplay.
+
+         O pôster agora é lazy e sem fetchpriority: na V2 a VSL não está mais
+         na primeira dobra, então ela saiu do caminho crítico do LCP. -->
+    <section class="section reveal" id="vsl" aria-labelledby="vsl-titulo">
       <div class="container">
-        <h2 id="investimento-titulo">Investimento</h2>
-        <div class="price-card">
-          <p class="price">R$97 <span>à vista</span></p>
-          <p class="price-alt">Parcelamento disponível no checkout.</p>
+        <div class="section-head">
+          <h2 id="vsl-titulo">Veja como o Método Express funciona na prática</h2>
+          <p class="prose">Em poucos minutos você vai entender como encontrar a oportunidade, criar a transformação e apresentar essa ideia ao negócio.</p>
+        </div>
+      </div>
+
+      <div class="vsl-wrap">
+        <div class="vsl-player" id="vslPlayer">
+          <picture class="vsl-poster" aria-hidden="true">
+            <source media="(min-width: 640px)" srcset="assets/images/vsl-poster-desktop-960.webp">
+            <img src="assets/images/vsl-poster-mobile-480.webp" width="480" height="480" alt="" loading="lazy" decoding="async">
+          </picture>
+          <button type="button" class="vsl-start-overlay" id="vslStartOverlay" aria-label="Ver o método funcionando — o vídeo abre com áudio">
+            <span class="vsl-start-card" aria-hidden="true">
+              <span class="vsl-start-play">
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </span>
+              <span class="vsl-start-title">Ver o método funcionando</span>
+              <span class="vsl-start-action">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M17 9.5a4 4 0 0 1 0 5"/></svg>
+                Com áudio
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="opportunity-strip reveal" aria-labelledby="oportunidades-titulo">
+      <div class="container">
+        <h2 id="oportunidades-titulo">Esse tipo de oportunidade está em negócios que você já encontra todos os dias.</h2>
+        <ul class="opportunity-chips" aria-label="Exemplos de negócios">
+          <li>Barbearias</li>
+          <li>Salões</li>
+          <li>Hamburguerias</li>
+          <li>Cafeterias</li>
+          <li>Lojas</li>
+          <li>Imobiliárias</li>
+        </ul>
+        <p class="opportunity-micro">Abra o Google ou o Instagram e comece a olhar os perfis da sua própria cidade.</p>
+      </div>
+    </aside>
+
+    <!-- ============ 4. COMO FUNCIONA EM 20 SEGUNDOS ============ -->
+    <section class="section section-alt reveal" aria-labelledby="explicacao-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="explicacao-titulo">Se eu tivesse que te explicar o Método Express em 20 segundos, seria assim:</h2>
+        </div>
+
+        <ol class="explain-flow" aria-label="Etapas do Método Express">
+          <li class="explain-step">
+            <span class="explain-step-number" aria-hidden="true">01</span>
+            <h3>Encontre</h3>
+            <p>Você abre o Google ou o Instagram.</p>
+            <p>Encontra um pequeno negócio com um perfil que claramente poderia ser melhor apresentado.</p>
+          </li>
+          <li class="explain-step">
+            <span class="explain-step-number" aria-hidden="true">02</span>
+            <h3>Print</h3>
+            <p>Tira um print.</p>
+          </li>
+          <li class="explain-step">
+            <span class="explain-step-number" aria-hidden="true">03</span>
+            <h3>Prompt</h3>
+            <p>Coloca esse print na inteligência artificial junto com o prompt que eu te entrego.</p>
+          </li>
+          <li class="explain-step">
+            <span class="explain-step-number" aria-hidden="true">04</span>
+            <h3>Crie</h3>
+            <p>A IA cria uma nova direção visual.</p>
+            <p>Você revisa, ajusta e monta o antes e depois.</p>
+          </li>
+          <li class="explain-step">
+            <span class="explain-step-number" aria-hidden="true">05</span>
+            <h3>Mostre</h3>
+            <p>Depois mostra isso para o dono do negócio.</p>
+            <p class="explain-beat">Pronto.</p>
+            <p>Agora ele não precisa imaginar o que você conseguiria fazer.</p>
+            <p class="explain-beat">Ele está olhando para a ideia.</p>
+          </li>
+        </ol>
+
+        <div class="explain-highlight">
+          <p class="explain-highlight-title">Um celular. Um print. Um prompt.</p>
+          <p class="explain-highlight-note">Para começar a criar a demonstração, é basicamente isso.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 5. POR QUE ISSO É DIFERENTE ============ -->
+    <section class="section reveal" aria-labelledby="diferente-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="diferente-titulo">A maioria tenta <strong class="accent-text">vender primeiro.</strong> Aqui, você <strong class="accent-text">mostra primeiro.</strong></h2>
+        </div>
+
+        <div class="msg-grid">
+          <article class="msg-card">
+            <p class="msg-tag">Mensagem 1</p>
+            <blockquote class="msg-bubble">“Olá, trabalho com redes sociais e gostaria de apresentar meus serviços.”</blockquote>
+            <p class="msg-note">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.8c0 1.7-2.4 2.1-2.4 3.4"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
+              O cliente ainda precisa imaginar tudo.
+            </p>
+          </article>
+
+          <article class="msg-card msg-card-strong">
+            <p class="msg-tag">Mensagem 2</p>
+            <blockquote class="msg-bubble">“Eu vi o seu perfil e fiz uma simulação de como ele poderia ficar. Posso te mostrar?”</blockquote>
+            <p class="msg-note">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 12 9 17 20 6"/></svg>
+              Agora existe algo concreto na conversa.
+            </p>
+          </article>
+        </div>
+
+        <div class="prose">
+          <p>As duas mensagens estão oferecendo um serviço.</p>
+          <p>Mas só uma delas já colocou alguma coisa concreta na frente do cliente.</p>
+        </div>
+
+        <p class="pull">Você não precisa convencer o cliente a imaginar. <strong class="accent-text">Você mostra.</strong></p>
+      </div>
+    </section>
+
+    <!-- ============ 6. NÃO PRECISA DOMINAR IA ============ -->
+    <section class="section section-dark reveal" aria-labelledby="ia-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="ia-titulo"><strong class="on-dark-accent">Você não precisa virar especialista em inteligência artificial</strong> para começar.</h2>
+        </div>
+
+        <div class="prose">
+          <p>Muita gente trava porque acha que primeiro precisa aprender dezenas de ferramentas, estudar IA durante meses e só depois tentar fazer alguma coisa com isso.</p>
+          <p>Aqui a lógica é outra.</p>
+          <p>No Método Express, a inteligência artificial tem uma função específica: <strong>ajudar você a criar a transformação visual.</strong></p>
+          <p>Eu te entrego o prompt.</p>
+          <p>Você aprende o que colocar.</p>
+          <p>O que observar.</p>
+          <p>Como pedir ajustes.</p>
+          <p>E o que fazer com aquela transformação depois.</p>
+        </div>
+
+        <p class="pull">A ferramenta faz parte do trabalho. <strong class="on-dark-accent">O método mostra o caminho.</strong></p>
+      </div>
+    </section>
+
+    <!-- ============ 7. VOCÊ NÃO RECEBE SÓ AULAS ============
+         Cards de PROCESSO, não de arquivo. Os dois únicos materiais
+         entregues que a página anuncia são o Prompt Raiz 1 e o Prompt
+         Raiz 2 — tudo o mais aqui é processo ensinado no treinamento. -->
+    <section class="section reveal" aria-labelledby="processo-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="processo-titulo">Você não recebe só aulas. <strong class="accent-text">Recebe um processo para executar.</strong></h2>
+          <div class="prose">
+            <p>Eu não quero que você termine o Método Express com várias horas assistidas e continue pensando: “Tá... e agora eu faço o quê?”</p>
+            <p>Por isso, o treinamento foi organizado em volta do que você precisa fazer na prática.</p>
+          </div>
+        </div>
+
+        <ul class="process-grid">
+          <li class="process-card">
+            <span class="process-step">
+              <span class="process-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+              </span>
+              <span class="process-number" aria-hidden="true">01</span>
+            </span>
+            <h3>Encontrar</h3>
+            <p>Aprenda a identificar pequenos negócios com uma oportunidade clara de melhoria visual.</p>
+          </li>
+
+          <li class="process-card">
+            <span class="process-step">
+              <span class="process-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.7 10.4 11.2 6 9.6 10.4 8Z"/><path d="M18.5 15.5 19.2 17.4 21 18.1 19.2 18.8 18.5 20.7 17.8 18.8 16 18.1 17.8 17.4Z"/></svg>
+              </span>
+              <span class="process-number" aria-hidden="true">02</span>
+            </span>
+            <h3>Criar</h3>
+            <p>Use o Prompt Raiz 1 para transformar o print do perfil em uma nova direção visual.</p>
+          </li>
+
+          <li class="process-card">
+            <span class="process-step">
+              <span class="process-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M9 14h6"/></svg>
+              </span>
+              <span class="process-number" aria-hidden="true">03</span>
+            </span>
+            <h3>Mostrar</h3>
+            <p>Aprenda a organizar o antes e depois para que o negócio consiga enxergar a transformação.</p>
+          </li>
+
+          <li class="process-card">
+            <span class="process-step">
+              <span class="process-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.9-.9L3 20.5l1.5-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg>
+              </span>
+              <span class="process-number" aria-hidden="true">04</span>
+            </span>
+            <h3>Abordar</h3>
+            <p>Entenda como iniciar a conversa e apresentar a demonstração.</p>
+          </li>
+
+          <li class="process-card">
+            <span class="process-step">
+              <span class="process-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+              </span>
+              <span class="process-number" aria-hidden="true">05</span>
+            </span>
+            <h3>Oferecer</h3>
+            <p>Aprenda a transformar aquela conversa em uma oferta de serviço clara.</p>
+          </li>
+
+          <li class="process-card">
+            <span class="process-step">
+              <span class="process-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8.5 12 4 4 8.5v7L12 20l8-4.5Z"/><polyline points="4 8.5 12 13 20 8.5"/><line x1="12" y1="13" x2="12" y2="20"/></svg>
+              </span>
+              <span class="process-number" aria-hidden="true">06</span>
+            </span>
+            <h3>Entregar</h3>
+            <p>Se o serviço for fechado, use o Prompt Raiz 2 e o processo do método para ajudar a produzir a entrega.</p>
+          </li>
+        </ul>
+
+        <p class="pull">Menos teoria solta. Mais clareza sobre o que fazer em seguida.</p>
+      </div>
+    </section>
+
+    <!-- ============ 8. DEPOIMENTO 1 ============
+         Vídeo real do produto (assets/videos/depoimento-naldo.mp4).
+         preload="none" + aspect-ratio fixo: nenhum byte de vídeo no
+         caminho crítico e nenhum deslocamento de layout.
+
+         O pôster vem em data-poster, não em poster: o atributo poster é
+         buscado com prioridade Medium já na carga, mesmo com o vídeo lá
+         embaixo — media o LCP do herói em ~120ms. initLazyPosters() (em
+         script.js) promove data-poster -> poster quando a seção se aproxima
+         da viewport.
+         Sem autoplay e sem legenda entre aspas: o texto do depoimento só
+         entra depois da revisão do conteúdo real do vídeo. -->
+    <section class="section section-alt reveal" aria-labelledby="depoimento1-titulo">
+      <div class="container">
+        <div class="testimonial">
+          <div class="testimonial-body">
+            <h2 id="depoimento1-titulo">Mas isso funciona para quem está começando?</h2>
+            <div class="prose">
+              <p>Essa é provavelmente uma das primeiras dúvidas de quem vê o método.</p>
+              <p>Por isso, prefiro que você escute alguém que colocou o processo em prática.</p>
+            </div>
+          </div>
+
+          <div>
+            <div class="testimonial-video">
+              <video src="assets/videos/depoimento-naldo.mp4" data-poster="assets/images/depoimento-naldo-poster.webp" controls playsinline preload="none" width="576" height="1024" aria-label="Depoimento em vídeo de um aluno do Método Express"></video>
+            </div>
+            <p class="testimonial-caption">Depoimento de aluno do Método Express. Resultados individuais variam.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 9. AUTORIDADE ============ -->
+    <section class="section section-dark reveal" aria-labelledby="autor-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="autor-titulo">Por que eu criei o Método Express</h2>
+        </div>
+
+        <div class="author-card">
+          <img class="author-photo" src="assets/images/andre-hoffmann-480.webp" srcset="assets/images/andre-hoffmann-320.webp 320w, assets/images/andre-hoffmann-480.webp 480w" sizes="132px" alt="André Hoffmann, criador do Método Express" width="480" height="480" loading="lazy" decoding="async">
+
+          <div>
+            <p class="author-name">André Hoffmann</p>
+            <p class="author-role">Criador do Método Express · Operação Home Office</p>
+          </div>
+
+          <div class="prose author-body">
+            <p>Eu sou André Hoffmann, formado em Análise e Desenvolvimento de Sistemas e Marketing.</p>
+            <p>Minha formação me colocou justamente no encontro entre tecnologia e comunicação.</p>
+            <p>E trabalhando com inteligência artificial e negócios, uma ideia ficou cada vez mais clara: é muito mais fácil apresentar um serviço quando a pessoa consegue enxergar a transformação.</p>
+            <p>Foi a partir desse princípio que eu organizei o Método Express.</p>
+            <p>Não para ensinar tudo sobre inteligência artificial. Mas para usar a tecnologia de uma forma específica e prática: <strong>encontrar uma oportunidade, criar uma demonstração e mostrar.</strong></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 10. DEPOIMENTO 2 ============
+         Vídeo real do produto (assets/videos/depoimento-amanda.mp4).
+         Mesmas regras do depoimento 1: sem autoplay, preload="none" e
+         nenhuma afirmação de resultado atribuída à aluna. -->
+    <section class="section reveal" aria-labelledby="depoimento2-titulo">
+      <div class="container">
+        <div class="testimonial">
+          <div class="testimonial-body">
+            <h2 id="depoimento2-titulo">Quando o processo sai da teoria</h2>
+            <div class="prose">
+              <p>Criar a transformação é a primeira parte.</p>
+              <p>Depois vem a execução: encontrar negócios, mostrar o trabalho e abrir conversas.</p>
+            </div>
+          </div>
+
+          <div>
+            <div class="testimonial-video">
+              <video src="assets/videos/depoimento-amanda.mp4" data-poster="assets/images/depoimento-amanda-poster.webp" controls playsinline preload="none" width="464" height="832" aria-label="Depoimento em vídeo de uma aluna do Método Express"></video>
+            </div>
+            <p class="testimonial-caption">Depoimento de aluna do Método Express. Resultados individuais variam.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 11. OFERTA ============ -->
+    <section class="section section-alt reveal" id="investimento" aria-labelledby="oferta-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="oferta-titulo">Você não está comprando mais um curso sobre inteligência artificial.</h2>
+          <div class="prose">
+            <p>Está recebendo um processo específico para transformar uma ferramenta que já está no seu celular em algo que você consegue mostrar para um possível cliente.</p>
+            <p>Você aprende como encontrar a oportunidade, criar a transformação, apresentar a ideia, oferecer o serviço e seguir para a entrega.</p>
+          </div>
+        </div>
+
+        <div class="offer-card">
+          <p class="offer-brand">Operação Home Office</p>
+          <p class="offer-product">Método Express</p>
+          <p class="offer-value-line">Você não está pagando para aprender “sobre IA”. Está aprendendo a usar a IA para criar algo concreto que consegue colocar na frente de um possível cliente.</p>
+
+          <ul class="offer-includes">
+            <li class="offer-include-primary">
+              <span class="offer-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+              </span>
+              <span><strong>Processo completo</strong> — encontrar, criar, mostrar, abordar, oferecer e entregar.</span>
+            </li>
+            <li>
+              <span class="offer-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+              </span>
+              <span><strong>Prompt Raiz 1</strong> — para criar a transformação visual a partir do print.</span>
+            </li>
+            <li>
+              <span class="offer-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+              </span>
+              <span><strong>Prompt Raiz 2</strong> — para ajudar na produção da entrega, se o serviço for fechado.</span>
+            </li>
+            <li>
+              <span class="offer-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+              </span>
+              <span><strong>Encontrar oportunidades</strong> — identificar negócios com espaço claro para melhorar a apresentação.</span>
+            </li>
+            <li>
+              <span class="offer-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+              </span>
+              <span><strong>Criar e apresentar a transformação</strong> — montar um antes e depois que o negócio consegue enxergar.</span>
+            </li>
+            <li>
+              <span class="offer-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+              </span>
+              <span><strong>Abordar e oferecer</strong> — iniciar a conversa, mostrar a ideia e apresentar o serviço.</span>
+            </li>
+            <li>
+              <span class="offer-check" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
+              </span>
+              <span><strong>Entrega</strong> — seguir o processo do método se o serviço for fechado.</span>
+            </li>
+          </ul>
+
+          <div class="offer-price-block">
+            <p class="offer-price">R$97</p>
+            <p class="offer-price-note">Preço atual de acesso</p>
+            <p class="offer-price-alt">Parcelamento disponível no checkout.</p>
+          </div>
 
           <!--
             BOTÃO DE COMPRA — checkout da Hotmart.
+            O href real já nasce no HTML: se o script.js falhar, o botão
+            continua funcionando. O JS só reescreve o link pra acrescentar
+            os parâmetros de atribuição (ver withTrackingParams).
             Troque a constante HOTMART_CHECKOUT_URL no topo do script.js.
           -->
           <a href="https://pay.hotmart.com/G106758643C" class="btn btn-primary btn-cta" id="ctaInvestimento" target="_blank" rel="noopener">
-            <span>Quero começar meu Método Express</span>
+            <span>Quero entrar no Método Express</span>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
           </a>
 
-          <ul class="cta-trust">
-            <li>100% pelo celular</li>
-            <li>7 dias de missões guiadas</li>
-            <li>2 Prompts Raiz incluídos</li>
-          </ul>
-
-          <p class="guarantee">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-            <span><strong>Garantia de 7 dias:</strong> você tem 7 dias para conhecer o Método Express. Se entender que não é para você dentro desse período, pode solicitar o reembolso.</span>
+          <p class="offer-secure">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+            Pagamento seguro pela Hotmart
           </p>
         </div>
       </div>
     </section>
 
-    <!-- ============ 7. PERGUNTAS FREQUENTES ============ -->
-    <section class="section reveal" aria-labelledby="faq-titulo">
+    <!-- ============ 12. GARANTIA ============
+         "7 dias" aparece aqui e SOMENTE aqui: é o prazo de reembolso,
+         não tempo de aprendizado nem promessa de resultado. -->
+    <section class="section reveal" aria-labelledby="garantia-titulo">
       <div class="container">
-        <h2 id="faq-titulo">Perguntas frequentes</h2>
+        <div class="guarantee-card">
+          <span class="guarantee-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.2 2.9 8.1 7 9.5 4.1-1.4 7-5.3 7-9.5V6Z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </span>
+          <div>
+            <h2 id="garantia-titulo">Você tem 7 dias para conhecer o Método Express.</h2>
+            <p>Entre, veja as aulas, conheça o processo e entenda como ele funciona. Se dentro do período de garantia você decidir que o Método Express não faz sentido para você, poderá solicitar o reembolso conforme as regras da plataforma.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 13. FAQ ============ -->
+    <section class="section section-alt reveal" aria-labelledby="faq-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="faq-titulo">Perguntas frequentes</h2>
+        </div>
+
         <div class="faq-list" id="faqList">
           <div class="faq-item">
             <button class="faq-question" id="faq-question-1" aria-expanded="false" aria-controls="faq-answer-1">
-              <span>Preciso saber alguma coisa de tecnologia?</span>
+              <span>Preciso saber design?</span>
               <span class="faq-icon" aria-hidden="true">+</span>
             </button>
             <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1">
-              <p>Não. As aulas te ensinam a usar as ferramentas do zero, passo a passo.</p>
+              <p>Não. A proposta é justamente usar a inteligência artificial para reduzir essa barreira. Você aprende a gerar uma base visual e revisar antes de apresentar.</p>
             </div>
           </div>
+
           <div class="faq-item">
             <button class="faq-question" id="faq-question-2" aria-expanded="false" aria-controls="faq-answer-2">
-              <span>Preciso ter computador?</span>
+              <span>Preciso entender de inteligência artificial?</span>
               <span class="faq-icon" aria-hidden="true">+</span>
             </button>
             <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2">
-              <p>Não. Todo o Método Express funciona 100% pelo celular.</p>
+              <p>Não. Você recebe o prompt e aprende como utilizá-lo dentro desse processo específico.</p>
             </div>
           </div>
+
           <div class="faq-item">
             <button class="faq-question" id="faq-question-3" aria-expanded="false" aria-controls="faq-answer-3">
-              <span>Em quanto tempo eu vejo resultado?</span>
+              <span>Preciso de computador?</span>
               <span class="faq-icon" aria-hidden="true">+</span>
             </button>
             <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3">
-              <p>Em 7 dias você percorre as sete missões — do perfil escolhido às primeiras abordagens enviadas. Fechar um cliente depende da sua execução e do mercado. Por isso, o Método Express não promete um prazo para esse resultado.</p>
+              <p>Para criar a primeira transformação, o processo pode ser feito pelo celular. Um computador pode facilitar etapas posteriores, mas não é necessário para começar a aplicar o mecanismo.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" id="faq-question-4" aria-expanded="false" aria-controls="faq-answer-4">
+              <span>Preciso já ter clientes ou seguidores?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4">
+              <p>Não. O método começa justamente mostrando como encontrar negócios e criar uma demonstração antes de ter um cliente fechado.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" id="faq-question-5" aria-expanded="false" aria-controls="faq-answer-5">
+              <span>O resultado é garantido?</span>
+              <span class="faq-icon" aria-hidden="true">+</span>
+            </button>
+            <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5">
+              <p>Não. O Método Express entrega o processo e as ferramentas. O resultado comercial depende da execução, das abordagens, da qualidade do trabalho, da negociação e de outros fatores.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ 8. CHAMADA FINAL ============ -->
+    <!-- ============ 14. CTA FINAL ============ -->
     <section class="section section-final reveal" aria-labelledby="final-titulo">
       <div class="hero-grain" aria-hidden="true"></div>
       <div class="container">
-        <h2 id="final-titulo">Você não precisa estar pronto pra começar.<br>Precisa só dar o primeiro passo.</h2>
+        <h2 id="final-titulo">A sua primeira transformação não precisa começar com um grande plano.</h2>
+
+        <div class="final-copy">
+          <p>Pode começar com um celular.</p>
+          <p>Um perfil.</p>
+          <p>Um print.</p>
+          <p>Um prompt.</p>
+          <p>E uma pergunta simples para um pequeno negócio:</p>
+          <p class="final-question">“Quer ver como o seu Instagram poderia ficar?”</p>
+        </div>
+
         <a href="https://pay.hotmart.com/G106758643C" class="btn btn-primary btn-cta" id="ctaFinal" target="_blank" rel="noopener">
-          <span>Quero começar meu Método Express</span>
+          <span>Quero começar com o Método Express</span>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
         </a>
-        <ul class="cta-trust">
-          <li>Garantia de 7 dias</li>
-          <li>100% pelo celular</li>
-          <li>7 dias de missões guiadas</li>
-        </ul>
+
+        <p class="offer-secure">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+          Pagamento seguro pela Hotmart
+        </p>
       </div>
     </section>
+
+    <!-- ============ 15. SUPORTE DISCRETO ============
+         Substitui o antigo botão flutuante de WhatsApp. É um link de texto,
+         no fim da página, pra não competir com o CTA de compra.
+         O evento Contact do Meta Pixel continua saindo daqui — e só daqui
+         (ver initLinks em script.js). -->
+    <div class="support">
+      <div class="container">
+        <p class="support-text">
+          <span>Ficou com alguma dúvida sobre acesso ou pagamento?</span>
+          <a href="https://wa.me/554888742835?text=Oi!%20Vi%20a%20p%C3%A1gina%20do%20M%C3%A9todo%20Express%20e%20queria%20saber%20mais." id="whatsappSuporte" class="support-link" target="_blank" rel="noopener">
+            <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.5.73 4.83 2 6.79L4 29l7.36-1.93a11.9 11.9 0 0 0 4.66.95h.01c6.62 0 12.02-5.4 12.02-12.02C28.05 8.4 22.65 3 16.02 3zm0 21.8h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.69.97.99-3.6-.23-.37a9.77 9.77 0 0 1-1.5-5.2c0-5.4 4.4-9.8 9.81-9.8 2.62 0 5.08 1.02 6.93 2.88a9.74 9.74 0 0 1 2.87 6.93c0 5.4-4.4 9.77-9.82 9.77zm5.37-7.32c-.29-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.66.15-.2.29-.76.96-.93 1.16-.17.2-.34.22-.63.07-.29-.15-1.24-.46-2.36-1.46-.87-.78-1.46-1.74-1.63-2.03-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.29-.49.1-.2.05-.37-.02-.51-.07-.15-.66-1.59-.9-2.18-.24-.57-.48-.5-.66-.51h-.56c-.2 0-.51.07-.78.37-.27.29-1.02 1-1.02 2.44s1.05 2.83 1.19 3.03c.15.2 2.06 3.14 4.99 4.4.7.3 1.24.48 1.67.61.7.22 1.34.19 1.84.12.56-.08 1.75-.71 2-1.4.24-.68.24-1.27.17-1.4-.07-.13-.27-.2-.56-.34z"/>
+            </svg>
+            Fale com o suporte.
+          </a>
+        </p>
+      </div>
+    </div>
 
   </main>
 
@@ -1488,14 +2600,6 @@ ul {
       <p>&copy; <span id="anoAtual"></span> Operação Home Office. Todos os direitos reservados.</p>
     </div>
   </footer>
-
-  <!-- Botão flutuante de WhatsApp -->
-  <a href="https://wa.me/554888742835?text=Oi!%20Vi%20a%20p%C3%A1gina%20do%20M%C3%A9todo%20Express%20e%20queria%20saber%20mais." id="whatsappFloat" class="whatsapp-float" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
-    <span class="whatsapp-pulse" aria-hidden="true"></span>
-    <svg viewBox="0 0 32 32" width="28" height="28" fill="#FFFFFF" aria-hidden="true">
-      <path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.5.73 4.83 2 6.79L4 29l7.36-1.93a11.9 11.9 0 0 0 4.66.95h.01c6.62 0 12.02-5.4 12.02-12.02C28.05 8.4 22.65 3 16.02 3zm0 21.8h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.69.97.99-3.6-.23-.37a9.77 9.77 0 0 1-1.5-5.2c0-5.4 4.4-9.8 9.81-9.8 2.62 0 5.08 1.02 6.93 2.88a9.74 9.74 0 0 1 2.87 6.93c0 5.4-4.4 9.77-9.82 9.77zm5.37-7.32c-.29-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.66.15-.2.29-.76.96-.93 1.16-.17.2-.34.22-.63.07-.29-.15-1.24-.46-2.36-1.46-.87-.78-1.46-1.74-1.63-2.03-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.29-.49.1-.2.05-.37-.02-.51-.07-.15-.66-1.59-.9-2.18-.24-.57-.48-.5-.66-.51h-.56c-.2 0-.51.07-.78.37-.27.29-1.02 1-1.02 2.44s1.05 2.83 1.19 3.03c.15.2 2.06 3.14 4.99 4.4.7.3 1.24.48 1.67.61.7.22 1.34.19 1.84.12.56-.08 1.75-.71 2-1.4.24-.68.24-1.27.17-1.4-.07-.13-.27-.2-.56-.34z"/>
-    </svg>
-  </a>
 
   <script src="script.js" defer></script>
 </body>
