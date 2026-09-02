@@ -6,39 +6,30 @@
      Veja o README.md para a lista completa de placeholders.
      ============================================================ */
 
-  // URL do vídeo (VSL) — um por dispositivo, já que o vídeo do mobile é
-  // quadrado (1:1) e o do desktop é 16:9. A escolha entre os dois usa o
-  // mesmo breakpoint (640px) do CSS — ver getVslVideoUrl() logo abaixo.
-  // Exemplos de formato aceito pra cada constante:
-  //   YouTube: 'https://www.youtube.com/embed/SEU_ID'
-  //   Vimeo:   'https://player.vimeo.com/video/SEU_ID'
-  //   Arquivo próprio: 'assets/videos/vsl.mp4'
-  var VSL_VIDEO_URL_MOBILE = 'https://www.youtube.com/embed/zyZgphLLg-Y';
-  var VSL_VIDEO_URL_DESKTOP = 'https://www.youtube.com/embed/a4tbLBVzkOs';
-  var VSL_DESKTOP_BREAKPOINT = '(min-width: 640px)';
+  // Nova VSL oficial: o mesmo vídeo vertical é usado em todos os dispositivos.
+  var VSL_VIDEO_URL = 'https://www.youtube.com/embed/fIDX2aD1TdQ';
 
   function getVslVideoUrl() {
-    var isDesktop = window.matchMedia && window.matchMedia(VSL_DESKTOP_BREAKPOINT).matches;
-    return isDesktop ? VSL_VIDEO_URL_DESKTOP : VSL_VIDEO_URL_MOBILE;
+    return VSL_VIDEO_URL;
   }
 
   // Ponto da oferta — quantos SEGUNDOS DE VSL EFETIVAMENTE ASSISTIDA até
   // emitir VSL_Offer. A landing é sempre visível; este contador existe
   // somente para preservar a semântica do tracking da apresentação.
   //
-  // Um valor por dispositivo, porque são dois cortes diferentes da VSL e
-  // eles podem divergir de duração. Hoje os dois são iguais (415s = 6min55s);
-  // a separação existe pra dar pra ajustar um sem mexer no outro. A escolha
-  // usa o MESMO breakpoint da VSL (VSL_DESKTOP_BREAKPOINT).
-  //
-  var VSL_OFFER_SECONDS_MOBILE = 415;
-  var VSL_OFFER_SECONDS_DESKTOP = 415;
-  var VSL_OFFER_KEY_WATCHED = 'mex_vsl_watched_seconds';
-  var VSL_TRACKING_KEY = 'metodoexpress_vsl_events';
+  // A transcrição automática do novo vídeo ainda não fornece um timestamp
+  // auditável para a fala “Continue descendo a página”. Enquanto esse ponto
+  // não for confirmado por revisão humana, VSL_Offer fica deliberadamente
+  // desativado. Não estimar nem usar o antigo marco de 415 segundos.
+  var VSL_OFFER_SECONDS = null;
+  // As chaves são específicas da nova VSL para que progresso e milestones
+  // legítimos do vídeo antigo não sejam reaproveitados no novo conteúdo.
+  // As chaves antigas não são removidas nem alteradas.
+  var VSL_OFFER_KEY_WATCHED = 'mex_vsl_fIDX2aD1TdQ_watched_seconds';
+  var VSL_TRACKING_KEY = 'metodoexpress_vsl_fIDX2aD1TdQ_events';
 
   function getVslOfferSeconds() {
-    var isDesktop = window.matchMedia && window.matchMedia(VSL_DESKTOP_BREAKPOINT).matches;
-    return isDesktop ? VSL_OFFER_SECONDS_DESKTOP : VSL_OFFER_SECONDS_MOBILE;
+    return VSL_OFFER_SECONDS;
   }
 
   // Link de checkout da Hotmart — usado em todos os botões de compra da
@@ -446,9 +437,9 @@
         ? offerWatched - lastOfferWatched
         : 0;
 
-      // Reaproveita o contador seguro do ponto da oferta. Depois de 415s ele
-      // para por design; os demais milestones continuam pelo mesmo critério
-      // de PLAYING e relógio plausível.
+      // Reaproveita o contador seguro de reprodução. Quando houver um ponto
+      // de oferta confirmado, esse contador para nele; os demais milestones
+      // continuam pelo mesmo critério de PLAYING e relógio plausível.
       if (offerDelta > 0) {
         effectiveSeconds += offerDelta;
       } else if ((countFromOwnClock || (offerProgress && offerProgress.hasReached())) &&
@@ -530,12 +521,14 @@
 
   /* ============================================================
      Progresso do ponto da oferta. Acumula tempo REAL de reprodução e avisa
-     o tracking quando a VSL chega a 415s. Não controla visibilidade, acesso
-     ou layout da landing. Deixar a aba aberta não conta.
+     o tracking apenas quando houver um timestamp confirmado. Não controla
+     visibilidade, acesso ou layout da landing. Deixar a aba aberta não conta.
      ============================================================ */
 
   function createVslOfferProgress() {
-    var required = getVslOfferSeconds();
+    var configuredSeconds = Number(getVslOfferSeconds());
+    var offerEnabled = isFinite(configuredSeconds) && configuredSeconds > 0;
+    var required = offerEnabled ? configuredSeconds : Infinity;
     var watched = 0;
     var persisted = 0;
     var reached = false;
@@ -602,7 +595,7 @@
     }
 
     function reach(reason) {
-      if (reached) return;
+      if (!offerEnabled || reached) return;
       reached = true;
       stop();
       write(VSL_OFFER_KEY_WATCHED, String(required));
@@ -651,9 +644,9 @@
         return;
       }
 
-      // Segunda fonte de verdade comercial. Como o player não oferece seek
-      // manual, 2s de progressão real observada bastam para rejeitar um salto
-      // instantâneo sem deixar um contador atrasado prender quem chegou a 415s.
+      // Segunda fonte de verdade comercial. Dois segundos de progressão real
+      // observada bastam para rejeitar um salto instantâneo quando o timestamp
+      // da oferta estiver configurado.
       // Qualquer avanço ocorrido em hidden é descontado do playhead elegível.
       if (isVisible && player && player.state === window.YT.PlayerState.PLAYING &&
           (player.currentTime - ignoredPlayerSeconds) >= required &&
@@ -713,20 +706,14 @@
 
   /* ============================================================
      VSL — carrega o player somente após o clique do usuário. Evita
-     baixar a API pesada do YouTube (~500KB) na carga inicial — testamos
-     autoplay mudo por JS e o custo de performance foi grande demais
-     (Total Blocking Time e "Práticas recomendadas" do PageSpeed caíram
-     bastante, e adiar o autoplay só piorava outras métricas).
+     baixar a API pesada do YouTube (~500KB) na carga inicial.
 
      Antes do clique carrega somente o thumbnail oficial da VSL. A API e o
      player do YouTube continuam sendo criados apenas depois da interação
-     explícita do usuário no overlay do index.html.
+     explícita do usuário na própria superfície do player.
 
-     Para YouTube especificamente, usa a IFrame Player API (em vez de
-     um <iframe> comum) para desligar os controles nativos — sem barra
-     de progresso, só dá pra pausar/retomar pelo botão que cobre o
-     vídeo, nunca avançar o tempo. Vimeo e vídeo próprio (self-hosted)
-     continuam com o fallback simples de iframe/<video>.
+     A IFrame Player API preserva os eventos de consumo e deixa os controles
+     nativos acessíveis, sem botão HTML ou tela intermediária sobre o vídeo.
      ============================================================ */
 
   function initVsl(offerProgress) {
@@ -740,15 +727,6 @@
     function extractYouTubeId(url) {
       var match = url.match(/embed\/([a-zA-Z0-9_-]+)/);
       return match ? match[1] : null;
-    }
-
-    function togglePlayback(ytPlayer) {
-      if (!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
-      if (ytPlayer.getPlayerState() === window.YT.PlayerState.PLAYING) {
-        ytPlayer.pauseVideo();
-      } else {
-        ytPlayer.playVideo();
-      }
     }
 
     function loadYouTubeApi(onReady) {
@@ -767,45 +745,20 @@
     }
 
     function createYouTubePlayer(videoId) {
-      // Nasce em "paused": o ícone de play fica visível até termos
-      // CONFIRMAÇÃO de que o vídeo está tocando. Antes assumia "playing"
-      // de cara e, quando o Safari/iOS recusava o autoplay, sobrava um
-      // retângulo preto sem nenhuma indicação de que era pra clicar.
-      player.innerHTML =
-        '<div class="vsl-yt-target" id="ytTarget"></div>' +
-        '<button type="button" class="vsl-toggle-overlay" id="vslToggle" data-state="paused" aria-label="Reproduzir vídeo">' +
-          '<span class="vsl-toggle-icon" aria-hidden="true">' +
-            '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>' +
-          '</span>' +
-        '</button>';
+      player.innerHTML = '<div class="vsl-yt-target" id="ytTarget"></div>';
       player.removeAttribute('role');
       player.removeAttribute('tabindex');
 
-      var toggle = document.getElementById('vslToggle');
       var ytPlayer = null;
       var vslTracking = createVslTracking(offerProgress, function () { return ytPlayer; });
 
-      function setToggleState(isPlaying) {
-        toggle.setAttribute('data-state', isPlaying ? 'playing' : 'paused');
-        toggle.setAttribute('aria-label', isPlaying ? 'Pausar vídeo' : 'Reproduzir vídeo');
-      }
-
-      toggle.addEventListener('click', function (event) {
-        event.stopPropagation();
-        togglePlayback(ytPlayer);
-      });
-
       loadYouTubeApi(function () {
         var playerVars = {
-          autoplay: 1,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
+          controls: 1,
           modestbranding: 1,
           rel: 0,
           playsinline: 1,
-          iv_load_policy: 3,
-          cc_load_policy: 1
+          iv_load_policy: 3
         };
         if (window.location.origin && window.location.origin !== 'null') {
           playerVars.origin = window.location.origin;
@@ -816,25 +769,19 @@
           playerVars: playerVars,
           events: {
             onReady: function (event) {
-              // O player nasce dentro de um callback assíncrono, ou seja,
-              // fora do gesto de clique — Safari/iOS podem recusar o
-              // autoplay. Tentamos, e se em ~1,2s não estiver tocando,
-              // deixamos o botão de play aparecendo pra pessoa clicar.
-              try { event.target.playVideo(); } catch (e) { /* autoplay negado */ }
-
-              setTimeout(function () {
-                var state = -1;
-                try { state = event.target.getPlayerState(); } catch (e) { /* ignora */ }
-                setToggleState(state === window.YT.PlayerState.PLAYING);
-              }, 1200);
+              // A criação começou em um clique real. A tentativa de play é
+              // consequência direta dessa interação; se o navegador a negar,
+              // os controles nativos permanecem visíveis para um novo toque.
+              try { event.target.playVideo(); } catch (e) { /* play negado */ }
             },
             onStateChange: function (event) {
               var isPlaying = event.data === window.YT.PlayerState.PLAYING;
-              setToggleState(isPlaying);
               // O ponto da oferta só acumula enquanto o vídeo está tocando.
               if (offerProgress) {
                 offerProgress.setPlaying(isPlaying);
-                if (event.data === window.YT.PlayerState.ENDED) offerProgress.reach('ended');
+                if (event.data === window.YT.PlayerState.ENDED && getVslOfferSeconds() !== null) {
+                  offerProgress.reach('ended');
+                }
               }
               vslTracking.setPlaying(isPlaying);
               if (event.data === window.YT.PlayerState.ENDED) vslTracking.ended();
@@ -847,7 +794,8 @@
       });
     }
 
-    function loadVideo() {
+    function loadVideo(event) {
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
       if (loaded) return;
       var videoUrl = getVslVideoUrl();
       if (!videoUrl) return;
@@ -867,15 +815,14 @@
       var el;
       if (isYouTube || isVimeo) {
         el = document.createElement('iframe');
-        el.src = videoUrl + (videoUrl.indexOf('?') === -1 ? '?' : '&') + 'autoplay=1&rel=0';
-        el.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+        el.src = videoUrl + (videoUrl.indexOf('?') === -1 ? '?' : '&') + 'rel=0';
+        el.setAttribute('allow', 'accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
         el.setAttribute('allowfullscreen', '');
         el.setAttribute('title', 'Vídeo: Método Express');
       } else {
         el = document.createElement('video');
         el.src = videoUrl;
         el.controls = true;
-        el.autoplay = true;
         el.playsInline = true;
         // Vídeo próprio: alimenta o contador do ponto da oferta pelos eventos nativos.
         el.addEventListener('play', function () { if (offerProgress) offerProgress.setPlaying(true); });
@@ -887,10 +834,13 @@
       player.appendChild(el);
       player.removeAttribute('role');
       player.removeAttribute('tabindex');
+      if (!isYouTube && !isVimeo && typeof el.play === 'function') {
+        try { el.play(); } catch (e) { /* controles permanecem disponíveis */ }
+      }
     }
 
-    // Botão nativo: clique, Enter e Espaço convergem para o mesmo evento
-    // sem listeners duplicados. O guard `loaded` impede um segundo player.
+    // O link cobre exatamente a área do player e exibe apenas a thumbnail
+    // oficial. Clique ou Enter carregam um único player no mesmo espaço.
     startOverlay.addEventListener('click', loadVideo);
   }
 
@@ -953,8 +903,7 @@
   function initLinks() {
     var checkoutUrl = withTrackingParams(HOTMART_CHECKOUT_URL);
 
-    // Dois CTAs de compra na V2: o da oferta e o da chamada final. A antiga
-    // "oferta rápida" (ctaQuickOffer) não existe mais e não deve voltar.
+    // Dois CTAs de compra na V2.1: o da oferta e o da chamada final.
     var ctaButtons = [
       document.getElementById('ctaInvestimento'),
       document.getElementById('ctaFinal')
@@ -1008,32 +957,6 @@
   function initFooterYear() {
     var el = document.getElementById('anoAtual');
     if (el) el.textContent = new Date().getFullYear();
-  }
-
-  /* ============================================================
-     Scroll reveal — fade-in leve nas seções ao entrar na tela.
-     ============================================================ */
-
-  function initScrollReveal() {
-    var targets = document.querySelectorAll('.reveal');
-    if (!targets.length) return;
-
-    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion || !('IntersectionObserver' in window)) {
-      targets.forEach(function (el) { el.classList.add('is-visible'); });
-      return;
-    }
-
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-
-    targets.forEach(function (el) { observer.observe(el); });
   }
 
   /* ============================================================
@@ -1108,6 +1031,5 @@
     safeInit('initLinks', initLinks);
     safeInit('initLazyPosters', initLazyPosters);
     safeInit('initFooterYear', initFooterYear);
-    safeInit('initScrollReveal', initScrollReveal);
   });
 })();

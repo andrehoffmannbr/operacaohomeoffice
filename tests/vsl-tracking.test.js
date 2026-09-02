@@ -10,7 +10,10 @@ const INDEX_PATH = path.join(__dirname, '..', 'index.html');
 const SCRIPT_PATH = path.join(__dirname, '..', 'script.js');
 const INDEX_SOURCE = fs.readFileSync(INDEX_PATH, 'utf8');
 const SCRIPT_SOURCE = fs.readFileSync(SCRIPT_PATH, 'utf8');
-const TRACKING_KEY = 'metodoexpress_vsl_events';
+const TRACKING_KEY = 'metodoexpress_vsl_fIDX2aD1TdQ_events';
+const OFFER_KEY = 'mex_vsl_fIDX2aD1TdQ_watched_seconds';
+// Fixture exclusivo da suíte: não representa o timestamp comercial da VSL.
+const OFFER_TEST_SECONDS = 120;
 
 function createStorage(existingMap, unavailable) {
   const values = existingMap || new Map();
@@ -78,7 +81,7 @@ function createEnvironment(options) {
   const fakePlayer = {
     state: -1,
     currentTime: 0,
-    duration: options.duration || 500,
+    duration: options.duration || 149,
     playCalls: 0,
     pauseCalls: 0,
     getPlayerState() { return this.state; },
@@ -230,7 +233,13 @@ function createEnvironment(options) {
     encodeURIComponent
   });
 
-  vm.runInContext(SCRIPT_SOURCE, context, { filename: SCRIPT_PATH });
+  const sourceUnderTest = options.offerSeconds
+    ? SCRIPT_SOURCE.replace(
+        'var VSL_OFFER_SECONDS = null;',
+        `var VSL_OFFER_SECONDS = ${Number(options.offerSeconds)};`
+      )
+    : SCRIPT_SOURCE;
+  vm.runInContext(sourceUnderTest, context, { filename: SCRIPT_PATH });
   document.dispatch('DOMContentLoaded');
 
   function clickVslWithoutReady() {
@@ -289,15 +298,12 @@ function startPlaying(environment) {
   environment.emitState(1);
 }
 
-test('Overlay A/B — abre visível sem inicializar player ou VSL_Start', () => {
+test('Thumbnail A/B — abre visível sem inicializar player ou VSL_Start', () => {
   const environment = createEnvironment();
 
   assert.match(INDEX_SOURCE, /id="vslStartOverlay"/);
-  // V2: o overlay virou "Ver o método funcionando" + microtexto "Com áudio".
-  // O triângulo de play é um SVG, não o caractere U+25B6 — que está fora do
-  // unicode-range das fontes locais e cairia numa fonte de sistema.
-  assert.match(INDEX_SOURCE, />Ver o método funcionando</);
-  assert.match(INDEX_SOURCE, /Com áudio\s*<\/span>/);
+  assert.match(INDEX_SOURCE, /i\.ytimg\.com\/vi\/fIDX2aD1TdQ\/hqdefault\.jpg/);
+  assert.doesNotMatch(INDEX_SOURCE, /Ver o método funcionando|Com áudio/);
   assert.equal(environment.playerCount(), 0);
   assert.equal(environment.fakePlayer.playCalls, 0);
   assert.deepEqual(eventNames(environment), []);
@@ -327,22 +333,22 @@ test('Overlay D/E — play parte de 0:00 e Start depende de PLAYING real', () =>
   assert.deepEqual(eventNames(environment), ['VSL_Start']);
 });
 
-test('Overlay G/H — preserva 1:1 mobile e 16:9 desktop', () => {
-  assert.match(INDEX_SOURCE, /\.vsl-player\s*\{[\s\S]*?aspect-ratio:\s*1\s*\/\s*1;/);
-  assert.match(INDEX_SOURCE, /@media \(min-width: 640px\)[\s\S]*?\.vsl-player\s*\{[\s\S]*?aspect-ratio:\s*16\s*\/\s*9;/);
-  assert.match(INDEX_SOURCE, /\.vsl-start-overlay\s*\{[\s\S]*?inset:\s*0;[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%;/);
+test('Player G/H — preserva 9:16 no mobile e desktop', () => {
+  assert.match(INDEX_SOURCE, /\.vsl-player\s*\{[^}]*aspect-ratio:\s*9\s*\/\s*16;/);
+  assert.doesNotMatch(INDEX_SOURCE, /aspect-ratio:\s*16\s*\/\s*9;/);
+  assert.match(INDEX_SOURCE, /\.vsl-launch,[\s\S]*?inset:\s*0;[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%;/);
 });
 
-test('Overlay I/J/K — landing segue aberta e Offer ocorre aos 415s', () => {
+test('Player I/J/K — landing segue aberta e Offer fica desativado sem timestamp', () => {
   const environment = createEnvironment();
 
   assert.equal(environment.isContentLocked(), false);
   startPlaying(environment);
   assert.equal(environment.isContentLocked(), false);
-  environment.advance(415000);
-
-  assertOfferReached(environment);
-  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
+  environment.advance(149000);
+  environment.emitState(0);
+  assert.equal(eventNames(environment).includes('VSL_Offer'), false);
+  assert.match(SCRIPT_SOURCE, /var VSL_OFFER_SECONDS = null;/);
 });
 
 test('Overlay M/N — checkout, UTMs e WhatsApp permanecem intactos', () => {
@@ -392,15 +398,16 @@ test('Página aberta 03 — reload antes de assistir segue aberto e sem Offer', 
   assert.equal(eventNames(reloaded).includes('VSL_Offer'), false);
 });
 
-test('Página aberta 04 — mex_content_unlocked legado não interfere no Offer', () => {
+test('Página aberta 04 — storage legado não ativa Offer sem timestamp', () => {
   const localMap = new Map([['mex_content_unlocked', '1']]);
   const environment = createEnvironment({ localMap });
 
   assert.equal(environment.isContentLocked(), false);
   assert.deepEqual(eventNames(environment), []);
   startPlaying(environment);
-  environment.advance(415000);
-  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
+  environment.advance(149000);
+  environment.emitState(0);
+  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 0);
   assert.equal(environment.localMap.get('mex_content_unlocked'), '1');
 });
 
@@ -432,19 +439,19 @@ test('B — Start ocorre no primeiro PLAYING e somente uma vez', () => {
 test('C — 25% exige playhead e consumo efetivo', () => {
   const environment = createEnvironment();
   startPlaying(environment);
-  environment.fakePlayer.currentTime = 450;
+  environment.fakePlayer.currentTime = 140;
   environment.advance(1000);
   assert.deepEqual(eventNames(environment), ['VSL_Start']);
 
   environment.fakePlayer.currentTime = 0;
-  environment.advance(125000);
+  environment.advance(38000);
   assert.deepEqual(eventNames(environment), ['VSL_Start', 'VSL_25']);
 });
 
 test('D — 50% ocorre uma vez', () => {
   const environment = createEnvironment();
   startPlaying(environment);
-  environment.advance(250000);
+  environment.advance(75000);
   environment.emitState(2);
   environment.emitState(1);
   environment.advance(2000);
@@ -454,28 +461,28 @@ test('D — 50% ocorre uma vez', () => {
 test('E — 75% ocorre uma vez', () => {
   const environment = createEnvironment();
   startPlaying(environment);
-  environment.advance(375000);
+  environment.advance(112000);
   assert.equal(eventNames(environment).filter((name) => name === 'VSL_75').length, 1);
 });
 
-test('F — Offer observa o ponto legítimo de 415s sem controlar a página', () => {
+test('F — Offer não é fabricado enquanto o timestamp comercial estiver pendente', () => {
   const environment = createEnvironment();
   startPlaying(environment);
-  environment.advance(415000);
+  environment.advance(149000);
+  environment.emitState(0);
 
-  const offer = environment.customEvents().find((event) => event.name === 'VSL_Offer');
-  assert.equal(offer.params.gate_seconds, 415);
+  assert.equal(environment.customEvents().find((event) => event.name === 'VSL_Offer'), undefined);
   assert.equal(environment.localMap.has('mex_content_unlocked'), false);
-  assert.equal(environment.localMap.get('mex_vsl_watched_seconds'), '415');
+  assert.equal(environment.localMap.has('mex_vsl_watched_seconds'), false);
 
   environment.advance(20000);
-  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
+  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 0);
 });
 
 test('G — 90% ocorre uma vez e ENDED não cria VSL_100', () => {
   const environment = createEnvironment();
   startPlaying(environment);
-  environment.advance(450000);
+  environment.advance(135000);
   environment.emitState(0);
   assert.equal(eventNames(environment).filter((name) => name === 'VSL_90').length, 1);
   assert.equal(eventNames(environment).includes('VSL_100'), false);
@@ -484,7 +491,7 @@ test('G — 90% ocorre uma vez e ENDED não cria VSL_100', () => {
 test('H — pause, resume e buffering não duplicam milestones', () => {
   const environment = createEnvironment();
   startPlaying(environment);
-  environment.advance(130000);
+  environment.advance(38000);
   environment.emitState(2);
   environment.emitState(1);
   environment.emitState(3);
@@ -498,7 +505,7 @@ test('H — pause, resume e buffering não duplicam milestones', () => {
 test('I — reload na mesma aba mantém deduplicação', () => {
   const first = createEnvironment();
   startPlaying(first);
-  first.advance(450000);
+  first.advance(135000);
   first.pagehide();
 
   const reloaded = createEnvironment({
@@ -514,9 +521,9 @@ test('I — reload na mesma aba mantém deduplicação', () => {
 test('J — nova sessão produz todos os eventos novamente', () => {
   const environment = createEnvironment();
   startPlaying(environment);
-  environment.advance(450000);
+  environment.advance(135000);
   assert.deepEqual(eventNames(environment), [
-    'VSL_Start', 'VSL_25', 'VSL_50', 'VSL_75', 'VSL_Offer', 'VSL_90'
+    'VSL_Start', 'VSL_25', 'VSL_50', 'VSL_75', 'VSL_90'
   ]);
 });
 
@@ -537,7 +544,7 @@ test('L — Pixel indisponível falha silenciosamente', () => {
   const environment = createEnvironment({ pixelUnavailable: true });
   assert.doesNotThrow(() => {
     startPlaying(environment);
-    environment.advance(450000);
+    environment.advance(149000);
     environment.emitState(0);
   });
   assert.deepEqual(eventNames(environment), []);
@@ -573,25 +580,26 @@ test('M — hidden/visible retoma somente se o player continuar PLAYING', () => 
 function assertOfferReached(environment) {
   assert.equal(environment.isContentLocked(), false);
   assert.equal(environment.localMap.has('mex_content_unlocked'), false);
-  assert.equal(environment.localMap.get('mex_vsl_watched_seconds'), '415');
+  assert.equal(environment.localMap.get(OFFER_KEY), String(OFFER_TEST_SECONDS));
+  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
 }
 
 function watchWithDelayedCallbacks(delaySeconds) {
-  const environment = createEnvironment();
+  const environment = createEnvironment({ offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(environment);
 
-  for (let elapsed = 0; elapsed < 420; elapsed += delaySeconds) {
+  for (let elapsed = 0; elapsed < 125; elapsed += delaySeconds) {
     environment.delayTimers(delaySeconds * 1000);
   }
 
   return environment;
 }
 
-test('Oferta 01 — PLAYING contínuo alcança o ponto em 415s', () => {
-  const environment = createEnvironment();
+test('Oferta 01 — PLAYING contínuo alcança o ponto configurado', () => {
+  const environment = createEnvironment({ offerSeconds: OFFER_TEST_SECONDS });
   assert.equal(environment.isContentLocked(), false);
   startPlaying(environment);
-  environment.advance(415000);
+  environment.advance(OFFER_TEST_SECONDS * 1000);
   assertOfferReached(environment);
 });
 
@@ -607,40 +615,38 @@ test('Oferta 04 — callback atrasado 30s preserva tempo legítimo', () => {
   assertOfferReached(watchWithDelayedCallbacks(30));
 });
 
-test('Oferta 05 — playhead em 415 alcança contador previamente atrasado', () => {
-  const localMap = new Map([['mex_vsl_watched_seconds', '385']]);
-  const environment = createEnvironment({ localMap });
-  environment.fakePlayer.currentTime = 413;
+test('Oferta 05 — playhead configurado alcança contador previamente atrasado', () => {
+  const localMap = new Map([[OFFER_KEY, '90']]);
+  const environment = createEnvironment({ localMap, offerSeconds: OFFER_TEST_SECONDS });
+  environment.fakePlayer.currentTime = 118;
   startPlaying(environment);
   environment.delayTimers(2000);
 
-  assert.equal(environment.fakePlayer.currentTime, 415);
+  assert.equal(environment.fakePlayer.currentTime, OFFER_TEST_SECONDS);
   assertOfferReached(environment);
-  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
 });
 
-test('Oferta 06 — ENDED confirma o ponto mesmo com contador em 395s', () => {
-  const localMap = new Map([['mex_vsl_watched_seconds', '395']]);
-  const environment = createEnvironment({ localMap });
+test('Oferta 06 — ENDED confirma o ponto quando ele está configurado', () => {
+  const localMap = new Map([[OFFER_KEY, '100']]);
+  const environment = createEnvironment({ localMap, offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(environment);
-  environment.fakePlayer.currentTime = 500;
+  environment.fakePlayer.currentTime = 149;
   environment.emitState(0);
 
   assertOfferReached(environment);
-  assert.equal(eventNames(environment).filter((name) => name === 'VSL_Offer').length, 1);
 });
 
 test('Oferta 07 — PAUSED não conta e depois retoma', () => {
-  const environment = createEnvironment();
+  const environment = createEnvironment({ offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(environment);
-  environment.advance(200000);
+  environment.advance(60000);
   environment.emitState(2);
   environment.delayTimers(30000);
   assert.equal(eventNames(environment).includes('VSL_Offer'), false);
   assert.equal(environment.isContentLocked(), false);
 
   environment.emitState(1);
-  environment.advance(214000);
+  environment.advance(59000);
   assert.equal(eventNames(environment).includes('VSL_Offer'), false);
   assert.equal(environment.isContentLocked(), false);
   environment.advance(1000);
@@ -648,16 +654,16 @@ test('Oferta 07 — PAUSED não conta e depois retoma', () => {
 });
 
 test('Oferta 08 — BUFFERING não conta e depois retoma', () => {
-  const environment = createEnvironment();
+  const environment = createEnvironment({ offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(environment);
-  environment.advance(200000);
+  environment.advance(60000);
   environment.emitState(3);
   environment.delayTimers(30000);
   assert.equal(eventNames(environment).includes('VSL_Offer'), false);
   assert.equal(environment.isContentLocked(), false);
 
   environment.emitState(1);
-  environment.advance(214000);
+  environment.advance(59000);
   assert.equal(eventNames(environment).includes('VSL_Offer'), false);
   assert.equal(environment.isContentLocked(), false);
   environment.advance(1000);
@@ -665,16 +671,16 @@ test('Oferta 08 — BUFFERING não conta e depois retoma', () => {
 });
 
 test('Oferta 09 — hidden não conta automaticamente', () => {
-  const environment = createEnvironment();
+  const environment = createEnvironment({ offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(environment);
-  environment.advance(100000);
+  environment.advance(30000);
   environment.setVisibility('hidden');
-  const watchedBeforeHidden = environment.localMap.get('mex_vsl_watched_seconds');
+  const watchedBeforeHidden = environment.localMap.get(OFFER_KEY);
   environment.delayTimers(30000);
 
-  assert.equal(environment.localMap.get('mex_vsl_watched_seconds'), watchedBeforeHidden);
+  assert.equal(environment.localMap.get(OFFER_KEY), watchedBeforeHidden);
   environment.setVisibility('visible');
-  environment.advance(314000);
+  environment.advance(89000);
   assert.equal(eventNames(environment).includes('VSL_Offer'), false);
   assert.equal(environment.isContentLocked(), false);
   environment.advance(1000);
@@ -682,43 +688,49 @@ test('Oferta 09 — hidden não conta automaticamente', () => {
 });
 
 test('Oferta 10 — visible recupera PLAYING sem novo onStateChange', () => {
-  const environment = createEnvironment();
+  const environment = createEnvironment({ offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(environment);
-  environment.advance(100000);
+  environment.advance(30000);
   environment.setVisibility('hidden');
   environment.delayTimers(30000);
   environment.setVisibility('visible');
 
   // getPlayerState continua PLAYING; nenhum callback do YouTube é emitido.
-  environment.advance(315000);
+  environment.advance(90000);
   assertOfferReached(environment);
 });
 
-test('Oferta 11 — reload preserva 300s e alcança o ponto após mais 115s', () => {
-  const first = createEnvironment();
+test('Oferta 11 — reload preserva progresso e completa o ponto configurado', () => {
+  const first = createEnvironment({ offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(first);
-  first.advance(300000);
+  first.advance(80000);
   first.pagehide();
 
-  const reloaded = createEnvironment({ localMap: first.localMap });
+  const reloaded = createEnvironment({
+    localMap: first.localMap,
+    offerSeconds: OFFER_TEST_SECONDS
+  });
   assert.equal(reloaded.isContentLocked(), false);
   startPlaying(reloaded);
-  reloaded.advance(115000);
+  reloaded.advance(40000);
   assertOfferReached(reloaded);
 });
 
 test('Oferta 12 — localStorage indisponível mantém página aberta', () => {
-  const environment = createEnvironment({ localStorageUnavailable: true });
+  const environment = createEnvironment({
+    localStorageUnavailable: true,
+    offerSeconds: OFFER_TEST_SECONDS
+  });
   assert.equal(environment.isContentLocked(), false);
   assert.doesNotThrow(() => {
     startPlaying(environment);
-    environment.advance(415000);
+    environment.advance(OFFER_TEST_SECONDS * 1000);
   });
   assert.equal(environment.isContentLocked(), false);
 });
 
 test('Oferta 13 — player sem ready mantém página aberta e não fabrica Offer', () => {
-  const environment = createEnvironment();
+  const environment = createEnvironment({ offerSeconds: OFFER_TEST_SECONDS });
   environment.clickVslWithoutReady();
   environment.delayTimers(15000);
   assert.equal(environment.isContentLocked(), false);
@@ -726,18 +738,18 @@ test('Oferta 13 — player sem ready mantém página aberta e não fabrica Offer
   assert.equal(environment.localMap.has('mex_content_unlocked'), false);
 });
 
-test('Oferta 14 — mobile usa vídeo correto e alcança o ponto em 415s', () => {
-  const environment = createEnvironment({ desktop: false });
+test('Oferta 14 — mobile usa a VSL única e alcança o ponto configurado', () => {
+  const environment = createEnvironment({ desktop: false, offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(environment);
-  assert.equal(environment.playerConfig().videoId, 'zyZgphLLg-Y');
-  environment.advance(415000);
+  assert.equal(environment.playerConfig().videoId, 'fIDX2aD1TdQ');
+  environment.advance(OFFER_TEST_SECONDS * 1000);
   assertOfferReached(environment);
 });
 
-test('Oferta 15 — desktop usa vídeo correto e alcança o ponto em 415s', () => {
-  const environment = createEnvironment({ desktop: true });
+test('Oferta 15 — desktop usa a mesma VSL e alcança o ponto configurado', () => {
+  const environment = createEnvironment({ desktop: true, offerSeconds: OFFER_TEST_SECONDS });
   startPlaying(environment);
-  assert.equal(environment.playerConfig().videoId, 'a4tbLBVzkOs');
-  environment.advance(415000);
+  assert.equal(environment.playerConfig().videoId, 'fIDX2aD1TdQ');
+  environment.advance(OFFER_TEST_SECONDS * 1000);
   assertOfferReached(environment);
 });

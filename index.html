@@ -3,1895 +3,840 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Método Express — Um print, um prompt e uma transformação para mostrar | Operação Home Office</title>
-  <meta name="description" content="Com um celular, um print e o prompt certo você cria uma transformação visual com IA e tem algo concreto para apresentar a um pequeno negócio — mesmo sem saber design.">
+  <title>Método Express — Mostre primeiro | Operação Home Office</title>
+  <meta name="description" content="Conheça o processo para encontrar uma oportunidade, criar uma transformação visual e mostrar algo concreto a um possível cliente.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://operacaohomeoffice.vercel.app/">
 
-  <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
   <meta property="og:site_name" content="Operação Home Office">
-  <meta property="og:title" content="Método Express — Um print, um prompt e uma transformação para mostrar">
-  <meta property="og:description" content="Com um celular, um print e o prompt certo você cria uma transformação visual com IA e tem algo concreto para apresentar a um pequeno negócio.">
+  <meta property="og:title" content="Método Express — Mostre primeiro">
+  <meta property="og:description" content="Um processo para transformar um print em algo concreto para mostrar a um possível cliente.">
   <meta property="og:image" content="https://operacaohomeoffice.vercel.app/assets/images/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:url" content="https://operacaohomeoffice.vercel.app/">
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Método Express — Um print, um prompt e uma transformação para mostrar">
-  <meta name="twitter:description" content="Com um celular, um print e o prompt certo você cria uma transformação visual com IA e tem algo concreto para apresentar a um pequeno negócio.">
+  <meta name="twitter:title" content="Método Express — Mostre primeiro">
+  <meta name="twitter:description" content="Um processo para transformar um print em algo concreto para mostrar a um possível cliente.">
   <meta name="twitter:image" content="https://operacaohomeoffice.vercel.app/assets/images/og-image.jpg">
 
-
-  <meta name="theme-color" content="#0F766E">
-
-  <!-- Favicon -->
+  <meta name="theme-color" content="#071111">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
   <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
-
-  <!-- Fontes variáveis self-hosted (assets/fonts) — sem conexão com o Google Fonts.
-       Sora para títulos (mais expressiva), Inter para texto corrido.
-
-       V2: as DUAS têm preload. Na V1 só a Inter era pré-carregada, pra não
-       competir com o pôster da VSL, que era o elemento LCP no topo da página.
-       Na V2 o herói é só texto (a VSL desceu pra terceira seção, com o pôster
-       em lazy), então o LCP passou a ser o <h1> — que é Sora. Pré-carregar a
-       Sora tirou o swap tardio do caminho crítico. -->
   <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/sora-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preconnect" href="https://i.ytimg.com" crossorigin>
+  <link rel="preload" href="https://i.ytimg.com/vi/fIDX2aD1TdQ/hqdefault.jpg" as="image" fetchpriority="high">
 
-  <!-- CSS inline no <head>: elimina a única requisição que bloqueava a renderização
-       (item "Solicitações que bloqueiam a renderização" do Lighthouse). Este bloco É a
-       folha de estilos do site — edite o CSS aqui. -->
   <style>
-/* ==========================================================================
-   Método Express — Landing Page V2
-   Mobile-first. Sem framework, sem dependências, sem CDN.
-
-   A V2 vende o mecanismo, não o calendário: 1 celular + 1 print + 1 prompt
-   = uma transformação visual pra mostrar a um pequeno negócio.
-   ========================================================================== */
-
-/* Fontes variáveis servidas localmente (subset latin) — zero conexão externa */
-@font-face {
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url('assets/fonts/inter-var.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Sora';
-  font-style: normal;
-  font-weight: 700 800;
-  font-display: swap;
-  src: url('assets/fonts/sora-var.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-:root {
-  --color-accent: #0F766E;
-  --color-accent-dark: #0B5C56;
-  --color-accent-darker: #083F3B;
-  --color-accent-light: #E6F4F2;
-  --color-accent-soft: #F2F9F8;
-  --color-bg: #FFFFFF;
-  --color-bg-alt: #F6F8F7;
-  --color-text: #14181A;
-  --color-text-muted: #52605E;
-  --color-text-soft: #6B7A77;
-  --color-border: #E2E8E6;
-  --color-border-strong: #CFDCD9;
-  --color-whatsapp: #25D366;
-
-  /* Texto sobre as seções escuras */
-  --color-on-dark: #FFFFFF;
-  --color-on-dark-muted: #C9E8E4;
-  --color-on-dark-accent: #7DD8CE;
-
-  --font-display: 'Sora', 'Inter', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-
-  --container-width: 1080px;
-  --measure: 62ch;
-
-  --shadow-sm: 0 2px 8px rgba(15, 23, 22, 0.06);
-  --shadow-md: 0 10px 30px rgba(11, 60, 55, 0.10);
-  --shadow-lg: 0 20px 50px rgba(11, 60, 55, 0.16);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  font-family: var(--font-body);
-  color: var(--color-text);
-  background: var(--color-bg);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-
-img, svg, video {
-  max-width: 100%;
-  display: block;
-}
-
-.container {
-  width: 100%;
-  max-width: var(--container-width);
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-h1, h2, h3 {
-  font-family: var(--font-display);
-  line-height: 1.18;
-  margin: 0 0 16px;
-  font-weight: 800;
-  letter-spacing: -0.015em;
-  text-wrap: balance;
-}
-
-h2 {
-  font-size: clamp(1.5rem, 4.6vw, 2.15rem);
-  text-align: center;
-  max-width: 22ch;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-h3 {
-  font-size: 1.02rem;
-  letter-spacing: -0.005em;
-}
-
-p {
-  margin: 0 0 14px;
-}
-
-ul, ol {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-a {
-  color: var(--color-accent-dark);
-}
-
-:focus-visible {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
-/* Bloco de texto corrido: largura de leitura confortável e centrado. */
-.prose {
-  max-width: var(--measure);
-  margin-left: auto;
-  margin-right: auto;
-  color: var(--color-text-muted);
-  font-size: 1.02rem;
-}
-
-.prose strong {
-  color: var(--color-text);
-}
-
-.accent-text {
-  color: var(--color-accent-dark);
-}
-
-.section-dark .on-dark-accent {
-  color: var(--color-on-dark-accent);
-}
-
-.eyebrow {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--color-accent-dark);
-  margin: 0 0 14px;
-}
-
-/* Frase de fechamento em destaque — usada no fim de várias seções. */
-.pull {
-  max-width: 30ch;
-  margin: 26px auto 0;
-  text-align: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.12rem, 3.8vw, 1.45rem);
-  line-height: 1.28;
-  letter-spacing: -0.015em;
-  color: var(--color-accent-darker);
-  text-wrap: balance;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ---------- Scroll reveal ---------- */
-
-.reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* ---------- Seções genéricas ---------- */
-
-.section {
-  padding: 50px 0;
-}
-
-.section-alt {
-  background: var(--color-bg-alt);
-}
-
-.section-dark {
-  background:
-    radial-gradient(60% 80% at 85% 0%, rgba(20, 184, 169, 0.18), transparent 60%),
-    linear-gradient(160deg, #083F3B 0%, #062E2B 100%);
-  color: var(--color-on-dark);
-}
-
-.section-dark h2,
-.section-dark h3 {
-  color: var(--color-on-dark);
-}
-
-.section-dark .prose {
-  color: var(--color-on-dark-muted);
-}
-
-.section-dark .prose strong {
-  color: var(--color-on-dark);
-}
-
-.section-dark .eyebrow {
-  color: var(--color-on-dark-accent);
-}
-
-.section-dark .pull {
-  color: var(--color-on-dark);
-}
-
-.section-head {
-  text-align: center;
-  margin-bottom: 26px;
-}
-
-.section-head .prose {
-  margin-top: 12px;
-}
-
-/* ==========================================================================
-   1. HERO
-   Só texto acima da dobra: o LCP é o <h1>, não uma imagem. A VSL desceu
-   pra terceira seção justamente por isso.
-   ========================================================================== */
-
-.hero {
-  position: relative;
-  padding: 30px 0 40px;
-  background:
-    radial-gradient(60% 50% at 15% 0%, rgba(15, 118, 110, 0.16), transparent 60%),
-    radial-gradient(50% 40% at 100% 6%, rgba(15, 118, 110, 0.12), transparent 60%),
-    linear-gradient(180deg, var(--color-accent-light) 0%, var(--color-bg) 82%);
-  overflow: hidden;
-}
-
-.hero-grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.05;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-.hero .container {
-  position: relative;
-}
-
-.hero-inner {
-  text-align: center;
-}
-
-.hero-headline {
-  margin: 0 0 14px;
-  font-size: clamp(1.6rem, 5.6vw, 2.7rem);
-  line-height: 1.16;
-  max-width: 19ch;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.hero-headline-accent {
-  color: var(--color-accent-darker);
-}
-
-.hero-sub {
-  color: var(--color-text-muted);
-  font-size: 1.02rem;
-  max-width: 54ch;
-  margin: 0 auto 22px;
-}
-
-.hero-sub strong {
-  color: var(--color-accent-darker);
-  font-weight: 700;
-}
-
-.hero-kicker {
-  margin: 20px auto 0;
-  max-width: 30ch;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.05rem, 3.6vw, 1.3rem);
-  line-height: 1.3;
-  letter-spacing: -0.015em;
-  color: var(--color-accent-darker);
-  text-wrap: balance;
-}
-
-.hero-cta {
-  margin-top: 18px;
-}
-
-/* ---------- Componente "1 celular / 1 print / 1 prompt / transformação" ----------
-   Mobile: os três insumos numa linha de 3 colunas + o resultado embaixo,
-   ligado por uma seta pra baixo — lê como uma equação.
-   Desktop (>=720px): tudo numa linha horizontal, com setas entre os passos. */
-
-.flow {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  max-width: 620px;
-  margin: 0 auto;
-}
-
-.flow-item,
-.flow-result {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 16px 6px;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(15, 118, 110, 0.2);
-  box-shadow: 0 8px 22px rgba(11, 60, 55, 0.09);
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: 0.01em;
-  color: var(--color-accent-darker);
-  text-align: center;
-}
-
-.flow-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-accent-light);
-  color: var(--color-accent-dark);
-  flex-shrink: 0;
-}
-
-/* O resultado ocupa a linha inteira no mobile e nasce preenchido de teal:
-   é o único item da equação com peso visual de "saída". */
-.flow-result {
-  grid-column: 1 / -1;
-  position: relative;
-  flex-direction: row;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 24px;
-  padding: 16px;
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #FFFFFF;
-  font-size: 0.92rem;
-  box-shadow: 0 14px 30px rgba(15, 118, 110, 0.32);
-}
-
-.flow-result .flow-icon {
-  background: rgba(255, 255, 255, 0.18);
-  color: #FFFFFF;
-  width: 30px;
-  height: 30px;
-}
-
-/* Seta pra baixo entre os insumos e o resultado (só no layout mobile). */
-.flow-result::before {
-  content: '';
-  position: absolute;
-  top: -19px;
-  left: 50%;
-  width: 9px;
-  height: 9px;
-  border-right: 2px solid var(--color-accent);
-  border-bottom: 2px solid var(--color-accent);
-  transform: translateX(-50%) rotate(45deg);
-}
-
-/* ==========================================================================
-   2. ANTES / DEPOIS — o protagonista visual da página
-   ========================================================================== */
-
-.ba {
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-items: center;
-  align-items: center;
-  gap: 12px;
-  max-width: 100%;
-  margin: 0 auto 14px;
-}
-
-.ba-shot {
-  width: min(100%, 260px);
-  margin: 0;
-  min-width: 0;
-}
-
-.ba-label {
-  text-align: center;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--color-text-muted); /* 6.1:1 sobre #F6F8F7 (WCAG AA) */
-  margin: 0 0 8px;
-}
-
-.ba-shot-after .ba-label {
-  color: var(--color-accent-dark);
-}
-
-.ba-shot img {
-  width: 100%;
-  height: auto;
-  border-radius: 18px;
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-}
-
-.ba-shot-after img {
-  border-color: rgba(15, 118, 110, 0.68);
-  box-shadow: 0 18px 44px rgba(11, 60, 55, 0.18);
-}
-
-/* Coluna do meio: o "motor" da transformação. */
-.ba-mid {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: auto;
-  padding-top: 0;
-}
-
-.ba-mid-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.35);
-  flex-shrink: 0;
-}
-
-.ba-mid-badge svg {
-  transform: rotate(90deg);
-}
-
-.ba-mid-label {
-  margin: 0;
-  font-size: 0.6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  line-height: 1.3;
-  text-align: center;
-  color: var(--color-accent-dark);
-}
-
-.ba-mid::after {
-  content: '';
-  width: 9px;
-  height: 9px;
-  margin-top: -2px;
-  border-right: 2px solid var(--color-accent);
-  border-bottom: 2px solid var(--color-accent);
-  transform: rotate(45deg);
-}
-
-.ba-disclaimer {
-  text-align: center;
-  font-size: 0.72rem;
-  line-height: 1.45;
-  color: var(--color-text-soft);
-  max-width: 44ch;
-  margin: 0 auto 22px;
-}
-
-.portfolio-note {
-  max-width: 720px;
-  margin: 24px auto 0;
-  padding: 16px 18px;
-  border-left: 3px solid var(--color-accent);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  background: var(--color-bg);
-  color: var(--color-text-muted);
-}
-
-.portfolio-note strong {
-  color: var(--color-accent-darker);
-}
-
-.transform-details {
-  max-width: 900px;
-  margin: 26px auto 0;
-  padding: 22px 18px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
-  box-shadow: var(--shadow-sm);
-}
-
-.transform-details h3 {
-  margin: 0 0 18px;
-  text-align: center;
-  font-size: clamp(1.2rem, 4vw, 1.5rem);
-  color: var(--color-accent-darker);
-}
-
-.transform-grid {
-  display: grid;
-  gap: 10px;
-}
-
-.transform-item {
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--color-accent-soft);
-  border: 1px solid rgba(15, 118, 110, 0.12);
-}
-
-.transform-name {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 0.76rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--color-accent-dark);
-}
-
-.transform-item p {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: var(--color-text-muted);
-}
-
-.transform-closing {
-  max-width: 62ch;
-  margin: 18px auto 0;
-  text-align: center;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-/* ==========================================================================
-   3. VSL
-   O player, os IDs e o tracking são os mesmos da V1 — só a moldura mudou.
-   ========================================================================== */
-
-.vsl-wrap {
-  width: 100%;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0;
-}
-
-.vsl-player {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  border-radius: var(--radius-lg);
-  background-color: var(--color-accent-darker);
-  overflow: hidden;
-  border: none;
-  box-shadow: var(--shadow-lg);
-}
-
-.vsl-poster,
-.vsl-poster img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.vsl-poster {
-  display: block;
-  pointer-events: none;
-}
-
-.vsl-poster img {
-  object-fit: cover;
-}
-
-.vsl-start-overlay {
-  position: absolute;
-  z-index: 2;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-  margin: 0;
-  padding: 20px;
-  appearance: none;
-  background: linear-gradient(180deg, rgba(1, 8, 8, 0.34), rgba(1, 8, 8, 0.7));
-  color: #FFFFFF;
-  font: inherit;
-  text-align: center;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.vsl-start-overlay:focus-visible {
-  outline: 3px solid #FFFFFF;
-  outline-offset: -6px;
-}
-
-.vsl-start-card {
-  width: min(100%, 340px);
-  padding: 22px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: var(--radius-lg);
-  background: rgba(3, 18, 17, 0.76);
-  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.vsl-start-overlay:hover .vsl-start-card {
-  transform: translateY(-2px);
-  background: rgba(3, 18, 17, 0.85);
-}
-
-/* Círculo branco com o triângulo de play: é o "▶" da chamada, desenhado
-   em SVG em vez do caractere U+25B6 — que está fora do unicode-range das
-   fontes locais e cairia numa fonte de sistema. */
-.vsl-start-play {
-  width: 62px;
-  height: 62px;
-  border-radius: 50%;
-  background: #FFFFFF;
-  color: var(--color-accent-darker);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.32);
-  animation: vsl-play-pulse 1.6s ease-in-out infinite;
-}
-
-.vsl-start-play svg {
-  margin-left: 4px;
-}
-
-.vsl-start-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.05rem, 4.6vw, 1.3rem);
-  line-height: 1.22;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-}
-
-.vsl-start-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.86rem;
-  line-height: 1.3;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.86);
-}
-
-@keyframes vsl-play-pulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.28); }
-  50% { transform: scale(1.045); box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
-}
-
-.vsl-player video,
-.vsl-player iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.vsl-player video {
-  object-fit: cover;
-}
-
-.vsl-yt-target,
-.vsl-yt-target iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* Botão transparente que cobre o player do YouTube inteiro: intercepta todo
-   clique/toque antes que chegue ao iframe, então dá pra pausar/retomar mas
-   nunca arrastar a barra de progresso (que fica desligada via playerVars). */
-.vsl-toggle-overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.vsl-toggle-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(8, 20, 18, 0.55);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.vsl-toggle-overlay[data-state="paused"] .vsl-toggle-icon {
-  opacity: 1;
-}
-
-.vsl-toggle-icon svg {
-  margin-left: 3px;
-}
-
-/* Faixa curta entre a demonstração em vídeo e o mapa de execução. */
-.opportunity-strip {
-  padding: 24px 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-accent-soft);
-  text-align: center;
-}
-
-.opportunity-strip h2 {
-  max-width: 34ch;
-  margin-bottom: 14px;
-  font-size: clamp(1.25rem, 4vw, 1.65rem);
-}
-
-.opportunity-chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.opportunity-chips li {
-  padding: 7px 11px;
-  border: 1px solid rgba(15, 118, 110, 0.22);
-  border-radius: 999px;
-  background: var(--color-bg);
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--color-accent-dark);
-}
-
-.opportunity-micro {
-  max-width: 48ch;
-  margin: 14px auto 0;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-/* ==========================================================================
-   4. COMO FUNCIONA EM 20 SEGUNDOS
-   ========================================================================== */
-
-.explain-flow {
-  display: grid;
-  gap: 18px;
-  max-width: 1040px;
-  margin: 0 auto;
-}
-
-.explain-step {
-  position: relative;
-  padding: 18px 18px 20px;
-  border: 1px solid var(--color-border);
-  border-top: 4px solid var(--color-accent);
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  box-shadow: var(--shadow-sm);
-}
-
-.explain-step:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -14px;
-  width: 9px;
-  height: 9px;
-  border-right: 2px solid var(--color-accent);
-  border-bottom: 2px solid var(--color-accent);
-  transform: translateX(-50%) rotate(45deg);
-}
-
-.explain-step-number {
-  display: block;
-  margin: 0 0 8px;
-  font-family: var(--font-display);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--color-accent);
-}
-
-.explain-step h3 {
-  margin: 0 0 10px;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-accent-darker);
-}
-
-.explain-step p {
-  margin: 0 0 7px;
-  color: var(--color-text-muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-
-.explain-step p:last-child {
-  margin-bottom: 0;
-}
-
-.explain-step .explain-beat {
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.explain-highlight {
-  max-width: 620px;
-  margin: 18px auto 0;
-  padding: 18px 20px;
-  border-radius: var(--radius-md);
-  background: var(--color-accent-light);
-  text-align: center;
-}
-
-.explain-highlight p {
-  margin: 0;
-}
-
-.explain-highlight-title {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.05rem, 3.6vw, 1.3rem);
-  letter-spacing: -0.015em;
-  color: var(--color-accent-darker);
-}
-
-.explain-highlight-note {
-  margin-top: 6px !important;
-  font-size: 0.86rem;
-  color: var(--color-accent-dark);
-}
-
-/* ==========================================================================
-   5. POR QUE ISSO É DIFERENTE — duas abordagens lado a lado
-   ========================================================================== */
-
-.msg-grid {
-  display: grid;
-  gap: 14px;
-  max-width: 860px;
-  margin: 0 auto 26px;
-}
-
-.msg-card {
-  padding: 18px;
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.msg-card-strong {
-  border-color: rgba(15, 118, 110, 0.42);
-  background: var(--color-accent-soft);
-  box-shadow: var(--shadow-md);
-}
-
-.msg-tag {
-  margin: 0;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-text-soft);
-}
-
-.msg-card-strong .msg-tag {
-  color: var(--color-accent-dark);
-}
-
-/* Balão de mensagem genérico — deliberadamente NÃO imita o WhatsApp. */
-.msg-bubble {
-  position: relative;
-  margin: 0;
-  padding: 14px 16px;
-  border-radius: 4px 16px 16px 16px;
-  background: #EEF1F0;
-  color: var(--color-text);
-  font-size: 0.98rem;
-  line-height: 1.5;
-}
-
-.msg-card-strong .msg-bubble {
-  background: var(--color-accent);
-  color: #FFFFFF;
-}
-
-.msg-note {
-  margin: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 0.88rem;
-  color: var(--color-text-muted);
-}
-
-.msg-card-strong .msg-note {
-  color: var(--color-accent-dark);
-  font-weight: 600;
-}
-
-.msg-note svg {
-  flex-shrink: 0;
-  margin-top: 3px;
-}
-
-/* ==========================================================================
-   7. VOCÊ NÃO RECEBE SÓ AULAS — cards de PROCESSO (não de arquivo)
-   ========================================================================== */
-
-.process-grid {
-  display: grid;
-  gap: 18px;
-  margin: 0 auto;
-  max-width: 1040px;
-}
-
-.process-card {
-  position: relative;
-  padding: 18px;
-  border-radius: var(--radius-md);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border-strong);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-}
-
-.process-card:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -14px;
-  width: 9px;
-  height: 9px;
-  border-right: 2px solid var(--color-accent);
-  border-bottom: 2px solid var(--color-accent);
-  transform: translateX(-50%) rotate(45deg);
-}
-
-.process-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: rgba(15, 118, 110, 0.3);
-}
-
-.process-step {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.process-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: var(--color-accent-light);
-  color: var(--color-accent-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.process-number {
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--color-accent);
-}
-
-.process-card h3 {
-  margin: 0 0 6px;
-  font-size: 0.88rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--color-accent-darker);
-}
-
-.process-card p {
-  margin: 0;
-  font-size: 0.92rem;
-  color: var(--color-text-muted);
-}
-
-/* ==========================================================================
-   8 / 10. DEPOIMENTOS EM VÍDEO
-   preload="none": nenhum byte de vídeo entra no caminho crítico.
-   ========================================================================== */
-
-.testimonial {
-  display: grid;
-  gap: 22px;
-  align-items: center;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.testimonial-video {
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-  aspect-ratio: 9 / 16;
-  border-radius: var(--radius-lg);
-  background: #0A1615;
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-}
-
-.testimonial-video video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background: #0A1615;
-}
-
-.testimonial-caption {
-  margin: 10px auto 0;
-  max-width: 300px;
-  text-align: center;
-  font-size: 0.78rem;
-  line-height: 1.45;
-  color: var(--color-text-soft);
-}
-
-.section-dark .testimonial-caption {
-  color: var(--color-on-dark-muted);
-}
-
-.section-dark .testimonial-video {
-  border-color: rgba(255, 255, 255, 0.16);
-}
-
-/* Aviso de asset ausente — some sozinho quando o vídeo existe. */
-.asset-missing {
-  max-width: 520px;
-  margin: 16px auto 0;
-  padding: 14px 16px;
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-md);
-  font-size: 0.82rem;
-  color: var(--color-text-soft);
-  text-align: center;
-}
-
-/* ==========================================================================
-   9. AUTORIDADE
-   ========================================================================== */
-
-.author-card {
-  display: grid;
-  gap: 20px;
-  justify-items: center;
-  text-align: center;
-  max-width: 640px;
-  margin: 0 auto;
-}
-
-.author-photo {
-  width: 132px;
-  height: 132px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-}
-
-.author-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.25rem;
-  margin: 0;
-  color: var(--color-on-dark);
-}
-
-.author-role {
-  color: var(--color-on-dark-accent);
-  font-size: 0.82rem;
-  font-weight: 600;
-  margin: 4px 0 0;
-}
-
-.author-body {
-  text-align: left;
-}
-
-/* ==========================================================================
-   11. OFERTA
-   ========================================================================== */
-
-.offer-card {
-  position: relative;
-  background: linear-gradient(180deg, var(--color-bg) 0%, var(--color-accent-soft) 100%);
-  border: 2px solid rgba(15, 118, 110, 0.44);
-  border-radius: var(--radius-xl);
-  padding: 30px 22px;
-  text-align: center;
-  max-width: 720px;
-  margin: 22px auto 0;
-  box-shadow: 0 28px 70px rgba(11, 60, 55, 0.19);
-}
-
-.offer-brand {
-  margin: 0 0 4px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--color-text-soft);
-}
-
-.offer-product {
-  margin: 0 0 20px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.6rem, 5vw, 2rem);
-  letter-spacing: -0.015em;
-  color: var(--color-accent-darker);
-}
-
-.offer-value-line {
-  margin: 0 0 20px;
-  padding: 14px 16px;
-  border-radius: var(--radius-md);
-  background: var(--color-accent-light);
-  font-weight: 700;
-  line-height: 1.5;
-  color: var(--color-accent-darker);
-}
-
-.offer-includes {
-  display: grid;
-  gap: 10px;
-  text-align: left;
-  margin: 0;
-  padding: 18px 0 0;
-  border-top: 1px solid var(--color-border-strong);
-}
-
-.offer-includes li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid rgba(15, 118, 110, 0.13);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.78);
-  font-size: 0.92rem;
-  color: var(--color-text-muted);
-}
-
-.offer-includes .offer-include-primary {
-  border-color: rgba(15, 118, 110, 0.35);
-  background: var(--color-accent-light);
-}
-
-.offer-includes strong {
-  color: var(--color-text);
-}
-
-.offer-check {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  margin-top: 1px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.offer-price-block {
-  margin: 26px 0 0;
-  padding: 24px 0 0;
-  border-top: 2px solid rgba(15, 118, 110, 0.2);
-}
-
-.offer-price {
-  font-family: var(--font-display);
-  font-size: 3rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--color-accent-dark);
-  margin: 0 0 6px;
-}
-
-.offer-price-note {
-  font-size: 0.86rem;
-  color: var(--color-text-muted);
-  margin: 0 0 4px;
-}
-
-.offer-price-alt {
-  font-size: 0.86rem;
-  color: var(--color-text-soft);
-  margin: 0 0 22px;
-}
-
-.offer-secure {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  margin: 14px 0 0;
-  font-size: 0.82rem;
-  color: var(--color-text-soft);
-}
-
-.offer-secure svg {
-  flex-shrink: 0;
-  color: var(--color-accent);
-}
-
-/* ==========================================================================
-   12. GARANTIA
-   ========================================================================== */
-
-.guarantee-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 22px;
-  border-radius: var(--radius-lg);
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-}
-
-.guarantee-badge {
-  flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--color-accent-light);
-  color: var(--color-accent-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.guarantee-card h2 {
-  text-align: left;
-  margin: 0 0 8px;
-  max-width: none;
-  font-size: clamp(1.15rem, 3.6vw, 1.4rem);
-}
-
-.guarantee-card p {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.96rem;
-}
-
-/* ==========================================================================
-   13. FAQ
-   ========================================================================== */
-
-.faq-list {
-  max-width: 660px;
-  margin: 0 auto;
-}
-
-.faq-item {
-  border-bottom: 1px solid var(--color-border);
-}
-
-.faq-question {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: none;
-  border: none;
-  padding: 18px 4px;
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--color-text);
-  text-align: left;
-  cursor: pointer;
-}
-
-.faq-icon {
-  flex-shrink: 0;
-  font-size: 1.3rem;
-  font-weight: 400;
-  color: var(--color-accent);
-  transition: transform 0.2s ease;
-}
-
-.faq-question[aria-expanded="true"] .faq-icon {
-  transform: rotate(45deg);
-}
-
-.faq-answer {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.25s ease;
-}
-
-.faq-answer p {
-  padding: 0 4px 18px;
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-/* ==========================================================================
-   14. CTA FINAL
-   ========================================================================== */
-
-.section-final {
-  position: relative;
-  text-align: center;
-  background:
-    radial-gradient(60% 80% at 50% 0%, rgba(15, 118, 110, 0.14), transparent 65%),
-    var(--color-accent-light);
-  overflow: hidden;
-}
-
-.section-final .container {
-  position: relative;
-}
-
-.final-copy {
-  max-width: 40ch;
-  margin: 0 auto 26px;
-  color: var(--color-text-muted);
-  font-size: 1.02rem;
-}
-
-.final-copy p {
-  margin: 0 0 8px;
-}
-
-.final-question {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.05rem, 3.6vw, 1.28rem);
-  line-height: 1.3;
-  letter-spacing: -0.015em;
-  color: var(--color-accent-darker);
-  margin-top: 16px !important;
-}
-
-.section-final .btn-cta {
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-/* ==========================================================================
-   Botões
-   ========================================================================== */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  text-decoration: none;
-  font-family: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.btn-primary {
-  background: var(--color-accent);
-  color: #FFFFFF;
-  box-shadow: 0 10px 24px rgba(15, 118, 110, 0.32);
-}
-
-.btn-primary:hover {
-  background: var(--color-accent-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(15, 118, 110, 0.4);
-}
-
-.btn-primary:active {
-  transform: scale(0.98);
-}
-
-/* CTA secundário do herói: leva pra demonstração, não pro checkout. */
-.btn-ghost {
-  padding: 13px 22px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid var(--color-border-strong);
-  color: var(--color-accent-dark);
-  font-size: 0.92rem;
-}
-
-.btn-ghost:hover {
-  background: #FFFFFF;
-  border-color: var(--color-accent);
-}
-
-.btn-cta {
-  width: 100%;
-  padding: 17px 22px;
-  border-radius: var(--radius-md);
-  font-size: clamp(0.95rem, 3.4vw, 1.05rem);
-  text-align: center;
-  line-height: 1.25;
-}
-
-.btn-cta svg {
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.btn-cta:hover svg {
-  transform: translateX(3px);
-}
-
-/* ==========================================================================
-   15. SUPORTE DISCRETO + rodapé
-   Não existe mais botão flutuante: o suporte é um link de texto no fim
-   da página, pra não competir com o CTA de compra.
-   ========================================================================== */
-
-.support {
-  padding: 30px 0 6px;
-  text-align: center;
-}
-
-.support-text {
-  margin: 0;
-  font-size: 0.92rem;
-  color: var(--color-text-muted);
-}
-
-.support-link {
-  /* linha própria: a frase não quebra no meio e o alvo de toque fica limpo */
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-  padding: 8px 4px;
-  font-weight: 700;
-  color: var(--color-accent-dark);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.support-text > span {
-  display: block;
-}
-
-.support-link svg {
-  color: var(--color-whatsapp);
-  flex-shrink: 0;
-}
-
-.footer {
-  padding: 18px 0 34px;
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-}
-
-/* ==========================================================================
-   Telas maiores
-   ========================================================================== */
-
-@media (min-width: 640px) {
-  .hero {
-    padding: 48px 0 54px;
-  }
-
-  .section {
-    padding: 68px 0;
-  }
-
-  #demonstracao {
-    padding-top: 60px;
-    padding-bottom: 60px;
-  }
-
-  .vsl-wrap {
-    padding: 0 20px;
-  }
-
-  .vsl-player {
-    aspect-ratio: 16 / 9;
-    border-radius: var(--radius-xl);
-  }
-
-  .ba {
-    grid-template-columns: 1fr auto 1fr;
-    justify-items: stretch;
-    gap: 18px;
-    max-width: 820px;
-  }
-
-  .ba-shot {
-    width: auto;
-  }
-
-  .ba-mid {
-    width: 90px;
-    padding-top: 24px;
-  }
-
-  .ba-mid-badge svg {
-    transform: none;
-  }
-
-  .ba-mid::after {
-    display: none;
-  }
-
-  .ba-mid-badge {
-    width: 44px;
-    height: 44px;
-  }
-
-  .ba-mid-label {
-    font-size: 0.72rem;
-  }
-
-  .transform-details {
-    padding: 26px;
-  }
-
-  .transform-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .opportunity-strip {
-    padding: 28px 0;
-  }
-
-  .msg-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-  }
-
-  .process-grid {
-    max-width: 720px;
-  }
-
-  .offer-card {
-    padding: 40px 34px;
-  }
-
-  .offer-includes {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .offer-includes .offer-include-primary {
-    grid-column: 1 / -1;
-  }
-
-  .testimonial {
-    grid-template-columns: 1fr 300px;
-    gap: 40px;
-  }
-
-  .testimonial-body {
-    text-align: left;
-  }
-
-  .testimonial-body h2 {
-    text-align: left;
-    margin-left: 0;
-    max-width: 18ch;
-  }
-
-  .testimonial-body .prose {
-    margin-left: 0;
-  }
-
-  .author-card {
-    grid-template-columns: 132px 1fr;
-    justify-items: start;
-    text-align: left;
-    gap: 28px;
-    max-width: 720px;
-  }
-
-  .author-photo {
-    grid-row: span 2;
-  }
-}
-
-/* A partir de 720px o componente do herói vira uma linha horizontal:
-   1 celular → 1 print → 1 prompt → transformação. */
-@media (min-width: 720px) {
-  .flow {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    justify-content: center;
-    gap: 12px;
-    max-width: 920px;
-  }
-
-  .flow-item,
-  .flow-result {
-    flex: 1 1 0;
-    min-width: 0;
-    justify-content: center;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    font-size: 0.92rem;
-  }
-
-  .flow-result {
-    flex-direction: column;
-    margin-top: 0;
-    padding: 20px 10px;
-    font-size: 0.92rem;
-  }
-
-  .flow-result .flow-icon {
-    width: 42px;
-    height: 42px;
-  }
-
-  /* Seta pra baixo é só do layout empilhado. */
-  .flow-result::before {
-    display: none;
-  }
-
-  /* Setas horizontais entre os passos, desenhadas em CSS (o caractere
-     U+2192 está fora do unicode-range das fontes locais). */
-  .flow-item::after {
-    content: '';
-    flex-shrink: 0;
-    align-self: center;
-    width: 9px;
-    height: 9px;
-    margin: 0 -4px 0 0;
-    border-top: 2px solid var(--color-accent);
-    border-right: 2px solid var(--color-accent);
-    transform: rotate(45deg);
-  }
-
-  .flow-item {
-    position: relative;
-    padding-right: 24px;
-  }
-
-  .flow-item::after {
-    position: absolute;
-    right: 4px;
-    top: 50%;
-    margin: 0;
-    transform: translateY(-50%) rotate(45deg);
-  }
-}
-
-@media (min-width: 960px) {
-  .explain-flow {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
-  }
-
-  .explain-step:not(:last-child)::after {
-    left: auto;
-    right: -12px;
-    bottom: auto;
-    top: 50%;
-    transform: translateY(-50%) rotate(-45deg);
-  }
-
-  .process-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px 18px;
-    max-width: 1040px;
-  }
-
-  .process-card {
-    padding: 18px;
-  }
-
-  .process-card:nth-child(1)::after,
-  .process-card:nth-child(2)::after {
-    left: auto;
-    right: -13px;
-    bottom: auto;
-    top: 50%;
-    transform: translateY(-50%) rotate(-45deg);
-  }
-
-  .process-card:nth-child(3)::after {
-    left: 50%;
-    right: auto;
-    bottom: -15px;
-    top: auto;
-    transform: translateX(-50%) rotate(45deg);
-  }
-
-  .process-card:nth-child(4) { grid-column: 3; grid-row: 2; }
-  .process-card:nth-child(5) { grid-column: 2; grid-row: 2; }
-  .process-card:nth-child(6) { grid-column: 1; grid-row: 2; }
-
-  .process-card:nth-child(4)::after,
-  .process-card:nth-child(5)::after {
-    left: -13px;
-    right: auto;
-    bottom: auto;
-    top: 50%;
-    transform: translateY(-50%) rotate(135deg);
-  }
-
-  .process-card p {
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  .msg-grid {
-    gap: 24px;
-  }
-}
-
-@media (min-width: 1120px) {
-  .process-grid {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 14px;
-  }
-
-  .process-card {
-    grid-column: auto !important;
-    grid-row: auto !important;
-    padding: 16px 14px 18px;
-  }
-
-  .process-card:not(:last-child)::after {
-    left: auto;
-    right: -11px;
-    bottom: auto;
-    top: 50%;
-    transform: translateY(-50%) rotate(-45deg);
-  }
-
-  .process-card p {
-    font-size: 0.84rem;
-  }
-}
+    @font-face {
+      font-family: 'Inter';
+      font-style: normal;
+      font-weight: 400 700;
+      font-display: swap;
+      src: url('assets/fonts/inter-var.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    @font-face {
+      font-family: 'Sora';
+      font-style: normal;
+      font-weight: 700 800;
+      font-display: swap;
+      src: url('assets/fonts/sora-var.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    :root {
+      --dark: #071111;
+      --dark-soft: #091716;
+      --teal: #0FCBC0;
+      --teal-dark: #08AFA6;
+      --teal-ink: #087E78;
+      --light: #FAFBFA;
+      --light-alt: #F5F8F7;
+      --ink: #111817;
+      --muted: #52615E;
+      --line: #DCE8E5;
+      --white: #F4F7F6;
+      --font-display: 'Sora', 'Inter', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --container: 1100px;
+      --measure: 64ch;
+      --shadow: 0 18px 50px rgba(7, 17, 17, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--light);
+      font-family: var(--font-body);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    img, video, iframe, svg { display: block; max-width: 100%; }
+    p, blockquote { margin: 0; }
+    ul, ol { margin: 0; padding: 0; list-style: none; }
+    a { color: inherit; }
+
+    :focus-visible {
+      outline: 3px solid var(--teal);
+      outline-offset: 4px;
+      border-radius: 6px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .section { padding: 64px 0; }
+    .section-light { background: var(--light); }
+    .section-alt { background: var(--light-alt); }
+
+    .section-dark {
+      color: var(--white);
+      background:
+        radial-gradient(circle at 82% 8%, rgba(15, 203, 192, 0.11), transparent 30%),
+        linear-gradient(145deg, var(--dark-soft), var(--dark));
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      text-wrap: balance;
+    }
+
+    h2 {
+      max-width: 25ch;
+      margin: 0 auto;
+      font-size: clamp(1.65rem, 6vw, 2.55rem);
+      text-align: center;
+    }
+
+    h3 { font-size: 1.05rem; }
+
+    .accent { color: var(--teal-ink); }
+    .section-dark .accent { color: var(--teal); }
+
+    .section-head {
+      max-width: 760px;
+      margin: 0 auto 30px;
+      text-align: center;
+    }
+
+    .section-head > p,
+    .section-head .prose { margin-top: 16px; }
+
+    .prose {
+      max-width: var(--measure);
+      margin-left: auto;
+      margin-right: auto;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .prose p + p { margin-top: 14px; }
+    .section-dark .prose { color: #BED0CD; }
+
+    .closing {
+      max-width: 48ch;
+      margin: 24px auto 0;
+      font-family: var(--font-display);
+      font-weight: 700;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .hero {
+      position: relative;
+      padding: 38px 0 68px;
+      color: var(--white);
+      background:
+        radial-gradient(circle at 18% 10%, rgba(15, 203, 192, 0.14), transparent 28%),
+        radial-gradient(circle at 88% 42%, rgba(8, 175, 166, 0.08), transparent 32%),
+        var(--dark);
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(15, 203, 192, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 203, 192, 0.025) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black, transparent 74%);
+    }
+
+    .hero .container { position: relative; }
+
+    .hero-copy {
+      max-width: 860px;
+      margin: 0 auto 22px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      max-width: 21ch;
+      margin: 0 auto;
+      font-size: clamp(2rem, 8vw, 3.75rem);
+    }
+
+    .hero-sub {
+      max-width: 680px;
+      margin: 24px auto 0;
+      color: #AFC2BF;
+      font-size: clamp(0.84rem, 3.1vw, 0.95rem);
+      line-height: 1.65;
+      text-align: center;
+    }
+
+    .hero-sub-lead { color: #73DED8; font-weight: 700; }
+
+    .vsl-wrap {
+      width: min(92vw, 420px);
+      margin: 0 auto;
+    }
+
+    .vsl-player {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      overflow: hidden;
+      border: 1px solid rgba(15, 203, 192, 0.52);
+      border-radius: var(--radius-lg);
+      background: #020707;
+      box-shadow: 0 0 0 1px rgba(15, 203, 192, 0.08), 0 24px 70px rgba(0, 0, 0, 0.42);
+    }
+
+    .vsl-launch,
+    .vsl-launch img,
+    .vsl-yt-target,
+    .vsl-yt-target iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .vsl-launch {
+      display: block;
+      cursor: pointer;
+      background: #020707;
+    }
+
+    .vsl-launch img {
+      object-fit: cover;
+      object-position: center;
+      transition: filter 200ms ease;
+    }
+
+    .vsl-launch:hover img { filter: brightness(1.06); }
+    .vsl-yt-target iframe { border: 0; }
+
+    .mechanism-flow {
+      display: grid;
+      gap: 22px;
+      max-width: 620px;
+      margin: 28px auto 0;
+    }
+
+    .mechanism-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      align-items: center;
+      gap: 12px;
+      min-height: 74px;
+      padding: 14px 16px;
+      border: 1px solid rgba(8, 175, 166, 0.26);
+      border-radius: var(--radius-md);
+      background: #FFFFFF;
+      box-shadow: 0 8px 28px rgba(7, 17, 17, 0.05);
+      font-family: var(--font-display);
+      font-size: 0.86rem;
+      font-weight: 800;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    .mechanism-card:not(:last-child)::after {
+      content: '↓';
+      position: absolute;
+      left: 50%;
+      bottom: -24px;
+      color: var(--teal-dark);
+      transform: translateX(-50%);
+    }
+
+    .mechanism-card:last-child {
+      color: #062E2B;
+      border-color: var(--teal);
+      background: rgba(15, 203, 192, 0.16);
+    }
+
+    .line-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--teal-dark);
+      border-radius: 50%;
+      color: var(--teal-ink);
+    }
+
+    .ba-intro { margin-bottom: 28px; text-align: center; }
+
+    .quote-line {
+      max-width: 620px;
+      margin: 18px auto;
+      padding: 16px 18px;
+      border-left: 3px solid var(--teal-dark);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      background: #FFFFFF;
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-weight: 700;
+    }
+
+    .ba {
+      display: grid;
+      grid-template-columns: 1fr;
+      justify-items: center;
+      gap: 12px;
+      max-width: 840px;
+      margin: 0 auto;
+    }
+
+    .ba-shot { width: min(100%, 280px); margin: 0; }
+
+    .ba-label {
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .ba-shot img {
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .ba-shot-after img { border-color: rgba(8, 175, 166, 0.7); }
+
+    .ba-arrow {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      color: #062E2B;
+      background: var(--teal);
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .change-strip {
+      max-width: 880px;
+      margin: 26px auto 0;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: #FFFFFF;
+      color: var(--teal-ink);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .disclaimer {
+      max-width: 62ch;
+      margin: 14px auto 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .ways {
+      display: grid;
+      gap: 16px;
+      max-width: 900px;
+      margin: 30px auto 0;
+    }
+
+    .way-card {
+      padding: 24px;
+      border: 1px solid rgba(244, 247, 246, 0.13);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .way-card-strong {
+      border-color: rgba(15, 203, 192, 0.48);
+      background: rgba(15, 203, 192, 0.075);
+    }
+
+    .way-tag {
+      margin-bottom: 12px;
+      color: var(--teal);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .way-card blockquote {
+      color: var(--white);
+      font-family: var(--font-display);
+      font-size: 1.02rem;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .way-note {
+      margin-top: 16px;
+      color: #B9CBC8;
+      font-size: 0.9rem;
+    }
+
+    .process-flow {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      max-width: 980px;
+      margin: 28px auto;
+      counter-reset: process;
+    }
+
+    .process-flow li {
+      counter-increment: process;
+      min-width: 0;
+      padding: 15px 10px;
+      border: 1px solid rgba(8, 175, 166, 0.23);
+      border-radius: var(--radius-sm);
+      background: #FFFFFF;
+      font-family: var(--font-display);
+      font-size: clamp(0.72rem, 3.2vw, 0.88rem);
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .process-flow li::before {
+      content: '0' counter(process);
+      display: block;
+      margin-bottom: 4px;
+      color: var(--teal-ink);
+      font-size: 0.67rem;
+      letter-spacing: 0.12em;
+    }
+
+    .prompt-assets {
+      display: grid;
+      gap: 12px;
+      max-width: 560px;
+      margin: 24px auto;
+    }
+
+    .prompt-asset {
+      padding: 17px;
+      border: 1px solid var(--teal-dark);
+      border-radius: var(--radius-md);
+      color: #063E3A;
+      background: rgba(15, 203, 192, 0.10);
+      font-family: var(--font-display);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    .niches {
+      max-width: 760px;
+      margin: 24px auto 0;
+      color: var(--teal-ink);
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.75;
+      text-align: center;
+    }
+
+    .testimonials {
+      display: grid;
+      gap: 22px;
+      max-width: 780px;
+      margin: 30px auto 0;
+    }
+
+    .testimonial-video {
+      width: min(100%, 330px);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--dark);
+      box-shadow: var(--shadow);
+    }
+
+    .testimonial-video video {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 9 / 16;
+      object-fit: cover;
+    }
+
+    .author-card {
+      display: grid;
+      gap: 24px;
+      align-items: center;
+      max-width: 900px;
+      margin: 30px auto 0;
+      padding: 22px;
+      border: 1px solid rgba(15, 203, 192, 0.25);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .author-photo {
+      width: min(100%, 300px);
+      aspect-ratio: 1;
+      margin: 0 auto;
+      object-fit: cover;
+      border: 1px solid rgba(15, 203, 192, 0.5);
+      border-radius: 20px;
+    }
+
+    .author-name {
+      margin-bottom: 2px;
+      color: var(--white);
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    .author-role {
+      margin-bottom: 18px;
+      color: var(--teal);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .author-copy p + p { margin-top: 13px; }
+
+    .offer-card {
+      max-width: 760px;
+      margin: 30px auto 0;
+      padding: 26px 20px;
+      border: 1px solid rgba(8, 175, 166, 0.45);
+      border-radius: var(--radius-lg);
+      background: #FFFFFF;
+      box-shadow: 0 24px 65px rgba(7, 17, 17, 0.12);
+    }
+
+    .offer-includes {
+      display: grid;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .offer-includes li {
+      position: relative;
+      padding: 12px 12px 12px 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      background: var(--light);
+    }
+
+    .offer-includes li::before {
+      content: '✓';
+      position: absolute;
+      left: 13px;
+      top: 12px;
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      color: #063E3A;
+      background: var(--teal);
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .offer-note {
+      margin-top: 22px;
+      color: var(--ink);
+      text-align: center;
+    }
+
+    .offer-note p + p { margin-top: 8px; }
+
+    .offer-price-block {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .offer-price-label { color: var(--muted); font-size: 0.82rem; }
+
+    .offer-price {
+      margin: 5px 0;
+      color: #087E78;
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 13vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .offer-price-alt { color: var(--muted); font-size: 0.86rem; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 56px;
+      margin-top: 22px;
+      padding: 15px 20px;
+      border: 1px solid var(--teal);
+      border-radius: var(--radius-sm);
+      color: #052B29;
+      background: var(--teal);
+      box-shadow: 0 12px 28px rgba(15, 203, 192, 0.20);
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: center;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .btn:hover {
+      background: #34D8CF;
+      box-shadow: 0 16px 34px rgba(15, 203, 192, 0.27);
+      transform: translateY(-2px);
+    }
+
+    .guarantee-card {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 16px;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: #FFFFFF;
+      box-shadow: 0 12px 36px rgba(7, 17, 17, 0.06);
+    }
+
+    .guarantee-mark {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--teal-dark);
+      border-radius: 50%;
+      color: var(--teal-ink);
+      font-family: var(--font-display);
+      font-weight: 800;
+    }
+
+    .guarantee-card h2 {
+      max-width: none;
+      margin: 0 0 12px;
+      font-size: clamp(1.3rem, 5vw, 1.85rem);
+      text-align: left;
+    }
+
+    .guarantee-card p { color: var(--muted); }
+    .guarantee-card p + p { margin-top: 12px; }
+
+    .faq-list { max-width: 760px; margin: 26px auto 0; }
+    .faq-item { border-bottom: 1px solid var(--line); }
+
+    .faq-question {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      width: 100%;
+      padding: 19px 2px;
+      border: 0;
+      color: var(--ink);
+      background: transparent;
+      font: inherit;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .faq-icon {
+      flex: 0 0 auto;
+      color: var(--teal-ink);
+      font-size: 1.35rem;
+      font-weight: 400;
+      transition: transform 200ms ease;
+    }
+
+    .faq-question[aria-expanded="true"] .faq-icon { transform: rotate(45deg); }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 220ms ease;
+    }
+
+    .faq-answer p { padding: 0 2px 20px; color: var(--muted); }
+
+    .final-section { text-align: center; }
+
+    .final-copy {
+      max-width: 44ch;
+      margin: 22px auto 0;
+      color: #BED0CD;
+    }
+
+    .final-copy p + p { margin-top: 5px; }
+
+    .final-question {
+      max-width: 28ch;
+      margin: 24px auto 0;
+      color: var(--teal);
+      font-family: var(--font-display);
+      font-size: clamp(1.45rem, 6vw, 2.25rem);
+      font-weight: 800;
+      line-height: 1.3;
+      text-wrap: balance;
+    }
+
+    .final-after { max-width: 50ch; margin: 18px auto 0; color: #D5E2E0; }
+    .final-section .btn { max-width: 500px; }
+    .secure-note { margin-top: 12px; color: #94AAA6; font-size: 0.78rem; }
+
+    .support {
+      max-width: 500px;
+      margin: 36px auto 0;
+      padding-top: 28px;
+      border-top: 1px solid rgba(244, 247, 246, 0.12);
+      color: #AFC2BF;
+      font-size: 0.9rem;
+    }
+
+    .support span { display: block; }
+
+    .support-link {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 7px 4px;
+      color: var(--teal);
+      font-weight: 700;
+      text-underline-offset: 3px;
+    }
+
+    .footer {
+      padding: 20px 0 30px;
+      color: #78908B;
+      background: #050C0C;
+      font-size: 0.76rem;
+      text-align: center;
+    }
+
+    @media (min-width: 640px) {
+      .container { padding: 0 28px; }
+      .section { padding: 82px 0; }
+      .hero { padding: 58px 0 82px; }
+      .hero-copy { margin-bottom: 28px; }
+
+      .ba {
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        justify-items: stretch;
+        gap: 22px;
+      }
+
+      .ba-shot { width: auto; }
+      .ba-arrow { transform: rotate(-90deg); }
+      .ways { grid-template-columns: 1fr 1fr; }
+      .prompt-assets { grid-template-columns: 1fr 1fr; }
+      .testimonials { grid-template-columns: 1fr 1fr; }
+      .offer-includes { grid-template-columns: 1fr 1fr; }
+      .author-card { grid-template-columns: minmax(240px, 320px) 1fr; padding: 30px; }
+    }
+
+    @media (min-width: 760px) {
+      .mechanism-flow {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        max-width: 1000px;
+      }
+
+      .mechanism-card {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        min-height: 128px;
+        padding: 16px 10px;
+        text-align: center;
+      }
+
+      .mechanism-card:not(:last-child)::after {
+        content: '→';
+        left: auto;
+        right: -13px;
+        bottom: auto;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+      }
+
+      .process-flow { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 1024px) {
+      .section { padding: 94px 0; }
+      .hero h1 { font-size: 3.7rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 
-  <!-- Sem JS: garante que o conteúdo com fade-in apareça normalmente -->
-  <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
-
-  <!--
-    Meta Pixel — o stub, init e PageView ficam disponíveis imediatamente.
-    O fbevents.js começa 1500ms depois, sempre async e sem depender de
-    interação. O intervalo curto permite que o navegador descubra primeiro
-    o pôster LCP prioritário, sem manter a antiga janela de perda de 4s.
-  -->
+  <!-- Sem JS: o conteúdo permanece totalmente visível e os dois links de compra continuam funcionais. -->
   <script>
   !function (f, b, e, v, n, t, s) {
     if (f.fbq) return;
@@ -1916,691 +861,279 @@ a {
   fbq('init', '3401433073361667');
   fbq('track', 'PageView');
   </script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3401433073361667&ev=PageView&noscript=1" alt=""></noscript>
-
-  <!--
-    TikTok Pixel (NÃO ATIVADO) — cole o snippet oficial do TikTok Ads Manager
-    aqui quando a conta de anúncio estiver criada.
-    <script>
-      !function (w, d, t) {...}(window, document, 'ttq');
-      ttq.load('SEU_PIXEL_ID');
-      ttq.page();
-    </script>
-  -->
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3401433073361667&amp;ev=PageView&amp;noscript=1" alt=""></noscript>
 </head>
 <body>
-
-  <!-- ============ 1. HERO ============
-       Sem preço, sem VSL, sem WhatsApp e sem CTA de checkout: a primeira
-       dobra existe só pra pessoa entender o mecanismo. O único CTA é uma
-       âncora interna pra demonstração. -->
-  <header class="hero">
-    <div class="hero-grain" aria-hidden="true"></div>
-
-    <div class="container hero-inner">
-      <p class="eyebrow">Método Express</p>
-
-      <h1 class="hero-headline">Pegue um print de um Instagram. Use um prompt. <span class="hero-headline-accent">Mostre ao dono como o perfil dele poderia ficar.</span></h1>
-
-      <p class="hero-sub">Com <strong>um celular, um print e o prompt certo</strong>, você consegue criar uma transformação visual com IA e ter <strong>algo concreto</strong> para apresentar a um pequeno negócio — mesmo sem saber design ou dominar inteligência artificial.</p>
-
-      <!-- A equação do método. Mobile: 3 insumos + resultado embaixo.
-           Desktop (>=720px): uma linha horizontal com setas. -->
-      <div class="flow">
-        <div class="flow-item">
-          <span class="flow-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-          </span>
-          1 celular
-        </div>
-        <div class="flow-item">
-          <span class="flow-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8"/><path d="M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8"/><path d="M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16"/><path d="M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/></svg>
-          </span>
-          1 print
-        </div>
-        <div class="flow-item">
-          <span class="flow-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.7 10.4 11.2 6 9.6 10.4 8Z"/><path d="M18.5 15.5 19.2 17.4 21 18.1 19.2 18.8 18.5 20.7 17.8 18.8 16 18.1 17.8 17.4Z"/></svg>
-          </span>
-          1 prompt
-        </div>
-        <div class="flow-result">
-          <span class="flow-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15.5-4.5-4.5L8 19.5"/></svg>
-          </span>
-          Uma transformação para mostrar
-        </div>
-      </div>
-
-      <p class="hero-kicker">Você não começa tentando convencer alguém. Começa mostrando.</p>
-
-      <p class="hero-cta">
-        <a href="#demonstracao" class="btn btn-ghost">Ver como funciona</a>
-      </p>
-    </div>
-  </header>
-
-  <main>
-
-    <!-- ============ 2. ANTES / DEPOIS ============ -->
-    <section class="section section-alt reveal" id="demonstracao" aria-labelledby="demo-titulo">
-      <div class="container">
-        <div class="section-head">
-          <h2 id="demo-titulo">O cliente não precisa imaginar o seu trabalho. <strong class="accent-text">Ele consegue ver.</strong></h2>
-        </div>
-
-        <!-- Antes/depois real do projeto — WebP com srcset, dimensões
-             explícitas (sem CLS) e lazy load: fica abaixo da dobra. -->
-        <div class="ba">
-          <figure class="ba-shot">
-            <figcaption class="ba-label">Antes</figcaption>
-            <img src="assets/images/perfil-antes-480.webp" srcset="assets/images/perfil-antes-320.webp 320w, assets/images/perfil-antes-480.webp 480w" sizes="(min-width: 900px) 347px, (min-width: 640px) calc((100vw - 170px) / 2), (min-width: 300px) 260px, calc(100vw - 40px)" alt="Perfil de barbearia no Instagram antes: feed desorganizado e apresentação fraca" width="480" height="853" loading="lazy" decoding="async">
-          </figure>
-
-          <div class="ba-mid" aria-hidden="true">
-            <span class="ba-mid-badge">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-            </span>
-            <p class="ba-mid-label">1 prompt + IA</p>
-          </div>
-
-          <figure class="ba-shot ba-shot-after">
-            <figcaption class="ba-label">Depois</figcaption>
-            <img src="assets/images/perfil-depois-480.webp" srcset="assets/images/perfil-depois-320.webp 320w, assets/images/perfil-depois-480.webp 480w" sizes="(min-width: 900px) 347px, (min-width: 640px) calc((100vw - 170px) / 2), (min-width: 300px) 260px, calc(100vw - 40px)" alt="O mesmo perfil depois: bio organizada, destaques e feed com apresentação profissional" width="480" height="853" loading="lazy" decoding="async">
-          </figure>
-        </div>
-
-        <p class="ba-disclaimer">Simulação visual. Não representa crescimento de seguidores, vendas ou faturamento.</p>
-
-        <div class="prose">
-          <p>Quando você chega dizendo “eu consigo melhorar seu Instagram”, o proprietário precisa acreditar na sua palavra.</p>
-          <p>Quando você chega mostrando uma transformação do próprio negócio dele...</p>
-          <p><strong>a conversa começa de outro lugar.</strong></p>
-        </div>
-
-        <p class="portfolio-note"><strong>Você não precisa esperar ter um portfólio completo para começar a mostrar do que é capaz.</strong> O próprio perfil do negócio pode virar a base da sua demonstração.</p>
-
-        <div class="transform-details" aria-labelledby="transformacao-titulo">
-          <h3 id="transformacao-titulo">O que muda nessa transformação?</h3>
-          <ul class="transform-grid">
-            <li class="transform-item">
-              <strong class="transform-name">Bio mais clara</strong>
-              <p>Uma apresentação mais organizada do negócio e do que ele oferece.</p>
-            </li>
-            <li class="transform-item">
-              <strong class="transform-name">Identidade visual mais consistente</strong>
-              <p>Uma direção de cores, estilo e apresentação com mais unidade.</p>
-            </li>
-            <li class="transform-item">
-              <strong class="transform-name">Destaques mais organizados</strong>
-              <p>Uma estrutura visual que ajuda o perfil a parecer mais cuidado e fácil de entender.</p>
-            </li>
-            <li class="transform-item">
-              <strong class="transform-name">Feed com aparência mais profissional</strong>
-              <p>Uma direção visual que apresenta melhor os produtos ou serviços.</p>
-            </li>
-          </ul>
-          <p class="transform-closing">Você não precisa reconstruir o negócio. Você mostra como a apresentação dele poderia melhorar.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 3. VSL ============
-         O player, os IDs do YouTube, o overlay de clique e todo o tracking
-         (VSL_Start / 25 / 50 / 75 / Offer / 90) são os mesmos da V1.
-         Só a moldura e o texto do overlay mudaram.
-
-         Dois vídeos, um por dispositivo: o corte de mobile é quadrado e o de
-         desktop é 16:9. As URLs ficam em VSL_VIDEO_URL_MOBILE /
-         VSL_VIDEO_URL_DESKTOP no topo do script.js e a escolha usa o mesmo
-         breakpoint de 640px do CSS (ver getVslVideoUrl em script.js).
-
-         Antes do clique carrega só o pôster local. A IFrame API do YouTube
-         (~500KB) e o player continuam sendo criados apenas depois da
-         interação explícita do usuário. Sem autoplay.
-
-         O pôster agora é lazy e sem fetchpriority: na V2 a VSL não está mais
-         na primeira dobra, então ela saiu do caminho crítico do LCP. -->
-    <section class="section reveal" id="vsl" aria-labelledby="vsl-titulo">
-      <div class="container">
-        <div class="section-head">
-          <h2 id="vsl-titulo">Veja como o Método Express funciona na prática</h2>
-          <p class="prose">Em poucos minutos você vai entender como encontrar a oportunidade, criar a transformação e apresentar essa ideia ao negócio.</p>
-        </div>
+  <header class="hero" id="vsl" aria-labelledby="hero-titulo">
+    <div class="container">
+      <div class="hero-copy">
+        <h1 id="hero-titulo">Veja como um simples print pode virar <span class="accent">algo concreto</span> para mostrar a um negócio.</h1>
       </div>
 
       <div class="vsl-wrap">
         <div class="vsl-player" id="vslPlayer">
-          <picture class="vsl-poster" aria-hidden="true">
-            <source media="(min-width: 640px)" srcset="assets/images/vsl-poster-desktop-960.webp">
-            <img src="assets/images/vsl-poster-mobile-480.webp" width="480" height="480" alt="" loading="lazy" decoding="async">
-          </picture>
-          <button type="button" class="vsl-start-overlay" id="vslStartOverlay" aria-label="Ver o método funcionando — o vídeo abre com áudio">
-            <span class="vsl-start-card" aria-hidden="true">
-              <span class="vsl-start-play">
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-              </span>
-              <span class="vsl-start-title">Ver o método funcionando</span>
-              <span class="vsl-start-action">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4a1 1 0 0 0 1 1h3l6 4V5L7 9H4a1 1 0 0 0-1 1z"/><path d="M17 9.5a4 4 0 0 1 0 5"/></svg>
-                Com áudio
-              </span>
-            </span>
-          </button>
+          <a class="vsl-launch" id="vslStartOverlay" href="https://www.youtube.com/watch?v=fIDX2aD1TdQ" aria-label="Assistir à apresentação do Método Express no YouTube">
+            <img src="https://i.ytimg.com/vi/fIDX2aD1TdQ/hqdefault.jpg" alt="Thumbnail oficial da apresentação em vídeo do Método Express" width="480" height="360" fetchpriority="high" decoding="async">
+          </a>
         </div>
       </div>
-    </section>
 
-    <aside class="opportunity-strip reveal" aria-labelledby="oportunidades-titulo">
-      <div class="container">
-        <h2 id="oportunidades-titulo">Esse tipo de oportunidade está em negócios que você já encontra todos os dias.</h2>
-        <ul class="opportunity-chips" aria-label="Exemplos de negócios">
-          <li>Barbearias</li>
-          <li>Salões</li>
-          <li>Hamburguerias</li>
-          <li>Cafeterias</li>
-          <li>Lojas</li>
-          <li>Imobiliárias</li>
-        </ul>
-        <p class="opportunity-micro">Abra o Google ou o Instagram e comece a olhar os perfis da sua própria cidade.</p>
-      </div>
-    </aside>
+      <p class="hero-sub"><span class="hero-sub-lead">Em menos de 3 minutos,</span> você vai entender a lógica do Método Express e por que mostrar primeiro pode mudar completamente a forma de abordar um possível cliente.</p>
+    </div>
+  </header>
 
-    <!-- ============ 4. COMO FUNCIONA EM 20 SEGUNDOS ============ -->
-    <section class="section section-alt reveal" aria-labelledby="explicacao-titulo">
+  <main>
+    <section class="section section-light" id="mecanismo" aria-labelledby="mecanismo-titulo">
       <div class="container">
         <div class="section-head">
-          <h2 id="explicacao-titulo">Se eu tivesse que te explicar o Método Express em 20 segundos, seria assim:</h2>
+          <h2 id="mecanismo-titulo">Pegue um print de um Instagram. Use um prompt. <span class="accent">Mostre ao dono como o perfil dele poderia ficar.</span></h2>
+          <div class="prose">
+            <p>Você não precisa chegar pedindo que o negócio imagine o que você sabe fazer.</p>
+            <p>O próprio perfil pode virar a base da sua demonstração.</p>
+          </div>
         </div>
 
-        <ol class="explain-flow" aria-label="Etapas do Método Express">
-          <li class="explain-step">
-            <span class="explain-step-number" aria-hidden="true">01</span>
-            <h3>Encontre</h3>
-            <p>Você abre o Google ou o Instagram.</p>
-            <p>Encontra um pequeno negócio com um perfil que claramente poderia ser melhor apresentado.</p>
+        <ol class="mechanism-flow" aria-label="Mecanismo do Método Express">
+          <li class="mechanism-card">
+            <span class="line-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg></span>
+            <span>1 celular</span>
           </li>
-          <li class="explain-step">
-            <span class="explain-step-number" aria-hidden="true">02</span>
-            <h3>Print</h3>
-            <p>Tira um print.</p>
+          <li class="mechanism-card">
+            <span class="line-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16"/></svg></span>
+            <span>1 print</span>
           </li>
-          <li class="explain-step">
-            <span class="explain-step-number" aria-hidden="true">03</span>
-            <h3>Prompt</h3>
-            <p>Coloca esse print na inteligência artificial junto com o prompt que eu te entrego.</p>
+          <li class="mechanism-card">
+            <span class="line-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.7 10.4 11.2 6 9.6 10.4 8Z"/></svg></span>
+            <span>1 prompt</span>
           </li>
-          <li class="explain-step">
-            <span class="explain-step-number" aria-hidden="true">04</span>
-            <h3>Crie</h3>
-            <p>A IA cria uma nova direção visual.</p>
-            <p>Você revisa, ajusta e monta o antes e depois.</p>
-          </li>
-          <li class="explain-step">
-            <span class="explain-step-number" aria-hidden="true">05</span>
-            <h3>Mostre</h3>
-            <p>Depois mostra isso para o dono do negócio.</p>
-            <p class="explain-beat">Pronto.</p>
-            <p>Agora ele não precisa imaginar o que você conseguiria fazer.</p>
-            <p class="explain-beat">Ele está olhando para a ideia.</p>
+          <li class="mechanism-card">
+            <span class="line-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15.5-4.5-4.5L8 19.5"/></svg></span>
+            <span>Uma transformação para mostrar</span>
           </li>
         </ol>
 
-        <div class="explain-highlight">
-          <p class="explain-highlight-title">Um celular. Um print. Um prompt.</p>
-          <p class="explain-highlight-note">Para começar a criar a demonstração, é basicamente isso.</p>
-        </div>
+        <p class="closing">Você começa com algo simples: encontra um perfil, tira um print e cria uma versão visual de como aquela apresentação poderia melhorar.</p>
       </div>
     </section>
 
-    <!-- ============ 5. POR QUE ISSO É DIFERENTE ============ -->
-    <section class="section reveal" aria-labelledby="diferente-titulo">
+    <section class="section section-alt" id="demonstracao" aria-labelledby="demo-titulo">
       <div class="container">
         <div class="section-head">
-          <h2 id="diferente-titulo">A maioria tenta <strong class="accent-text">vender primeiro.</strong> Aqui, você <strong class="accent-text">mostra primeiro.</strong></h2>
+          <h2 id="demo-titulo">O cliente não precisa imaginar. <span class="accent">Ele consegue ver.</span></h2>
         </div>
 
-        <div class="msg-grid">
-          <article class="msg-card">
-            <p class="msg-tag">Mensagem 1</p>
-            <blockquote class="msg-bubble">“Olá, trabalho com redes sociais e gostaria de apresentar meus serviços.”</blockquote>
-            <p class="msg-note">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.8c0 1.7-2.4 2.1-2.4 3.4"/><line x1="12" y1="17" x2="12" y2="17.01"/></svg>
-              O cliente ainda precisa imaginar tudo.
-            </p>
-          </article>
+        <div class="prose ba-intro">
+          <p>Quando você simplesmente diz:</p>
+          <blockquote class="quote-line">“Eu consigo melhorar o seu Instagram.”</blockquote>
+          <p>o dono ainda precisa imaginar o resultado.</p>
+          <p>Mas quando você apresenta uma transformação do próprio negócio, a conversa muda.</p>
+        </div>
 
-          <article class="msg-card msg-card-strong">
-            <p class="msg-tag">Mensagem 2</p>
-            <blockquote class="msg-bubble">“Eu vi o seu perfil e fiz uma simulação de como ele poderia ficar. Posso te mostrar?”</blockquote>
-            <p class="msg-note">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 12 9 17 20 6"/></svg>
-              Agora existe algo concreto na conversa.
-            </p>
+        <div class="ba">
+          <figure class="ba-shot">
+            <figcaption class="ba-label">Antes</figcaption>
+            <img src="assets/images/perfil-antes-480.webp" srcset="assets/images/perfil-antes-320.webp 320w, assets/images/perfil-antes-480.webp 480w" sizes="(min-width: 640px) 36vw, 280px" alt="Perfil de barbearia no Instagram antes, com apresentação visual desorganizada" width="480" height="853" loading="lazy" decoding="async">
+          </figure>
+          <span class="ba-arrow" aria-hidden="true">↓</span>
+          <figure class="ba-shot ba-shot-after">
+            <figcaption class="ba-label">Depois</figcaption>
+            <img src="assets/images/perfil-depois-480.webp" srcset="assets/images/perfil-depois-320.webp 320w, assets/images/perfil-depois-480.webp 480w" sizes="(min-width: 640px) 36vw, 280px" alt="O mesmo perfil com bio, destaques e feed apresentados de forma mais consistente" width="480" height="853" loading="lazy" decoding="async">
+          </figure>
+        </div>
+
+        <p class="change-strip">Bio mais clara · Identidade visual mais consistente · Destaques organizados · Feed com uma apresentação mais profissional</p>
+        <p class="disclaimer">Simulação visual. Não representa crescimento de seguidores, vendas ou faturamento.</p>
+        <p class="closing">O objetivo é mostrar uma possibilidade de apresentação.</p>
+      </div>
+    </section>
+
+    <section class="section section-dark" id="mostrar-primeiro" aria-labelledby="mostrar-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="mostrar-titulo">A maioria tenta vender primeiro. <span class="accent">Aqui, você mostra primeiro.</span></h2>
+        </div>
+
+        <div class="ways">
+          <article class="way-card">
+            <p class="way-tag">Jeito 1</p>
+            <blockquote>“Oi, eu trabalho com redes sociais e gostaria de apresentar meus serviços.”</blockquote>
+            <p class="way-note">O cliente ainda precisa descobrir quem você é, entender o que você faz e imaginar como aquilo poderia ajudá-lo.</p>
+          </article>
+          <article class="way-card way-card-strong">
+            <p class="way-tag">Jeito 2</p>
+            <blockquote>“Eu vi o seu perfil e fiz uma simulação de como ele poderia ficar. Quer ver?”</blockquote>
+            <p class="way-note">Agora existe algo concreto na conversa.</p>
           </article>
         </div>
+
+        <p class="closing">Na primeira situação, o cliente precisa imaginar.<br>Na segunda, ele consegue ver.</p>
+        <p class="closing">E essa é uma das principais ideias por trás do Método Express.</p>
+      </div>
+    </section>
+
+    <section class="section section-light" id="processo" aria-labelledby="processo-titulo">
+      <div class="container">
+        <div class="section-head"><h2 id="processo-titulo">Você não recebe só aulas. <span class="accent">Recebe um processo para executar.</span></h2></div>
+
+        <ol class="process-flow" aria-label="Etapas do processo">
+          <li>Encontrar</li><li>Criar</li><li>Mostrar</li><li>Abordar</li><li>Oferecer</li><li>Entregar</li>
+        </ol>
 
         <div class="prose">
-          <p>As duas mensagens estão oferecendo um serviço.</p>
-          <p>Mas só uma delas já colocou alguma coisa concreta na frente do cliente.</p>
+          <p>Você aprende a encontrar uma oportunidade, criar a transformação, apresentar a ideia, iniciar a conversa, oferecer o serviço e saber como seguir caso o negócio queira contratar.</p>
+          <p>O Prompt Raiz 1 ajuda você na criação da transformação.</p>
+          <p>E, depois do fechamento, o Prompt Raiz 2 ajuda a seguir para a entrega.</p>
         </div>
 
-        <p class="pull">Você não precisa convencer o cliente a imaginar. <strong class="accent-text">Você mostra.</strong></p>
-      </div>
-    </section>
-
-    <!-- ============ 6. NÃO PRECISA DOMINAR IA ============ -->
-    <section class="section section-dark reveal" aria-labelledby="ia-titulo">
-      <div class="container">
-        <div class="section-head">
-          <h2 id="ia-titulo"><strong class="on-dark-accent">Você não precisa virar especialista em inteligência artificial</strong> para começar.</h2>
-        </div>
+        <div class="prompt-assets" aria-label="Materiais do método"><div class="prompt-asset">Prompt Raiz 1</div><div class="prompt-asset">Prompt Raiz 2</div></div>
 
         <div class="prose">
-          <p>Muita gente trava porque acha que primeiro precisa aprender dezenas de ferramentas, estudar IA durante meses e só depois tentar fazer alguma coisa com isso.</p>
-          <p>Aqui a lógica é outra.</p>
-          <p>No Método Express, a inteligência artificial tem uma função específica: <strong>ajudar você a criar a transformação visual.</strong></p>
-          <p>Eu te entrego o prompt.</p>
-          <p>Você aprende o que colocar.</p>
-          <p>O que observar.</p>
-          <p>Como pedir ajustes.</p>
-          <p>E o que fazer com aquela transformação depois.</p>
+          <p>Você não precisa dominar design.</p>
+          <p>Também não precisa virar especialista em inteligência artificial.</p>
+          <p><strong>A ferramenta ajuda a executar. O método mostra o que fazer com ela.</strong></p>
         </div>
 
-        <p class="pull">A ferramenta faz parte do trabalho. <strong class="on-dark-accent">O método mostra o caminho.</strong></p>
+        <p class="niches">Barbearias · Salões · Hamburguerias · Cafeterias · Lojas · Imobiliárias · Pet shops · Academias · e outros negócios.</p>
+        <p class="closing">Você pode procurar oportunidades na sua cidade ou em outras regiões do Brasil.</p>
       </div>
     </section>
 
-    <!-- ============ 7. VOCÊ NÃO RECEBE SÓ AULAS ============
-         Cards de PROCESSO, não de arquivo. Os dois únicos materiais
-         entregues que a página anuncia são o Prompt Raiz 1 e o Prompt
-         Raiz 2 — tudo o mais aqui é processo ensinado no treinamento. -->
-    <section class="section reveal" aria-labelledby="processo-titulo">
+    <section class="section section-alt" id="depoimentos" aria-labelledby="depoimentos-titulo">
       <div class="container">
         <div class="section-head">
-          <h2 id="processo-titulo">Você não recebe só aulas. <strong class="accent-text">Recebe um processo para executar.</strong></h2>
-          <div class="prose">
-            <p>Eu não quero que você termine o Método Express com várias horas assistidas e continue pensando: “Tá... e agora eu faço o quê?”</p>
-            <p>Por isso, o treinamento foi organizado em volta do que você precisa fazer na prática.</p>
-          </div>
+          <h2 id="depoimentos-titulo">Veja quem já colocou o processo em prática.</h2>
+          <p class="prose">A melhor forma de entender o Método Express é ver pessoas que saíram da teoria e começaram a executar o processo.</p>
         </div>
 
-        <ul class="process-grid">
-          <li class="process-card">
-            <span class="process-step">
-              <span class="process-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-              </span>
-              <span class="process-number" aria-hidden="true">01</span>
-            </span>
-            <h3>Encontrar</h3>
-            <p>Aprenda a identificar pequenos negócios com uma oportunidade clara de melhoria visual.</p>
-          </li>
+        <div class="testimonials">
+          <div class="testimonial-video"><video src="assets/videos/depoimento-naldo.mp4" data-poster="assets/images/depoimento-naldo-poster.webp" controls playsinline preload="none" width="576" height="1024" aria-label="Depoimento em vídeo de um aluno do Método Express"></video></div>
+          <div class="testimonial-video"><video src="assets/videos/depoimento-amanda.mp4" data-poster="assets/images/depoimento-amanda-poster.webp" controls playsinline preload="none" width="464" height="832" aria-label="Depoimento em vídeo de uma aluna do Método Express"></video></div>
+        </div>
 
-          <li class="process-card">
-            <span class="process-step">
-              <span class="process-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.7 10.4 11.2 6 9.6 10.4 8Z"/><path d="M18.5 15.5 19.2 17.4 21 18.1 19.2 18.8 18.5 20.7 17.8 18.8 16 18.1 17.8 17.4Z"/></svg>
-              </span>
-              <span class="process-number" aria-hidden="true">02</span>
-            </span>
-            <h3>Criar</h3>
-            <p>Use o Prompt Raiz 1 para transformar o print do perfil em uma nova direção visual.</p>
-          </li>
-
-          <li class="process-card">
-            <span class="process-step">
-              <span class="process-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M9 14h6"/></svg>
-              </span>
-              <span class="process-number" aria-hidden="true">03</span>
-            </span>
-            <h3>Mostrar</h3>
-            <p>Aprenda a organizar o antes e depois para que o negócio consiga enxergar a transformação.</p>
-          </li>
-
-          <li class="process-card">
-            <span class="process-step">
-              <span class="process-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.9-.9L3 20.5l1.5-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4Z"/></svg>
-              </span>
-              <span class="process-number" aria-hidden="true">04</span>
-            </span>
-            <h3>Abordar</h3>
-            <p>Entenda como iniciar a conversa e apresentar a demonstração.</p>
-          </li>
-
-          <li class="process-card">
-            <span class="process-step">
-              <span class="process-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
-              </span>
-              <span class="process-number" aria-hidden="true">05</span>
-            </span>
-            <h3>Oferecer</h3>
-            <p>Aprenda a transformar aquela conversa em uma oferta de serviço clara.</p>
-          </li>
-
-          <li class="process-card">
-            <span class="process-step">
-              <span class="process-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8.5 12 4 4 8.5v7L12 20l8-4.5Z"/><polyline points="4 8.5 12 13 20 8.5"/><line x1="12" y1="13" x2="12" y2="20"/></svg>
-              </span>
-              <span class="process-number" aria-hidden="true">06</span>
-            </span>
-            <h3>Entregar</h3>
-            <p>Se o serviço for fechado, use o Prompt Raiz 2 e o processo do método para ajudar a produzir a entrega.</p>
-          </li>
-        </ul>
-
-        <p class="pull">Menos teoria solta. Mais clareza sobre o que fazer em seguida.</p>
+        <p class="disclaimer">Cada experiência é individual. O Método Express não garante clientes, vendas ou renda.</p>
       </div>
     </section>
 
-    <!-- ============ 8. DEPOIMENTO 1 ============
-         Vídeo real do produto (assets/videos/depoimento-naldo.mp4).
-         preload="none" + aspect-ratio fixo: nenhum byte de vídeo no
-         caminho crítico e nenhum deslocamento de layout.
-
-         O pôster vem em data-poster, não em poster: o atributo poster é
-         buscado com prioridade Medium já na carga, mesmo com o vídeo lá
-         embaixo — media o LCP do herói em ~120ms. initLazyPosters() (em
-         script.js) promove data-poster -> poster quando a seção se aproxima
-         da viewport.
-         Sem autoplay e sem legenda entre aspas: o texto do depoimento só
-         entra depois da revisão do conteúdo real do vídeo. -->
-    <section class="section section-alt reveal" aria-labelledby="depoimento1-titulo">
+    <section class="section section-dark" id="autoridade" aria-labelledby="autor-titulo">
       <div class="container">
-        <div class="testimonial">
-          <div class="testimonial-body">
-            <h2 id="depoimento1-titulo">Mas isso funciona para quem está começando?</h2>
-            <div class="prose">
-              <p>Essa é provavelmente uma das primeiras dúvidas de quem vê o método.</p>
-              <p>Por isso, prefiro que você escute alguém que colocou o processo em prática.</p>
-            </div>
-          </div>
-
-          <div>
-            <div class="testimonial-video">
-              <video src="assets/videos/depoimento-naldo.mp4" data-poster="assets/images/depoimento-naldo-poster.webp" controls playsinline preload="none" width="576" height="1024" aria-label="Depoimento em vídeo de um aluno do Método Express"></video>
-            </div>
-            <p class="testimonial-caption">Depoimento de aluno do Método Express. Resultados individuais variam.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 9. AUTORIDADE ============ -->
-    <section class="section section-dark reveal" aria-labelledby="autor-titulo">
-      <div class="container">
-        <div class="section-head">
-          <h2 id="autor-titulo">Por que eu criei o Método Express</h2>
-        </div>
+        <div class="section-head"><h2 id="autor-titulo">Por que eu criei o Método Express</h2></div>
 
         <div class="author-card">
-          <img class="author-photo" src="assets/images/andre-hoffmann-480.webp" srcset="assets/images/andre-hoffmann-320.webp 320w, assets/images/andre-hoffmann-480.webp 480w" sizes="132px" alt="André Hoffmann, criador do Método Express" width="480" height="480" loading="lazy" decoding="async">
+          <img class="author-photo" src="assets/images/andre-hoffmann-480.webp" srcset="assets/images/andre-hoffmann-320.webp 320w, assets/images/andre-hoffmann-480.webp 480w" sizes="(min-width: 640px) 300px, 80vw" alt="André Hoffmann, criador do Método Express, em seu estúdio" width="480" height="480" loading="lazy" decoding="async">
 
-          <div>
+          <div class="author-copy prose">
             <p class="author-name">André Hoffmann</p>
-            <p class="author-role">Criador do Método Express · Operação Home Office</p>
-          </div>
-
-          <div class="prose author-body">
-            <p>Eu sou André Hoffmann, formado em Análise e Desenvolvimento de Sistemas e Marketing.</p>
-            <p>Minha formação me colocou justamente no encontro entre tecnologia e comunicação.</p>
-            <p>E trabalhando com inteligência artificial e negócios, uma ideia ficou cada vez mais clara: é muito mais fácil apresentar um serviço quando a pessoa consegue enxergar a transformação.</p>
-            <p>Foi a partir desse princípio que eu organizei o Método Express.</p>
-            <p>Não para ensinar tudo sobre inteligência artificial. Mas para usar a tecnologia de uma forma específica e prática: <strong>encontrar uma oportunidade, criar uma demonstração e mostrar.</strong></p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 10. DEPOIMENTO 2 ============
-         Vídeo real do produto (assets/videos/depoimento-amanda.mp4).
-         Mesmas regras do depoimento 1: sem autoplay, preload="none" e
-         nenhuma afirmação de resultado atribuída à aluna. -->
-    <section class="section reveal" aria-labelledby="depoimento2-titulo">
-      <div class="container">
-        <div class="testimonial">
-          <div class="testimonial-body">
-            <h2 id="depoimento2-titulo">Quando o processo sai da teoria</h2>
-            <div class="prose">
-              <p>Criar a transformação é a primeira parte.</p>
-              <p>Depois vem a execução: encontrar negócios, mostrar o trabalho e abrir conversas.</p>
-            </div>
-          </div>
-
-          <div>
-            <div class="testimonial-video">
-              <video src="assets/videos/depoimento-amanda.mp4" data-poster="assets/images/depoimento-amanda-poster.webp" controls playsinline preload="none" width="464" height="832" aria-label="Depoimento em vídeo de uma aluna do Método Express"></video>
-            </div>
-            <p class="testimonial-caption">Depoimento de aluna do Método Express. Resultados individuais variam.</p>
+            <p class="author-role">Criador do Método Express</p>
+            <p>Formado em Análise e Desenvolvimento de Sistemas e Marketing, eu sempre estive no ponto de encontro entre tecnologia e comunicação.</p>
+            <p>E uma coisa ficou cada vez mais clara para mim:</p>
+            <p>as novas ferramentas tornaram muito mais fácil criar.</p>
+            <p>Mas saber usar uma ferramenta não significa saber o que fazer com ela.</p>
+            <p>Foi por isso que organizei o Método Express.</p>
+            <p>Um processo para usar inteligência artificial com um objetivo específico:</p>
+            <p>criar algo concreto para mostrar a um possível cliente antes de tentar vender o serviço.</p>
+            <p><strong>Menos teoria solta.</strong></p>
+            <p><strong>Mais clareza sobre qual é o próximo passo.</strong></p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ 11. OFERTA ============ -->
-    <section class="section section-alt reveal" id="investimento" aria-labelledby="oferta-titulo">
+    <section class="section section-light" id="investimento" aria-labelledby="oferta-titulo">
       <div class="container">
         <div class="section-head">
           <h2 id="oferta-titulo">Você não está comprando mais um curso sobre inteligência artificial.</h2>
           <div class="prose">
-            <p>Está recebendo um processo específico para transformar uma ferramenta que já está no seu celular em algo que você consegue mostrar para um possível cliente.</p>
-            <p>Você aprende como encontrar a oportunidade, criar a transformação, apresentar a ideia, oferecer o serviço e seguir para a entrega.</p>
+            <p>Você está recebendo um processo específico para usar a IA com um objetivo:</p>
+            <p>encontrar uma oportunidade, criar uma transformação, apresentar a ideia e saber como seguir caso o negócio queira contratar o serviço.</p>
           </div>
         </div>
 
         <div class="offer-card">
-          <p class="offer-brand">Operação Home Office</p>
-          <p class="offer-product">Método Express</p>
-          <p class="offer-value-line">Você não está pagando para aprender “sobre IA”. Está aprendendo a usar a IA para criar algo concreto que consegue colocar na frente de um possível cliente.</p>
-
           <ul class="offer-includes">
-            <li class="offer-include-primary">
-              <span class="offer-check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
-              </span>
-              <span><strong>Processo completo</strong> — encontrar, criar, mostrar, abordar, oferecer e entregar.</span>
-            </li>
-            <li>
-              <span class="offer-check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
-              </span>
-              <span><strong>Prompt Raiz 1</strong> — para criar a transformação visual a partir do print.</span>
-            </li>
-            <li>
-              <span class="offer-check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
-              </span>
-              <span><strong>Prompt Raiz 2</strong> — para ajudar na produção da entrega, se o serviço for fechado.</span>
-            </li>
-            <li>
-              <span class="offer-check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
-              </span>
-              <span><strong>Encontrar oportunidades</strong> — identificar negócios com espaço claro para melhorar a apresentação.</span>
-            </li>
-            <li>
-              <span class="offer-check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
-              </span>
-              <span><strong>Criar e apresentar a transformação</strong> — montar um antes e depois que o negócio consegue enxergar.</span>
-            </li>
-            <li>
-              <span class="offer-check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
-              </span>
-              <span><strong>Abordar e oferecer</strong> — iniciar a conversa, mostrar a ideia e apresentar o serviço.</span>
-            </li>
-            <li>
-              <span class="offer-check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 9 17 20 6"/></svg>
-              </span>
-              <span><strong>Entrega</strong> — seguir o processo do método se o serviço for fechado.</span>
-            </li>
+            <li>Processo completo do início à entrega</li><li>Prompt Raiz 1</li><li>Prompt Raiz 2</li><li>Como encontrar oportunidades</li><li>Como criar e apresentar a transformação</li><li>Como iniciar a abordagem</li><li>Como oferecer o serviço</li><li>Como seguir para a entrega</li>
           </ul>
 
+          <div class="offer-note">
+            <p>Você não precisa descobrir sozinho o que fazer depois de cada etapa.</p>
+            <p><strong>O processo já foi organizado para você executar.</strong></p>
+          </div>
+
           <div class="offer-price-block">
+            <p class="offer-price-label">Preço atual de acesso</p>
             <p class="offer-price">R$97</p>
-            <p class="offer-price-note">Preço atual de acesso</p>
             <p class="offer-price-alt">Parcelamento disponível no checkout.</p>
           </div>
 
-          <!--
-            BOTÃO DE COMPRA — checkout da Hotmart.
-            O href real já nasce no HTML: se o script.js falhar, o botão
-            continua funcionando. O JS só reescreve o link pra acrescentar
-            os parâmetros de atribuição (ver withTrackingParams).
-            Troque a constante HOTMART_CHECKOUT_URL no topo do script.js.
-          -->
-          <a href="https://pay.hotmart.com/G106758643C" class="btn btn-primary btn-cta" id="ctaInvestimento" target="_blank" rel="noopener">
-            <span>Quero entrar no Método Express</span>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-          </a>
-
-          <p class="offer-secure">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-            Pagamento seguro pela Hotmart
-          </p>
+          <a href="https://pay.hotmart.com/G106758643C" class="btn" id="ctaInvestimento" target="_blank" rel="noopener">Quero entrar no Método Express</a>
         </div>
       </div>
     </section>
 
-    <!-- ============ 12. GARANTIA ============
-         "7 dias" aparece aqui e SOMENTE aqui: é o prazo de reembolso,
-         não tempo de aprendizado nem promessa de resultado. -->
-    <section class="section reveal" aria-labelledby="garantia-titulo">
+    <section class="section section-alt" id="garantia" aria-labelledby="garantia-titulo">
       <div class="container">
         <div class="guarantee-card">
-          <span class="guarantee-badge" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5.5c0 4.2 2.9 8.1 7 9.5 4.1-1.4 7-5.3 7-9.5V6Z"/><polyline points="9 12 11 14 15 10"/></svg>
-          </span>
+          <span class="guarantee-mark" aria-hidden="true">7</span>
           <div>
             <h2 id="garantia-titulo">Você tem 7 dias para conhecer o Método Express.</h2>
-            <p>Entre, veja as aulas, conheça o processo e entenda como ele funciona. Se dentro do período de garantia você decidir que o Método Express não faz sentido para você, poderá solicitar o reembolso conforme as regras da plataforma.</p>
+            <p>Entre, veja as aulas, conheça o processo e analise se o conteúdo faz sentido para você.</p>
+            <p>Se dentro do prazo de garantia você decidir que não quer continuar, poderá solicitar o reembolso conforme as regras da plataforma.</p>
+            <p><strong>Sem complicação.</strong></p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ 13. FAQ ============ -->
-    <section class="section section-alt reveal" aria-labelledby="faq-titulo">
+    <section class="section section-light" id="faq" aria-labelledby="faq-titulo">
       <div class="container">
-        <div class="section-head">
-          <h2 id="faq-titulo">Perguntas frequentes</h2>
-        </div>
+        <div class="section-head"><h2 id="faq-titulo">Perguntas frequentes</h2></div>
 
         <div class="faq-list" id="faqList">
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-1" aria-expanded="false" aria-controls="faq-answer-1">
-              <span>Preciso saber design?</span>
-              <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1">
-              <p>Não. A proposta é justamente usar a inteligência artificial para reduzir essa barreira. Você aprende a gerar uma base visual e revisar antes de apresentar.</p>
-            </div>
+            <button class="faq-question" id="faq-question-1" aria-expanded="false" aria-controls="faq-answer-1"><span>Preciso saber design?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1"><p><strong>Não.</strong><br>O método foi estruturado para que você consiga começar mesmo sem experiência profissional em design.</p></div>
           </div>
-
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-2" aria-expanded="false" aria-controls="faq-answer-2">
-              <span>Preciso entender de inteligência artificial?</span>
-              <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2">
-              <p>Não. Você recebe o prompt e aprende como utilizá-lo dentro desse processo específico.</p>
-            </div>
+            <button class="faq-question" id="faq-question-2" aria-expanded="false" aria-controls="faq-answer-2"><span>Preciso entender de inteligência artificial?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2"><p><strong>Não.</strong><br>Você vai aprender como utilizar a ferramenta dentro do processo e terá os Prompts Raiz para orientar etapas específicas.</p></div>
           </div>
-
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-3" aria-expanded="false" aria-controls="faq-answer-3">
-              <span>Preciso de computador?</span>
-              <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3">
-              <p>Para criar a primeira transformação, o processo pode ser feito pelo celular. Um computador pode facilitar etapas posteriores, mas não é necessário para começar a aplicar o mecanismo.</p>
-            </div>
+            <button class="faq-question" id="faq-question-3" aria-expanded="false" aria-controls="faq-answer-3"><span>Preciso de computador?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3"><p>A primeira transformação pode ser criada pelo celular.<br><br>Um computador pode facilitar algumas etapas posteriores, mas não é necessário para entender e começar o processo.</p></div>
           </div>
-
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-4" aria-expanded="false" aria-controls="faq-answer-4">
-              <span>Preciso já ter clientes ou seguidores?</span>
-              <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4">
-              <p>Não. O método começa justamente mostrando como encontrar negócios e criar uma demonstração antes de ter um cliente fechado.</p>
-            </div>
+            <button class="faq-question" id="faq-question-4" aria-expanded="false" aria-controls="faq-answer-4"><span>Preciso já ter clientes?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4"><p><strong>Não.</strong><br>O Método Express começa justamente na etapa de encontrar possíveis oportunidades.</p></div>
           </div>
-
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-5" aria-expanded="false" aria-controls="faq-answer-5">
-              <span>O resultado é garantido?</span>
-              <span class="faq-icon" aria-hidden="true">+</span>
-            </button>
-            <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5">
-              <p>Não. O Método Express entrega o processo e as ferramentas. O resultado comercial depende da execução, das abordagens, da qualidade do trabalho, da negociação e de outros fatores.</p>
-            </div>
+            <button class="faq-question" id="faq-question-5" aria-expanded="false" aria-controls="faq-answer-5"><span>Preciso ter seguidores?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5"><p><strong>Não.</strong><br>O serviço é oferecido para negócios. O foco não é construir audiência pessoal antes de começar.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" id="faq-question-6" aria-expanded="false" aria-controls="faq-answer-6"><span>O resultado é garantido?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6"><p><strong>Não.</strong><br>O Método Express entrega o processo, os materiais e a orientação.<br><br>Conseguir clientes e gerar resultados depende da execução, da qualidade do trabalho, das abordagens realizadas e de outros fatores individuais.</p></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ 14. CTA FINAL ============ -->
-    <section class="section section-final reveal" aria-labelledby="final-titulo">
-      <div class="hero-grain" aria-hidden="true"></div>
+    <section class="section section-dark final-section" id="cta-final" aria-labelledby="final-titulo">
       <div class="container">
-        <h2 id="final-titulo">A sua primeira transformação não precisa começar com um grande plano.</h2>
+        <h2 id="final-titulo">A sua primeira transformação pode começar com um print.</h2>
+        <div class="final-copy"><p>Encontre um perfil.</p><p>Tire um print.</p><p>Crie a demonstração.</p><p>Mostre para o negócio.</p><p>E faça uma pergunta simples:</p></div>
+        <p class="final-question">“Quer ver como o seu Instagram poderia ficar?”</p>
+        <p class="final-after">Se essa ideia fez sentido para você, conheça o Método Express e veja o processo completo.</p>
 
-        <div class="final-copy">
-          <p>Pode começar com um celular.</p>
-          <p>Um perfil.</p>
-          <p>Um print.</p>
-          <p>Um prompt.</p>
-          <p>E uma pergunta simples para um pequeno negócio:</p>
-          <p class="final-question">“Quer ver como o seu Instagram poderia ficar?”</p>
+        <a href="https://pay.hotmart.com/G106758643C" class="btn" id="ctaFinal" target="_blank" rel="noopener">Quero conhecer o Método Express</a>
+        <p class="secure-note">Pagamento processado pela Hotmart · 7 dias de garantia</p>
+
+        <div class="support">
+          <p><span>Ficou com alguma dúvida sobre acesso ou pagamento?</span><a href="https://wa.me/554888742835?text=Oi!%20Vi%20a%20p%C3%A1gina%20do%20M%C3%A9todo%20Express%20e%20queria%20saber%20mais." id="whatsappSuporte" class="support-link" target="_blank" rel="noopener">Fale com o suporte.</a></p>
         </div>
-
-        <a href="https://pay.hotmart.com/G106758643C" class="btn btn-primary btn-cta" id="ctaFinal" target="_blank" rel="noopener">
-          <span>Quero começar com o Método Express</span>
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
-        </a>
-
-        <p class="offer-secure">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-          Pagamento seguro pela Hotmart
-        </p>
       </div>
     </section>
-
-    <!-- ============ 15. SUPORTE DISCRETO ============
-         Substitui o antigo botão flutuante de WhatsApp. É um link de texto,
-         no fim da página, pra não competir com o CTA de compra.
-         O evento Contact do Meta Pixel continua saindo daqui — e só daqui
-         (ver initLinks em script.js). -->
-    <div class="support">
-      <div class="container">
-        <p class="support-text">
-          <span>Ficou com alguma dúvida sobre acesso ou pagamento?</span>
-          <a href="https://wa.me/554888742835?text=Oi!%20Vi%20a%20p%C3%A1gina%20do%20M%C3%A9todo%20Express%20e%20queria%20saber%20mais." id="whatsappSuporte" class="support-link" target="_blank" rel="noopener">
-            <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
-              <path d="M16.02 3C9.4 3 4 8.4 4 15.02c0 2.5.73 4.83 2 6.79L4 29l7.36-1.93a11.9 11.9 0 0 0 4.66.95h.01c6.62 0 12.02-5.4 12.02-12.02C28.05 8.4 22.65 3 16.02 3zm0 21.8h-.01a9.8 9.8 0 0 1-4.99-1.37l-.36-.21-3.69.97.99-3.6-.23-.37a9.77 9.77 0 0 1-1.5-5.2c0-5.4 4.4-9.8 9.81-9.8 2.62 0 5.08 1.02 6.93 2.88a9.74 9.74 0 0 1 2.87 6.93c0 5.4-4.4 9.77-9.82 9.77zm5.37-7.32c-.29-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.66.15-.2.29-.76.96-.93 1.16-.17.2-.34.22-.63.07-.29-.15-1.24-.46-2.36-1.46-.87-.78-1.46-1.74-1.63-2.03-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.29-.49.1-.2.05-.37-.02-.51-.07-.15-.66-1.59-.9-2.18-.24-.57-.48-.5-.66-.51h-.56c-.2 0-.51.07-.78.37-.27.29-1.02 1-1.02 2.44s1.05 2.83 1.19 3.03c.15.2 2.06 3.14 4.99 4.4.7.3 1.24.48 1.67.61.7.22 1.34.19 1.84.12.56-.08 1.75-.71 2-1.4.24-.68.24-1.27.17-1.4-.07-.13-.27-.2-.56-.34z"/>
-            </svg>
-            Fale com o suporte.
-          </a>
-        </p>
-      </div>
-    </div>
-
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <p>&copy; <span id="anoAtual"></span> Operação Home Office. Todos os direitos reservados.</p>
-    </div>
-  </footer>
-
+  <footer class="footer"><div class="container"><p>&copy; <span id="anoAtual"></span> Operação Home Office. Todos os direitos reservados.</p></div></footer>
   <script src="script.js" defer></script>
 </body>
 </html>
