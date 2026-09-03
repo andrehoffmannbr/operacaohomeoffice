@@ -302,7 +302,8 @@ test('Thumbnail A/B — abre visível sem inicializar player ou VSL_Start', () =
   const environment = createEnvironment();
 
   assert.match(INDEX_SOURCE, /id="vslStartOverlay"/);
-  assert.match(INDEX_SOURCE, /i\.ytimg\.com\/vi\/fIDX2aD1TdQ\/hqdefault\.jpg/);
+  assert.match(INDEX_SOURCE, /assets\/images\/vsl-poster\.webp/);
+  assert.doesNotMatch(INDEX_SOURCE, /i\.ytimg\.com/);
   assert.doesNotMatch(INDEX_SOURCE, /Ver o método funcionando|Com áudio/);
   assert.equal(environment.playerCount(), 0);
   assert.equal(environment.fakePlayer.playCalls, 0);

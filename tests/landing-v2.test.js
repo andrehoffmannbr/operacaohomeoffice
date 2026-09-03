@@ -42,9 +42,10 @@ test('V2.1 — hero segue a ordem H1, VSL e microcopy', () => {
   assert.equal(countOccurrences(hero[0], CHECKOUT_URL), 0);
 });
 
-test('V2.1 — VSL usa um único vídeo vertical e thumbnail oficial', () => {
+test('V2.1 — VSL usa um único vídeo vertical e poster local otimizado', () => {
   assert.match(INDEX_SOURCE, new RegExp(`youtube\\.com/watch\\?v=${VSL_ID}`));
-  assert.match(INDEX_SOURCE, new RegExp(`i\\.ytimg\\.com/vi/${VSL_ID}/hqdefault\\.jpg`));
+  assert.match(INDEX_SOURCE, /assets\/images\/vsl-poster\.webp/);
+  assert.doesNotMatch(INDEX_SOURCE, /i\.ytimg\.com/);
   assert.match(SCRIPT_SOURCE, new RegExp(`youtube\\.com/embed/${VSL_ID}`));
   assert.equal(countOccurrences(SCRIPT_SOURCE, `embed/${VSL_ID}`), 1);
   assert.match(STYLE_SOURCE, /\.vsl-player\s*\{[^}]*aspect-ratio:\s*9\s*\/\s*16/);
@@ -160,6 +161,7 @@ test('V2.1 — materiais centrais, informações de acesso e bônus aparecem ant
   for (const bonus of ['Kit de Abordagem Express', 'Pack de Prompts por Nicho', 'Fechamento Express']) {
     assert.match(offer, new RegExp(bonus));
   }
+  assert.match(offer, /Como conduzir a conversa quando o negócio demonstra interesse, montar uma proposta, definir o preço do serviço, apresentar o valor, responder objeções e encaminhar para o fechamento\./);
   assert.ok(offer.indexOf('class="offer-stack"') < offer.indexOf('R$97'));
   assert.ok(offer.indexOf('class="bonus-block"') < offer.indexOf('R$97'));
   assert.doesNotMatch(offer, /R\$997|valor de R\$|<s>|<del>|de R\$\s*\d/i);
@@ -255,18 +257,23 @@ test('V2.1 — depoimentos ficam lado a lado no desktop e fora do caminho críti
   assert.doesNotMatch(INDEX_VISIBLE, /\bPIX\b|R\$\s*3[.]?500/i);
 });
 
-test('V2.1 — imagens locais são lazy e thumbnail da VSL tem prioridade alta', () => {
+test('V2.1 — imagens abaixo da dobra são lazy e poster local da VSL tem prioridade alta', () => {
   const images = INDEX_SOURCE.match(/<img[^>]*>/g) || [];
   const local = images.filter((tag) => /src="assets\//.test(tag));
-  assert.equal(local.length, 5);
-  for (const tag of local) {
+  assert.equal(local.length, 6);
+  for (const tag of local.filter((tag) => !tag.includes('vsl-poster.webp'))) {
     assert.match(tag, /loading="lazy"/);
     assert.match(tag, /width="\d+"/);
     assert.match(tag, /height="\d+"/);
   }
-  const thumbnail = images.find((tag) => tag.includes(`i.ytimg.com/vi/${VSL_ID}`));
+  const thumbnail = images.find((tag) => tag.includes('assets/images/vsl-poster.webp'));
   assert.ok(thumbnail);
+  assert.ok(fs.existsSync(path.join(ROOT, 'assets', 'images', 'vsl-poster.webp')));
+  assert.match(thumbnail, /width="720"/);
+  assert.match(thumbnail, /height="1279"/);
+  assert.match(thumbnail, /loading="eager"/);
   assert.match(thumbnail, /fetchpriority="high"/);
+  assert.doesNotMatch(thumbnail, /loading="lazy"/);
 });
 
 test('V2.1 — continua em HTML, CSS e JS puros, com fontes self-hosted', () => {
