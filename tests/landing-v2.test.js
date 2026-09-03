@@ -98,7 +98,7 @@ test('V2.1 — há somente um fluxo de execução com seis etapas', () => {
 test('V2.1 — seções seguem a arquitetura final', () => {
   const order = [
     'id="vsl"', 'id="mecanismo"', 'id="demonstracao"', 'id="mostrar-primeiro"',
-    'id="processo"', 'id="depoimentos"', 'id="autoridade"', 'id="investimento"',
+    'id="prova-mecanismo"', 'id="processo"', 'id="depoimentos"', 'id="autoridade"', 'id="investimento"',
     'id="garantia"', 'id="faq"', 'id="cta-final"'
   ];
   let previous = -1;
@@ -117,24 +117,83 @@ test('V2.1 — promessa não usa calendário, renda ou urgência artificial', ()
     /\bem 7 dias\b/i, /7 dias de missões/i, /curso de 7 dias/i, /Dia\s*[1-7]\s*[—-]/,
     /primeira renda/i, /renda garantida/i, /resultado garantido/i,
     /liberdade financeira/i, /últimas vagas/i, /vagas limitadas/i, /countdown/i,
+    /só hoje/i, /termina em \d/i, /preço subindo/i, /\[DATA\]/,
     /<s>/, /<del>/, /de R\$\s*\d/i
   ]) assert.doesNotMatch(INDEX_VISIBLE, prohibited, `promessa proibida: ${prohibited}`);
 });
 
-test('V2.1 — materiais confirmados e oferta completa aparecem antes do preço', () => {
-  assert.match(INDEX_VISIBLE, /Prompt Raiz 1/);
-  assert.match(INDEX_VISIBLE, /Prompt Raiz 2/);
-  for (const invented of [/comunidade/i, /checklist/i, /\bbônus\b/i, /\bPDF\b/, /planilha/i]) {
-    assert.doesNotMatch(INDEX_VISIBLE, invented, `material não confirmado: ${invented}`);
+test('V2.1 — prova do mecanismo usa os dois prints reais e vem após Mostrar primeiro', () => {
+  const proof = INDEX_SOURCE.match(/<section[^>]*id="prova-mecanismo"[\s\S]*?<\/section>/);
+  assert.ok(proof, 'prova do mecanismo não encontrada');
+  assert.ok(INDEX_SOURCE.indexOf('id="mostrar-primeiro"') < INDEX_SOURCE.indexOf('id="prova-mecanismo"'));
+  assert.ok(INDEX_SOURCE.indexOf('id="prova-mecanismo"') < INDEX_SOURCE.indexOf('id="processo"'));
+  for (const name of ['conversa1.png', 'conversa2.png']) {
+    assert.ok(fs.existsSync(path.join(ROOT, 'assets', 'images', name)));
+    const tag = proof[0].match(new RegExp(`<img[^>]*src="assets/images/${name.replace('.', '\\.')}"[^>]*>`));
+    assert.ok(tag, `imagem ausente: ${name}`);
+    assert.match(tag[0], /loading="lazy"/);
+    assert.match(tag[0], /width="941"/);
+    assert.match(tag[0], /height="1672"/);
   }
+  assert.match(STYLE_SOURCE, /\.proof-grid\s*\{[^}]*display:\s*grid;/);
+  assert.match(STYLE_SOURCE, /@media \(min-width: 640px\)[\s\S]*?\.proof-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+  assert.match(proof[0], /Conversas reais após o envio de uma simulação visual\./);
+  assert.match(proof[0], /não representam garantia de contratação, venda ou resultado\./);
+  for (const prohibited of [/cliente fechado/i, /venda garantida/i, /contratação garantida/i, /resultado financeiro/i]) {
+    assert.doesNotMatch(proof[0], prohibited);
+  }
+});
+
+test('V2.1 — materiais centrais, informações de acesso e bônus aparecem antes do preço', () => {
+  const process = INDEX_SOURCE.match(/<section[^>]*id="processo"[\s\S]*?<\/section>/)[0];
+  assert.match(process, /Prompt Raiz 1/);
+  assert.match(process, /Prompt Raiz 2/);
+  assert.doesNotMatch(process, /\bbônus\b/i);
   const offer = INDEX_SOURCE.match(/<section[^>]*id="investimento"[\s\S]*?<\/section>/)[0];
-  const includes = offer.match(/<ul class="offer-includes">[\s\S]*?<\/ul>/)[0];
-  assert.equal(countOccurrences(includes, '<li>'), 8);
-  for (const item of [
-    'Processo completo', 'Prompt Raiz 1', 'Prompt Raiz 2', 'encontrar oportunidades',
-    'criar e apresentar', 'iniciar a abordagem', 'oferecer o serviço', 'seguir para a entrega'
-  ]) assert.match(includes, new RegExp(item, 'i'), `item ausente: ${item}`);
-  assert.ok(offer.indexOf('<ul class="offer-includes">') < offer.indexOf('R$97'));
+  assert.equal(countOccurrences(offer, 'class="offer-product"'), 3);
+  assert.match(offer, /Processo completo/);
+  assert.match(offer, /Encontrar → Criar → Mostrar → Abordar → Oferecer → Entregar/);
+  assert.match(offer, /Prompt Raiz 1/);
+  assert.match(offer, /Prompt Raiz 2/);
+  assert.match(offer, /7 aulas práticas · cerca de 2h de conteúdo · acesso vitalício · suporte \+ comunidade/);
+  assert.equal(countOccurrences(offer, 'class="bonus-card"'), 3);
+  for (const bonus of ['Kit de Abordagem Express', 'Pack de Prompts por Nicho', 'Fechamento Express']) {
+    assert.match(offer, new RegExp(bonus));
+  }
+  assert.ok(offer.indexOf('class="offer-stack"') < offer.indexOf('R$97'));
+  assert.ok(offer.indexOf('class="bonus-block"') < offer.indexOf('R$97'));
+  assert.doesNotMatch(offer, /R\$997|valor de R\$|<s>|<del>|de R\$\s*\d/i);
+});
+
+test('V2.1 — autoridade prioriza aplicação prática sem alegações financeiras', () => {
+  const author = INDEX_SOURCE.match(/<section[^>]*id="autoridade"[\s\S]*?<\/section>/)[0];
+  assert.match(author, /André Hoffmann/);
+  assert.match(author, /Criador do Método Express/);
+  assert.match(author, /testei a lógica na prática/);
+  assert.match(author, /Peguei perfis reais, criei simulações e apresentei a ideia diretamente aos negócios/);
+  assert.match(author, /Formado em Análise e Desenvolvimento de Sistemas e Marketing/);
+  assert.match(author, /transformar tecnologia e comunicação em um processo claro para executar/);
+  assert.doesNotMatch(author, /faturamento|R\$|\d+ clientes/i);
+});
+
+test('V2.1 — FAQ responde ferramentas, conteúdo, acesso e suporte', () => {
+  const faq = INDEX_SOURCE.match(/<section[^>]*id="faq"[\s\S]*?<\/section>/)[0];
+  for (const copy of [
+    'Qual ferramenta de inteligência artificial é usada?', 'ChatGPT', 'Grok',
+    'Preciso pagar ferramentas extras para começar?', 'Quanto conteúdo eu recebo?',
+    '7 aulas práticas', 'cerca de 2 horas', 'Por quanto tempo tenho acesso?',
+    'O acesso é vitalício.', 'Existe suporte?', 'suporte e comunidade'
+  ]) assert.match(faq, new RegExp(copy.replace(/[?+.]/g, '\\$&'), 'i'), `copy ausente: ${copy}`);
+  assert.doesNotMatch(faq, /100% grátis|nunca vai pagar nada/i);
+});
+
+test('V2.1 — favicon oficial usa somente o novo asset ME', () => {
+  const icon = INDEX_SOURCE.match(/<link rel="icon"[^>]*>/);
+  assert.ok(icon);
+  assert.match(icon[0], /type="image\/png"/);
+  assert.match(icon[0], /href="assets\/images\/favicon\.png"/);
+  assert.ok(fs.existsSync(path.join(ROOT, 'assets', 'images', 'favicon.png')));
+  assert.equal(countOccurrences(INDEX_BODY, 'assets/images/favicon.png'), 0);
 });
 
 test('V2.1 — dois CTAs Hotmart e suporte final mantêm os destinos aprovados', () => {
@@ -193,12 +252,13 @@ test('V2.1 — depoimentos ficam lado a lado no desktop e fora do caminho críti
     assert.match(tag, /width="\d+"/);
     assert.match(tag, /height="\d+"/);
   }
+  assert.doesNotMatch(INDEX_VISIBLE, /\bPIX\b|R\$\s*3[.]?500/i);
 });
 
 test('V2.1 — imagens locais são lazy e thumbnail da VSL tem prioridade alta', () => {
   const images = INDEX_SOURCE.match(/<img[^>]*>/g) || [];
   const local = images.filter((tag) => /src="assets\//.test(tag));
-  assert.equal(local.length, 3);
+  assert.equal(local.length, 5);
   for (const tag of local) {
     assert.match(tag, /loading="lazy"/);
     assert.match(tag, /width="\d+"/);

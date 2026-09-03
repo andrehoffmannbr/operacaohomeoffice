@@ -24,8 +24,8 @@
   <meta name="twitter:image" content="https://operacaohomeoffice.vercel.app/assets/images/og-image.jpg">
 
   <meta name="theme-color" content="#071111">
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
-  <link rel="apple-touch-icon" href="assets/icons/favicon.svg">
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="assets/images/favicon.png">
   <link rel="preload" href="assets/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/sora-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preconnect" href="https://i.ytimg.com" crossorigin>
@@ -428,6 +428,39 @@
       font-size: 0.9rem;
     }
 
+    .proof-section { padding-top: 54px; padding-bottom: 58px; }
+
+    .proof-grid {
+      display: grid;
+      gap: 16px;
+      max-width: 980px;
+      margin: 26px auto 0;
+    }
+
+    .proof-card {
+      margin: 0;
+      padding: 6px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #FFFFFF;
+      box-shadow: 0 14px 40px rgba(7, 17, 17, 0.08);
+    }
+
+    .proof-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 14px;
+    }
+
+    .proof-caption {
+      margin-top: 18px;
+      color: var(--teal-ink);
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
     .process-flow {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -551,6 +584,18 @@
 
     .author-copy p + p { margin-top: 13px; }
 
+    .author-question {
+      padding-left: 14px;
+      border-left: 2px solid var(--teal);
+      color: var(--white);
+      font-weight: 700;
+    }
+
+    .author-credentials {
+      color: #94AAA6;
+      font-size: 0.86rem;
+    }
+
     .offer-card {
       max-width: 760px;
       margin: 30px auto 0;
@@ -561,35 +606,87 @@
       box-shadow: 0 24px 65px rgba(7, 17, 17, 0.12);
     }
 
-    .offer-includes {
+    .offer-facts {
+      margin-top: 20px;
+      padding: 13px 16px;
+      border: 1px solid rgba(8, 175, 166, 0.3);
+      border-radius: var(--radius-sm);
+      color: #075D58;
+      background: rgba(15, 203, 192, 0.08);
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .offer-stack {
       display: grid;
-      gap: 10px;
+      gap: 12px;
       margin-top: 24px;
     }
 
-    .offer-includes li {
-      position: relative;
-      padding: 12px 12px 12px 42px;
+    .offer-product {
+      padding: 16px;
       border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       color: var(--muted);
       background: var(--light);
     }
 
-    .offer-includes li::before {
-      content: '✓';
-      position: absolute;
-      left: 13px;
-      top: 12px;
-      display: grid;
-      place-items: center;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      color: #063E3A;
-      background: var(--teal);
-      font-size: 0.72rem;
+    .offer-product-title {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
       font-weight: 800;
+      letter-spacing: 0.035em;
+      text-transform: uppercase;
+    }
+
+    .offer-process {
+      color: var(--teal-ink);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .bonus-block {
+      margin-top: 26px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .bonus-title {
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: 1.08rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .bonus-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .bonus-card {
+      padding: 15px;
+      border: 1px solid rgba(8, 175, 166, 0.24);
+      border-radius: var(--radius-md);
+      background: rgba(15, 203, 192, 0.055);
+    }
+
+    .bonus-card h3 {
+      margin-bottom: 6px;
+      color: #075D58;
+      font-size: 0.92rem;
+    }
+
+    .bonus-card p {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.55;
     }
 
     .offer-note {
@@ -692,7 +789,7 @@
       justify-content: space-between;
       gap: 14px;
       width: 100%;
-      padding: 19px 2px;
+      padding: 16px 2px;
       border: 0;
       color: var(--ink);
       background: transparent;
@@ -789,9 +886,12 @@
       .ba-shot { width: auto; }
       .ba-arrow { transform: rotate(-90deg); }
       .ways { grid-template-columns: 1fr 1fr; }
+      .proof-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .prompt-assets { grid-template-columns: 1fr 1fr; }
       .testimonials { grid-template-columns: 1fr 1fr; }
-      .offer-includes { grid-template-columns: 1fr 1fr; }
+      .offer-stack { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .offer-product:first-child { grid-column: 1 / -1; }
+      .bonus-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .author-card { grid-template-columns: minmax(240px, 320px) 1fr; padding: 30px; }
     }
 
@@ -826,6 +926,12 @@
     @media (min-width: 1024px) {
       .section { padding: 94px 0; }
       .hero h1 { font-size: 3.7rem; }
+    }
+
+    @media (max-width: 359px) {
+      .proof-section .container,
+      #investimento .container { padding-left: 12px; padding-right: 12px; }
+      .offer-card { padding-left: 14px; padding-right: 14px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -957,7 +1063,7 @@
           <article class="way-card">
             <p class="way-tag">Jeito 1</p>
             <blockquote>“Oi, eu trabalho com redes sociais e gostaria de apresentar meus serviços.”</blockquote>
-            <p class="way-note">O cliente ainda precisa descobrir quem você é, entender o que você faz e imaginar como aquilo poderia ajudá-lo.</p>
+            <p class="way-note">O cliente ainda precisa imaginar.</p>
           </article>
           <article class="way-card way-card-strong">
             <p class="way-tag">Jeito 2</p>
@@ -967,11 +1073,31 @@
         </div>
 
         <p class="closing">Na primeira situação, o cliente precisa imaginar.<br>Na segunda, ele consegue ver.</p>
-        <p class="closing">E essa é uma das principais ideias por trás do Método Express.</p>
       </div>
     </section>
 
-    <section class="section section-light" id="processo" aria-labelledby="processo-titulo">
+    <section class="section section-light proof-section" id="prova-mecanismo" aria-labelledby="prova-mecanismo-titulo">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="prova-mecanismo-titulo">Quando você mostra algo concreto, <span class="accent">a conversa muda.</span></h2>
+          <p class="prose">Essas conversas começaram com uma simulação visual enviada para negócios reais.</p>
+        </div>
+
+        <div class="proof-grid">
+          <figure class="proof-card">
+            <img src="assets/images/conversa1.png" alt="Conversa real após o envio de uma simulação visual para uma imobiliária" width="941" height="1672" loading="lazy" decoding="async">
+          </figure>
+          <figure class="proof-card">
+            <img src="assets/images/conversa2.png" alt="Conversa real após o envio de uma simulação visual para uma hamburgueria" width="941" height="1672" loading="lazy" decoding="async">
+          </figure>
+        </div>
+
+        <p class="proof-caption">Conversas reais após o envio de uma simulação visual.</p>
+        <p class="disclaimer">As respostas demonstram interesse em entender o serviço e não representam garantia de contratação, venda ou resultado.</p>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="processo" aria-labelledby="processo-titulo">
       <div class="container">
         <div class="section-head"><h2 id="processo-titulo">Você não recebe só aulas. <span class="accent">Recebe um processo para executar.</span></h2></div>
 
@@ -998,7 +1124,7 @@
       </div>
     </section>
 
-    <section class="section section-alt" id="depoimentos" aria-labelledby="depoimentos-titulo">
+    <section class="section section-light" id="depoimentos" aria-labelledby="depoimentos-titulo">
       <div class="container">
         <div class="section-head">
           <h2 id="depoimentos-titulo">Veja quem já colocou o processo em prática.</h2>
@@ -1024,15 +1150,13 @@
           <div class="author-copy prose">
             <p class="author-name">André Hoffmann</p>
             <p class="author-role">Criador do Método Express</p>
-            <p>Formado em Análise e Desenvolvimento de Sistemas e Marketing, eu sempre estive no ponto de encontro entre tecnologia e comunicação.</p>
-            <p>E uma coisa ficou cada vez mais clara para mim:</p>
-            <p>as novas ferramentas tornaram muito mais fácil criar.</p>
-            <p>Mas saber usar uma ferramenta não significa saber o que fazer com ela.</p>
-            <p>Foi por isso que organizei o Método Express.</p>
-            <p>Um processo para usar inteligência artificial com um objetivo específico:</p>
-            <p>criar algo concreto para mostrar a um possível cliente antes de tentar vender o serviço.</p>
-            <p><strong>Menos teoria solta.</strong></p>
-            <p><strong>Mais clareza sobre qual é o próximo passo.</strong></p>
+            <p>Antes de organizar isso em um método, eu testei a lógica na prática.</p>
+            <p>Peguei perfis reais, criei simulações e apresentei a ideia diretamente aos negócios.</p>
+            <p>A pergunta era simples:</p>
+            <p class="author-question">mostrar uma possibilidade concreta antes de tentar vender mudaria a conversa?</p>
+            <p>Foi a partir dessa lógica que organizei o Método Express.</p>
+            <p class="author-credentials">Formado em Análise e Desenvolvimento de Sistemas e Marketing.</p>
+            <p>O objetivo foi transformar tecnologia e comunicação em um processo claro para executar.</p>
           </div>
         </div>
       </div>
@@ -1043,19 +1167,48 @@
         <div class="section-head">
           <h2 id="oferta-titulo">Você não está comprando mais um curso sobre inteligência artificial.</h2>
           <div class="prose">
-            <p>Você está recebendo um processo específico para usar a IA com um objetivo:</p>
-            <p>encontrar uma oportunidade, criar uma transformação, apresentar a ideia e saber como seguir caso o negócio queira contratar o serviço.</p>
+            <p>Você recebe um processo para saber o que procurar, o que criar, como mostrar e como seguir quando um negócio demonstra interesse.</p>
           </div>
         </div>
 
         <div class="offer-card">
-          <ul class="offer-includes">
-            <li>Processo completo do início à entrega</li><li>Prompt Raiz 1</li><li>Prompt Raiz 2</li><li>Como encontrar oportunidades</li><li>Como criar e apresentar a transformação</li><li>Como iniciar a abordagem</li><li>Como oferecer o serviço</li><li>Como seguir para a entrega</li>
-          </ul>
+          <p class="offer-facts">7 aulas práticas · cerca de 2h de conteúdo · acesso vitalício · suporte + comunidade</p>
+
+          <div class="offer-stack" aria-label="Componentes centrais do Método Express">
+            <article class="offer-product">
+              <span class="offer-product-title">Processo completo</span>
+              <p class="offer-process">Encontrar → Criar → Mostrar → Abordar → Oferecer → Entregar</p>
+            </article>
+            <article class="offer-product">
+              <span class="offer-product-title">Prompt Raiz 1</span>
+              <p>Para orientar a criação da transformação.</p>
+            </article>
+            <article class="offer-product">
+              <span class="offer-product-title">Prompt Raiz 2</span>
+              <p>Para ajudar você a seguir para a entrega depois do fechamento.</p>
+            </article>
+          </div>
+
+          <div class="bonus-block">
+            <p class="bonus-title">Bônus de implementação</p>
+            <div class="bonus-grid">
+              <article class="bonus-card">
+                <h3>Kit de Abordagem Express</h3>
+                <p>Modelos de mensagem para iniciar a conversa, enviar a simulação, fazer follow-up e responder quando o negócio demonstra interesse.</p>
+              </article>
+              <article class="bonus-card">
+                <h3>Pack de Prompts por Nicho</h3>
+                <p>Aplicações guiadas para adaptar o processo a diferentes tipos de negócio, como hamburguerias, barbearias, salões, pet shops, imobiliárias e outros nichos.</p>
+              </article>
+              <article class="bonus-card">
+                <h3>Fechamento Express</h3>
+                <p>Orientação prática para saber como conduzir a conversa quando o negócio responde “como funciona?”, apresentar o serviço, lidar com objeções e encaminhar para o fechamento.</p>
+              </article>
+            </div>
+          </div>
 
           <div class="offer-note">
-            <p>Você não precisa descobrir sozinho o que fazer depois de cada etapa.</p>
-            <p><strong>O processo já foi organizado para você executar.</strong></p>
+            <p>Conteúdo direto ao ponto, organizado para você saber qual é o próximo passo.</p>
           </div>
 
           <div class="offer-price-block">
@@ -1093,10 +1246,6 @@
             <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1"><p><strong>Não.</strong><br>O método foi estruturado para que você consiga começar mesmo sem experiência profissional em design.</p></div>
           </div>
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-2" aria-expanded="false" aria-controls="faq-answer-2"><span>Preciso entender de inteligência artificial?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2"><p><strong>Não.</strong><br>Você vai aprender como utilizar a ferramenta dentro do processo e terá os Prompts Raiz para orientar etapas específicas.</p></div>
-          </div>
-          <div class="faq-item">
             <button class="faq-question" id="faq-question-3" aria-expanded="false" aria-controls="faq-answer-3"><span>Preciso de computador?</span><span class="faq-icon" aria-hidden="true">+</span></button>
             <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3"><p>A primeira transformação pode ser criada pelo celular.<br><br>Um computador pode facilitar algumas etapas posteriores, mas não é necessário para entender e começar o processo.</p></div>
           </div>
@@ -1111,6 +1260,18 @@
           <div class="faq-item">
             <button class="faq-question" id="faq-question-6" aria-expanded="false" aria-controls="faq-answer-6"><span>O resultado é garantido?</span><span class="faq-icon" aria-hidden="true">+</span></button>
             <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6"><p><strong>Não.</strong><br>O Método Express entrega o processo, os materiais e a orientação.<br><br>Conseguir clientes e gerar resultados depende da execução, da qualidade do trabalho, das abordagens realizadas e de outros fatores individuais.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" id="faq-question-7" aria-expanded="false" aria-controls="faq-answer-7"><span>Qual ferramenta de inteligência artificial é usada?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-7" role="region" aria-labelledby="faq-question-7"><p>O método pode ser aplicado com ferramentas como ChatGPT e Grok.<br><br>A lógica não depende de uma única plataforma: você aprende o processo e pode usar ferramentas capazes de criar a transformação.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" id="faq-question-8" aria-expanded="false" aria-controls="faq-answer-8"><span>Preciso pagar ferramentas extras para começar?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-8" role="region" aria-labelledby="faq-question-8"><p>Existem opções que permitem começar sem contratar uma estrutura cara de ferramentas. Ao longo do método, você entende quais ferramentas podem ser usadas em cada etapa.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" id="faq-question-9" aria-expanded="false" aria-controls="faq-answer-9"><span>Quanto conteúdo eu recebo?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-9" role="region" aria-labelledby="faq-question-9"><p>O Método Express tem 7 aulas práticas, com cerca de 2 horas de conteúdo direto ao ponto.<br><br><strong>Por quanto tempo tenho acesso?</strong> O acesso é vitalício.<br><br><strong>Existe suporte?</strong> Sim. O aluno tem acesso a suporte e comunidade.</p></div>
           </div>
         </div>
       </div>
