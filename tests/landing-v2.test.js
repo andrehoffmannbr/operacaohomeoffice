@@ -24,6 +24,10 @@ function countOccurrences(haystack, needle) {
   return haystack.split(needle).length - 1;
 }
 
+function visibleText(fragment) {
+  return fragment.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+}
+
 test('V2.1 — hero segue a ordem H1, VSL e microcopy', () => {
   const hero = INDEX_BODY.match(/<header class="hero"[\s\S]*?<\/header>/);
   assert.ok(hero, 'hero não encontrado');
@@ -107,7 +111,7 @@ test('V2.1 — há somente um fluxo de execução com seis etapas', () => {
 test('V2.1 — seções seguem a arquitetura final', () => {
   const order = [
     'id="vsl"', 'id="mecanismo"', 'id="demonstracao"', 'id="mostrar-primeiro"',
-    'id="prova-mecanismo"', 'id="processo"', 'id="depoimentos"', 'id="autoridade"', 'id="investimento"',
+    'id="prova-mecanismo"', 'id="processo"', 'id="depoimentos"', 'id="investimento"', 'id="autoridade"',
     'id="garantia"', 'id="faq"', 'id="cta-final"'
   ];
   let previous = -1;
@@ -122,9 +126,13 @@ test('V2.1 — seções seguem a arquitetura final', () => {
 test('V2.1 — urgência real não reintroduz promessas ou artifícios', () => {
   assert.match(INDEX_VISIBLE, /Você tem 7 dias para conhecer o Método Express\./);
   assert.match(INDEX_VISIBLE, /7 dias de garantia/);
-  assert.equal(countOccurrences(INDEX_VISIBLE, '10/09 às 23h59'), 2);
-  assert.match(INDEX_VISIBLE, /Entrando até 10\/09 às 23h59, os três bônus abaixo ficam incluídos no seu acesso\./);
-  assert.match(INDEX_VISIBLE, /Entre até 10\/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso\./);
+  assert.equal(countOccurrences(INDEX_VISIBLE, '15/09 às 23h59'), 3);
+  assert.equal(countOccurrences(INDEX_VISIBLE, 'datetime="2026-09-15T23:59:00-03:00"'), 3);
+  assert.doesNotMatch(INDEX_VISIBLE, /10\/09/);
+  const pageText = visibleText(INDEX_BODY);
+  assert.match(pageText, /Eles ficam incluídos nesta oferta até 15\/09 às 23h59\./);
+  assert.match(pageText, /Entrando até 15\/09 às 23h59, os três bônus abaixo ficam incluídos no seu acesso\./);
+  assert.match(pageText, /Entre até 15\/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso\./);
   for (const prohibited of [
     /\bem 7 dias\b/i, /7 dias de missões/i, /curso de 7 dias/i, /Dia\s*[1-7]\s*[—-]/,
     /primeira renda/i, /renda garantida/i, /resultado garantido/i,
@@ -150,7 +158,16 @@ test('V2.1 — prova do mecanismo usa os dois prints reais e vem após Mostrar p
   assert.match(STYLE_SOURCE, /\.proof-grid\s*\{[^}]*display:\s*grid;/);
   assert.match(STYLE_SOURCE, /@media \(min-width: 640px\)[\s\S]*?\.proof-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
   assert.match(proof[0], /Quando você mostra,[\s\S]*a conversa muda\./);
-  assert.match(proof[0], /Conversas reais após o envio de uma simulação visual\./);
+  assert.equal(countOccurrences(proof[0], 'class="proof-result"'), 2);
+  assert.equal(countOccurrences(proof[0], 'Depois de ver a simulação, o negócio quis entender como o serviço funcionava e a conversa avançou para proposta.'), 2);
+  assert.equal(countOccurrences(proof[0], 'class="founder-case"'), 1);
+  assert.match(proof[0], /Mostrar abre a conversa\. Prospectar transforma conversa em oportunidade\./);
+  assert.match(proof[0], /Na minha primeira semana aplicando essa lógica, abordei cerca de 10 negócios\./);
+  assert.match(proof[0], /Um deles se tornou meu primeiro cliente por R\$700\./);
+  assert.match(proof[0], /Não foi esperar alguém aparecer\./);
+  assert.match(proof[0], /Foi procurar negócios, mostrar o trabalho e conversar\./);
+  assert.match(visibleText(proof[0]), /≈ 10\s*negócios abordados → 1\s*cliente → R\$700/);
+  assert.equal(countOccurrences(proof[0], 'R$700'), 2);
   assert.doesNotMatch(proof[0], /não representam garantia de contratação, venda ou resultado/i);
   for (const prohibited of [/cliente fechado/i, /venda garantida/i, /contratação garantida/i, /resultado financeiro/i]) {
     assert.doesNotMatch(proof[0], prohibited);
@@ -159,14 +176,18 @@ test('V2.1 — prova do mecanismo usa os dois prints reais e vem após Mostrar p
 
 test('V2.1 — materiais centrais, informações de acesso e bônus aparecem antes do preço', () => {
   const process = INDEX_SOURCE.match(/<section[^>]*id="processo"[\s\S]*?<\/section>/)[0];
-  assert.doesNotMatch(process, /\bbônus\b/i);
+  assert.match(process, /Com um print, um celular e a IA, você consegue criar uma primeira simulação em poucos minutos\./);
+  assert.match(process, /Continue descendo\. Eu preparei 3 bônus de implementação para facilitar seus primeiros passos\./);
+  assert.doesNotMatch(process, /Kit de Abordagem Express|Pack de Prompts por Nicho|Fechamento Express/);
   const offer = INDEX_SOURCE.match(/<section[^>]*id="investimento"[\s\S]*?<\/section>/)[0];
-  assert.equal(countOccurrences(offer, 'class="offer-product"'), 3);
+  assert.match(offer, /O que você recebe ao entrar/);
+  assert.equal(countOccurrences(offer, 'class="offer-product"'), 2);
   assert.match(offer, /Processo completo/);
   assert.match(offer, /Encontrar → Criar → Mostrar → Abordar → Oferecer → Entregar/);
-  assert.match(offer, /Prompt Raiz 1/);
-  assert.match(offer, /Prompt Raiz 2/);
-  assert.match(offer, /7 aulas práticas · cerca de 2h · acesso vitalício · suporte direto via WhatsApp \+ comunidade/);
+  assert.match(offer, /Prompt Raiz 1 \+ Prompt Raiz 2/);
+  for (const fact of ['7 aulas práticas', 'cerca de 2h', 'Acesso vitalício', 'Suporte direto', 'via WhatsApp + comunidade']) {
+    assert.match(offer, new RegExp(fact.replace(/[+]/g, '\\+'), 'i'));
+  }
   assert.equal(countOccurrences(offer, 'class="bonus-card"'), 3);
   for (const bonus of ['Kit de Abordagem Express', 'Pack de Prompts por Nicho', 'Fechamento Express']) {
     assert.match(offer, new RegExp(bonus));
@@ -227,7 +248,7 @@ test('V2.1 — dois CTAs Hotmart e suporte final mantêm os destinos aprovados',
   const final = INDEX_SOURCE.match(/<section[^>]*id="cta-final"[\s\S]*?<\/section>/)[0];
   assert.match(final, /Você já tem o principal para começar:[\s\S]*um celular e um caminho\./);
   assert.match(final, /Agora é você quem decide quantos negócios vai abordar e até onde quer levar essa habilidade\./);
-  assert.match(final, /Entre até 10\/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso\./);
+  assert.match(visibleText(final), /Entre até 15\/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso\./);
   assert.match(final, /Quero entrar no Método Express/i);
   assert.match(SCRIPT_SOURCE, new RegExp(`WHATSAPP_NUMERO = '${WHATSAPP_NUMBER}'`));
 });
