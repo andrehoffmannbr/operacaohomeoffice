@@ -30,9 +30,10 @@ test('V2.1 — hero segue a ordem H1, VSL e microcopy', () => {
   assert.equal(countOccurrences(hero[0], '<h1'), 1);
   const h1 = hero[0].match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1];
   const text = h1.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-  assert.equal(text, 'Veja como um simples print pode virar algo concreto para mostrar a um negócio.');
-  assert.match(h1, /<span class="accent">algo concreto<\/span>/);
-  assert.match(hero[0], /Em menos de 3 minutos/);
+  assert.equal(text, 'Pare de pedir uma chance. Mostre por que um negócio deveria contratar você.');
+  assert.match(h1, /<span class="accent">contratar você<\/span>/);
+  assert.match(hero[0], /Em menos de 3 minutos,[\s\S]*usar um celular e inteligência artificial/);
+  assert.match(hero[0], /apresentar isso a negócios reais e abrir uma conversa comercial de um jeito diferente/);
   assert.match(hero[0], /id="vslPlayer"/);
   assert.ok(hero[0].indexOf('<h1') < hero[0].indexOf('id="vslPlayer"'));
   assert.ok(hero[0].indexOf('id="vslPlayer"') < hero[0].indexOf('class="hero-sub"'));
@@ -60,6 +61,8 @@ test('V2.1 — mecanismo separado apresenta a sequência em quatro passos', () =
   const section = INDEX_SOURCE.match(/<section[^>]*id="mecanismo"[\s\S]*?<\/section>/);
   assert.ok(section);
   assert.match(section[0], /Pegue um print de um Instagram\. Use um prompt\./);
+  assert.match(section[0], /Você não precisa começar tentando convencer alguém de que sabe fazer\./);
+  assert.match(section[0], /Primeiro, você mostra\./);
   assert.equal(countOccurrences(section[0], 'class="mechanism-card"'), 4);
   let previous = -1;
   for (const step of ['1 celular', '1 print', '1 prompt', 'Uma transformação para mostrar']) {
@@ -76,7 +79,8 @@ test('V2.1 — antes/depois empilha no mobile e fica lado a lado a partir de 640
   assert.ok(section);
   assert.equal(countOccurrences(section[0], 'class="ba-shot'), 2);
   assert.equal(countOccurrences(section[0], '<img '), 2);
-  assert.match(section[0], /Simulação visual\. Não representa crescimento de seguidores, vendas ou faturamento\./);
+  assert.match(section[0], /Simulação visual de apresentação do perfil\./);
+  assert.doesNotMatch(section[0], /crescimento de seguidores|vendas ou faturamento/i);
 });
 
 test('V2.1 — há somente um fluxo de execução com seis etapas', () => {
@@ -85,15 +89,19 @@ test('V2.1 — há somente um fluxo de execução com seis etapas', () => {
   assert.ok(process);
   assert.equal(countOccurrences(process[0], '<li>'), 6);
   let previous = -1;
-  for (const step of ['Encontrar', 'Criar', 'Mostrar', 'Abordar', 'Oferecer', 'Entregar']) {
-    const position = process[0].indexOf(`>${step}</li>`);
+  for (const step of [
+    'Encontrar possíveis clientes', 'Criar a transformação', 'Mostrar antes de vender',
+    'Abrir a conversa', 'Apresentar a proposta', 'Fechar e entregar'
+  ]) {
+    const position = process[0].indexOf(`>${step}</strong>`);
     assert.ok(position > previous, `etapa ausente ou fora de ordem: ${step}`);
     previous = position;
   }
   const section = INDEX_SOURCE.match(/<section[^>]*id="processo"[\s\S]*?<\/section>/)[0];
-  for (const niche of ['Barbearias', 'Salões', 'Hamburguerias', 'Cafeterias', 'Lojas', 'Imobiliárias']) {
-    assert.match(section, new RegExp(niche));
-  }
+  assert.match(section, /Transforme a IA em uma habilidade simples que pode virar[\s\S]*serviço e renda/);
+  assert.match(section, /A ideia não é largar tudo amanhã\. É começar a construir uma segunda opção\./);
+  assert.match(section, /Por trás de cada etapa existe um processo: prompts, scripts, follow-up, proposta, negociação e entrega\./);
+  assert.match(section, /É isso que você aprende dentro do Método Express\./);
 });
 
 test('V2.1 — seções seguem a arquitetura final', () => {
@@ -111,9 +119,12 @@ test('V2.1 — seções seguem a arquitetura final', () => {
   }
 });
 
-test('V2.1 — promessa não usa calendário, renda ou urgência artificial', () => {
+test('V2.1 — urgência real não reintroduz promessas ou artifícios', () => {
   assert.match(INDEX_VISIBLE, /Você tem 7 dias para conhecer o Método Express\./);
   assert.match(INDEX_VISIBLE, /7 dias de garantia/);
+  assert.equal(countOccurrences(INDEX_VISIBLE, '10/09 às 23h59'), 2);
+  assert.match(INDEX_VISIBLE, /Entrando até 10\/09 às 23h59, os três bônus abaixo ficam incluídos no seu acesso\./);
+  assert.match(INDEX_VISIBLE, /Entre até 10\/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso\./);
   for (const prohibited of [
     /\bem 7 dias\b/i, /7 dias de missões/i, /curso de 7 dias/i, /Dia\s*[1-7]\s*[—-]/,
     /primeira renda/i, /renda garantida/i, /resultado garantido/i,
@@ -138,8 +149,9 @@ test('V2.1 — prova do mecanismo usa os dois prints reais e vem após Mostrar p
   }
   assert.match(STYLE_SOURCE, /\.proof-grid\s*\{[^}]*display:\s*grid;/);
   assert.match(STYLE_SOURCE, /@media \(min-width: 640px\)[\s\S]*?\.proof-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+  assert.match(proof[0], /Quando você mostra,[\s\S]*a conversa muda\./);
   assert.match(proof[0], /Conversas reais após o envio de uma simulação visual\./);
-  assert.match(proof[0], /não representam garantia de contratação, venda ou resultado\./);
+  assert.doesNotMatch(proof[0], /não representam garantia de contratação, venda ou resultado/i);
   for (const prohibited of [/cliente fechado/i, /venda garantida/i, /contratação garantida/i, /resultado financeiro/i]) {
     assert.doesNotMatch(proof[0], prohibited);
   }
@@ -147,8 +159,6 @@ test('V2.1 — prova do mecanismo usa os dois prints reais e vem após Mostrar p
 
 test('V2.1 — materiais centrais, informações de acesso e bônus aparecem antes do preço', () => {
   const process = INDEX_SOURCE.match(/<section[^>]*id="processo"[\s\S]*?<\/section>/)[0];
-  assert.match(process, /Prompt Raiz 1/);
-  assert.match(process, /Prompt Raiz 2/);
   assert.doesNotMatch(process, /\bbônus\b/i);
   const offer = INDEX_SOURCE.match(/<section[^>]*id="investimento"[\s\S]*?<\/section>/)[0];
   assert.equal(countOccurrences(offer, 'class="offer-product"'), 3);
@@ -156,37 +166,45 @@ test('V2.1 — materiais centrais, informações de acesso e bônus aparecem ant
   assert.match(offer, /Encontrar → Criar → Mostrar → Abordar → Oferecer → Entregar/);
   assert.match(offer, /Prompt Raiz 1/);
   assert.match(offer, /Prompt Raiz 2/);
-  assert.match(offer, /7 aulas práticas · cerca de 2h de conteúdo · acesso vitalício · suporte \+ comunidade/);
+  assert.match(offer, /7 aulas práticas · cerca de 2h · acesso vitalício · suporte direto via WhatsApp \+ comunidade/);
   assert.equal(countOccurrences(offer, 'class="bonus-card"'), 3);
   for (const bonus of ['Kit de Abordagem Express', 'Pack de Prompts por Nicho', 'Fechamento Express']) {
     assert.match(offer, new RegExp(bonus));
   }
-  assert.match(offer, /Como conduzir a conversa quando o negócio demonstra interesse, montar uma proposta, definir o preço do serviço, apresentar o valor, responder objeções e encaminhar para o fechamento\./);
+  assert.match(offer, /Como conduzir a conversa, montar uma proposta, definir o preço do serviço, apresentar o valor, responder objeções e encaminhar para o fechamento\./);
+  assert.match(offer, /O acesso ao Método Express custa <strong>R\$97<\/strong>/);
+  assert.match(offer, /10 artes \+ melhorias na apresentação do perfil/);
+  assert.match(offer, /valor de referência em torno de <strong>R\$700<\/strong>/);
+  assert.match(offer, /mais de 7 vezes o valor de acesso ao Método Express/);
+  assert.match(offer, /Valores podem variar conforme pacote e negociação\./);
   assert.ok(offer.indexOf('class="offer-stack"') < offer.indexOf('R$97'));
   assert.ok(offer.indexOf('class="bonus-block"') < offer.indexOf('R$97'));
-  assert.doesNotMatch(offer, /R\$997|valor de R\$|<s>|<del>|de R\$\s*\d/i);
+  assert.doesNotMatch(offer, /R\$997|<s>|<del>|de R\$\s*\d/i);
 });
 
 test('V2.1 — autoridade prioriza aplicação prática sem alegações financeiras', () => {
   const author = INDEX_SOURCE.match(/<section[^>]*id="autoridade"[\s\S]*?<\/section>/)[0];
   assert.match(author, /André Hoffmann/);
   assert.match(author, /Criador do Método Express/);
-  assert.match(author, /testei a lógica na prática/);
-  assert.match(author, /Peguei perfis reais, criei simulações e apresentei a ideia diretamente aos negócios/);
+  assert.match(author, /testei a lógica com negócios reais/);
+  assert.match(author, /Peguei perfis, criei simulações e apresentei a ideia diretamente para os donos/);
+  assert.match(author, /mostrar uma transformação antes de tentar vender mudaria a conversa/);
   assert.match(author, /Formado em Análise e Desenvolvimento de Sistemas e Marketing/);
-  assert.match(author, /transformar tecnologia e comunicação em um processo claro para executar/);
+  assert.match(author, /unir tecnologia, comunicação e prospecção em um caminho simples de executar/);
   assert.doesNotMatch(author, /faturamento|R\$|\d+ clientes/i);
 });
 
 test('V2.1 — FAQ responde ferramentas, conteúdo, acesso e suporte', () => {
   const faq = INDEX_SOURCE.match(/<section[^>]*id="faq"[\s\S]*?<\/section>/)[0];
   for (const copy of [
-    'Qual ferramenta de inteligência artificial é usada?', 'ChatGPT', 'Grok',
-    'Preciso pagar ferramentas extras para começar?', 'Quanto conteúdo eu recebo?',
+    'Preciso saber design?', 'Preciso entender de inteligência artificial?', 'Preciso de computador?',
+    'Quais ferramentas são usadas?', 'ChatGPT', 'Grok', 'Quanto conteúdo eu recebo?',
     '7 aulas práticas', 'cerca de 2 horas', 'Por quanto tempo tenho acesso?',
-    'O acesso é vitalício.', 'Existe suporte?', 'suporte e comunidade'
+    'O acesso é vitalício.', 'Existe suporte?', 'suporte direto via WhatsApp', 'comunidade',
+    'Preciso já ter clientes ou seguidores?'
   ]) assert.match(faq, new RegExp(copy.replace(/[?+.]/g, '\\$&'), 'i'), `copy ausente: ${copy}`);
-  assert.doesNotMatch(faq, /100% grátis|nunca vai pagar nada/i);
+  assert.equal(countOccurrences(faq, 'class="faq-item"'), 8);
+  assert.doesNotMatch(faq, /O resultado é garantido|Preciso pagar ferramentas extras|100% grátis|nunca vai pagar nada/i);
 });
 
 test('V2.1 — favicon oficial usa somente o novo asset ME', () => {
@@ -206,6 +224,11 @@ test('V2.1 — dois CTAs Hotmart e suporte final mantêm os destinos aprovados',
   assert.match(INDEX_SOURCE, /id="whatsappSuporte"/);
   assert.match(INDEX_SOURCE, new RegExp(`https://wa\\.me/${WHATSAPP_NUMBER}`));
   assert.match(INDEX_VISIBLE, /Ficou com alguma dúvida sobre acesso ou pagamento\?/);
+  const final = INDEX_SOURCE.match(/<section[^>]*id="cta-final"[\s\S]*?<\/section>/)[0];
+  assert.match(final, /Você já tem o principal para começar:[\s\S]*um celular e um caminho\./);
+  assert.match(final, /Agora é você quem decide quantos negócios vai abordar e até onde quer levar essa habilidade\./);
+  assert.match(final, /Entre até 10\/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso\./);
+  assert.match(final, /Quero entrar no Método Express/i);
   assert.match(SCRIPT_SOURCE, new RegExp(`WHATSAPP_NUMERO = '${WHATSAPP_NUMBER}'`));
 });
 
@@ -254,6 +277,9 @@ test('V2.1 — depoimentos ficam lado a lado no desktop e fora do caminho críti
     assert.match(tag, /width="\d+"/);
     assert.match(tag, /height="\d+"/);
   }
+  const testimonials = INDEX_SOURCE.match(/<section[^>]*id="depoimentos"[\s\S]*?<\/section>/)[0];
+  assert.match(testimonials, /pessoas que saíram da teoria e começaram a executar\./);
+  assert.doesNotMatch(testimonials, /Cada experiência é individual|não garante clientes, vendas ou renda/i);
   assert.doesNotMatch(INDEX_VISIBLE, /\bPIX\b|R\$\s*3[.]?500/i);
 });
 

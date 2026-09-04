@@ -462,7 +462,7 @@
 
     .process-flow {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr;
       gap: 10px;
       max-width: 980px;
       margin: 28px auto;
@@ -471,26 +471,43 @@
 
     .process-flow li {
       counter-increment: process;
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      column-gap: 10px;
+      align-items: start;
       min-width: 0;
-      padding: 15px 10px;
+      padding: 15px;
       border: 1px solid rgba(8, 175, 166, 0.23);
       border-radius: var(--radius-sm);
       background: #FFFFFF;
-      font-family: var(--font-display);
-      font-size: clamp(0.72rem, 3.2vw, 0.88rem);
-      font-weight: 800;
-      text-align: center;
-      text-transform: uppercase;
     }
 
     .process-flow li::before {
       content: '0' counter(process);
-      display: block;
-      margin-bottom: 4px;
+      grid-row: 1 / span 2;
       color: var(--teal-ink);
+      font-family: var(--font-display);
       font-size: 0.67rem;
+      font-weight: 800;
       letter-spacing: 0.12em;
     }
+
+    .process-flow strong {
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .process-flow span {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .process-closing p + p { margin-top: 10px; }
 
     .prompt-assets {
       display: grid;
@@ -663,6 +680,16 @@
       text-align: center;
     }
 
+    .offer-urgency {
+      max-width: 58ch;
+      margin: 10px auto 0;
+      color: #075D58;
+      font-size: 0.86rem;
+      font-weight: 700;
+      line-height: 1.55;
+      text-align: center;
+    }
+
     .bonus-grid {
       display: grid;
       gap: 10px;
@@ -695,6 +722,30 @@
     }
 
     .offer-note p + p { margin-top: 8px; }
+
+    .investment-math {
+      margin-top: 24px;
+      padding: 20px;
+      border: 1px solid rgba(8, 175, 166, 0.3);
+      border-radius: var(--radius-md);
+      background: rgba(15, 203, 192, 0.055);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .investment-math h3 {
+      color: var(--ink);
+      font-size: 1.05rem;
+    }
+
+    .investment-math p { margin-top: 10px; font-size: 0.9rem; }
+    .investment-math strong { color: #075D58; }
+
+    .investment-note {
+      color: var(--muted);
+      font-size: 0.78rem !important;
+      font-style: italic;
+    }
 
     .offer-price-block {
       margin-top: 24px;
@@ -826,6 +877,13 @@
 
     .final-copy p + p { margin-top: 5px; }
 
+    .final-urgency {
+      max-width: 52ch;
+      margin: 22px auto 0;
+      color: var(--teal);
+      font-weight: 700;
+    }
+
     .final-question {
       max-width: 28ch;
       margin: 24px auto 0;
@@ -886,6 +944,7 @@
       .ba-arrow { transform: rotate(-90deg); }
       .ways { grid-template-columns: 1fr 1fr; }
       .proof-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .process-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .prompt-assets { grid-template-columns: 1fr 1fr; }
       .testimonials { grid-template-columns: 1fr 1fr; }
       .offer-stack { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -919,7 +978,7 @@
         z-index: 2;
       }
 
-      .process-flow { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+      .process-flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
     @media (min-width: 1024px) {
@@ -972,7 +1031,7 @@
   <header class="hero" id="vsl" aria-labelledby="hero-titulo">
     <div class="container">
       <div class="hero-copy">
-        <h1 id="hero-titulo">Veja como um simples print pode virar <span class="accent">algo concreto</span> para mostrar a um negócio.</h1>
+        <h1 id="hero-titulo">Pare de pedir uma chance. Mostre por que um negócio deveria <span class="accent">contratar você</span>.</h1>
       </div>
 
       <div class="vsl-wrap">
@@ -983,7 +1042,7 @@
         </div>
       </div>
 
-      <p class="hero-sub"><span class="hero-sub-lead">Em menos de 3 minutos,</span> você vai entender a lógica do Método Express e por que mostrar primeiro pode mudar completamente a forma de abordar um possível cliente.</p>
+      <p class="hero-sub"><span class="hero-sub-lead">Em menos de 3 minutos,</span> você vai entender como usar um celular e inteligência artificial para criar uma transformação visual, apresentar isso a negócios reais e abrir uma conversa comercial de um jeito diferente.</p>
     </div>
   </header>
 
@@ -993,8 +1052,8 @@
         <div class="section-head">
           <h2 id="mecanismo-titulo">Pegue um print de um Instagram. Use um prompt. <span class="accent">Mostre ao dono como o perfil dele poderia ficar.</span></h2>
           <div class="prose">
-            <p>Você não precisa chegar pedindo que o negócio imagine o que você sabe fazer.</p>
-            <p>O próprio perfil pode virar a base da sua demonstração.</p>
+            <p>Você não precisa começar tentando convencer alguém de que sabe fazer.</p>
+            <p><strong>Primeiro, você mostra.</strong></p>
           </div>
         </div>
 
@@ -1017,7 +1076,6 @@
           </li>
         </ol>
 
-        <p class="closing">Você começa com algo simples: encontra um perfil, tira um print e cria uma versão visual de como aquela apresentação poderia melhorar.</p>
       </div>
     </section>
 
@@ -1028,10 +1086,7 @@
         </div>
 
         <div class="prose ba-intro">
-          <p>Quando você simplesmente diz:</p>
-          <blockquote class="quote-line">“Eu consigo melhorar o seu Instagram.”</blockquote>
-          <p>o dono ainda precisa imaginar o resultado.</p>
-          <p>Mas quando você apresenta uma transformação do próprio negócio, a conversa muda.</p>
+          <p>Você pega um perfil real e cria uma simulação visual de como aquela apresentação poderia ficar mais profissional, organizada e valorizada.</p>
         </div>
 
         <div class="ba">
@@ -1046,9 +1101,7 @@
           </figure>
         </div>
 
-        <p class="change-strip">Bio mais clara · Identidade visual mais consistente · Destaques organizados · Feed com uma apresentação mais profissional</p>
-        <p class="disclaimer">Simulação visual. Não representa crescimento de seguidores, vendas ou faturamento.</p>
-        <p class="closing">O objetivo é mostrar uma possibilidade de apresentação.</p>
+        <p class="disclaimer">Simulação visual de apresentação do perfil.</p>
       </div>
     </section>
 
@@ -1067,18 +1120,18 @@
           <article class="way-card way-card-strong">
             <p class="way-tag">Jeito 2</p>
             <blockquote>“Eu vi o seu perfil e fiz uma simulação de como ele poderia ficar. Quer ver?”</blockquote>
-            <p class="way-note">Agora existe algo concreto na conversa.</p>
+            <p class="way-note">Agora ele já consegue enxergar como o perfil pode melhorar.</p>
           </article>
         </div>
 
-        <p class="closing">Na primeira situação, o cliente precisa imaginar.<br>Na segunda, ele consegue ver.</p>
+        <p class="closing">Na primeira situação, você pede confiança.<br>Na segunda, você mostra antes de vender.</p>
       </div>
     </section>
 
     <section class="section section-light proof-section" id="prova-mecanismo" aria-labelledby="prova-mecanismo-titulo">
       <div class="container">
         <div class="section-head">
-          <h2 id="prova-mecanismo-titulo">Quando você mostra algo concreto, <span class="accent">a conversa muda.</span></h2>
+          <h2 id="prova-mecanismo-titulo">Quando você mostra, <span class="accent">a conversa muda.</span></h2>
           <p class="prose">Essas conversas começaram com uma simulação visual enviada para negócios reais.</p>
         </div>
 
@@ -1092,34 +1145,33 @@
         </div>
 
         <p class="proof-caption">Conversas reais após o envio de uma simulação visual.</p>
-        <p class="disclaimer">As respostas demonstram interesse em entender o serviço e não representam garantia de contratação, venda ou resultado.</p>
       </div>
     </section>
 
     <section class="section section-alt" id="processo" aria-labelledby="processo-titulo">
       <div class="container">
-        <div class="section-head"><h2 id="processo-titulo">Você não recebe só aulas. <span class="accent">Recebe um processo para executar.</span></h2></div>
+        <div class="section-head">
+          <h2 id="processo-titulo">Transforme a IA em uma habilidade simples que pode virar <span class="accent">serviço e renda.</span></h2>
+          <div class="prose">
+            <p>Você não precisa virar designer, montar uma agência ou dominar dezenas de ferramentas.</p>
+            <p>Com um celular, um print e o caminho certo, você aprende a criar uma transformação profissional para um negócio e usar isso para abrir oportunidades reais.</p>
+            <p><strong>A ideia não é largar tudo amanhã. É começar a construir uma segunda opção.</strong></p>
+          </div>
+        </div>
 
         <ol class="process-flow" aria-label="Etapas do processo">
-          <li>Encontrar</li><li>Criar</li><li>Mostrar</li><li>Abordar</li><li>Oferecer</li><li>Entregar</li>
+          <li><strong>Encontrar possíveis clientes</strong><span>Negócios bons que ainda podem se apresentar melhor no Instagram.</span></li>
+          <li><strong>Criar a transformação</strong><span>Usar um print e a IA para criar uma apresentação visual mais profissional.</span></li>
+          <li><strong>Mostrar antes de vender</strong><span>Deixar o negócio enxergar a melhoria antes de receber uma proposta.</span></li>
+          <li><strong>Abrir a conversa</strong><span>Usar uma abordagem profissional para gerar interesse e avançar.</span></li>
+          <li><strong>Apresentar a proposta</strong><span>Mostrar o que pode melhorar, o que será entregue e o valor do serviço.</span></li>
+          <li><strong>Fechar e entregar</strong><span>Conduzir a negociação e seguir o processo para produzir a entrega.</span></li>
         </ol>
 
-        <div class="prose">
-          <p>Você aprende a encontrar uma oportunidade, criar a transformação, apresentar a ideia, iniciar a conversa, oferecer o serviço e saber como seguir caso o negócio queira contratar.</p>
-          <p>O Prompt Raiz 1 ajuda você na criação da transformação.</p>
-          <p>E, depois do fechamento, o Prompt Raiz 2 ajuda a seguir para a entrega.</p>
+        <div class="closing process-closing">
+          <p>Por trás de cada etapa existe um processo: prompts, scripts, follow-up, proposta, negociação e entrega.</p>
+          <p><strong>É isso que você aprende dentro do Método Express.</strong></p>
         </div>
-
-        <div class="prompt-assets" aria-label="Materiais do método"><div class="prompt-asset">Prompt Raiz 1</div><div class="prompt-asset">Prompt Raiz 2</div></div>
-
-        <div class="prose">
-          <p>Você não precisa dominar design.</p>
-          <p>Também não precisa virar especialista em inteligência artificial.</p>
-          <p><strong>A ferramenta ajuda a executar. O método mostra o que fazer com ela.</strong></p>
-        </div>
-
-        <p class="niches">Barbearias · Salões · Hamburguerias · Cafeterias · Lojas · Imobiliárias · Pet shops · Academias · e outros negócios.</p>
-        <p class="closing">Você pode procurar oportunidades na sua cidade ou em outras regiões do Brasil.</p>
       </div>
     </section>
 
@@ -1127,15 +1179,13 @@
       <div class="container">
         <div class="section-head">
           <h2 id="depoimentos-titulo">Veja quem já colocou o processo em prática.</h2>
-          <p class="prose">A melhor forma de entender o Método Express é ver pessoas que saíram da teoria e começaram a executar o processo.</p>
+          <p class="prose">A melhor forma de entender o Método Express é ver pessoas que saíram da teoria e começaram a executar.</p>
         </div>
 
         <div class="testimonials">
           <div class="testimonial-video"><video src="assets/videos/depoimento-naldo.mp4" data-poster="assets/images/depoimento-naldo-poster.webp" controls playsinline preload="none" width="576" height="1024" aria-label="Depoimento em vídeo de um aluno do Método Express"></video></div>
           <div class="testimonial-video"><video src="assets/videos/depoimento-amanda.mp4" data-poster="assets/images/depoimento-amanda-poster.webp" controls playsinline preload="none" width="464" height="832" aria-label="Depoimento em vídeo de uma aluna do Método Express"></video></div>
         </div>
-
-        <p class="disclaimer">Cada experiência é individual. O Método Express não garante clientes, vendas ou renda.</p>
       </div>
     </section>
 
@@ -1149,13 +1199,13 @@
           <div class="author-copy prose">
             <p class="author-name">André Hoffmann</p>
             <p class="author-role">Criador do Método Express</p>
-            <p>Antes de organizar isso em um método, eu testei a lógica na prática.</p>
-            <p>Peguei perfis reais, criei simulações e apresentei a ideia diretamente aos negócios.</p>
+            <p>Antes de organizar isso em um método, eu testei a lógica com negócios reais.</p>
+            <p>Peguei perfis, criei simulações e apresentei a ideia diretamente para os donos.</p>
             <p>A pergunta era simples:</p>
-            <p class="author-question">mostrar uma possibilidade concreta antes de tentar vender mudaria a conversa?</p>
-            <p>Foi a partir dessa lógica que organizei o Método Express.</p>
+            <p class="author-question">mostrar uma transformação antes de tentar vender mudaria a conversa?</p>
+            <p>As respostas mostraram que havia uma forma muito mais inteligente de iniciar esse contato.</p>
+            <p>Foi daí que organizei o Método Express: um processo para unir tecnologia, comunicação e prospecção em um caminho simples de executar.</p>
             <p class="author-credentials">Formado em Análise e Desenvolvimento de Sistemas e Marketing.</p>
-            <p>O objetivo foi transformar tecnologia e comunicação em um processo claro para executar.</p>
           </div>
         </div>
       </div>
@@ -1166,12 +1216,16 @@
         <div class="section-head">
           <h2 id="oferta-titulo">Você não está comprando mais um curso sobre inteligência artificial.</h2>
           <div class="prose">
-            <p>Você recebe um processo para saber o que procurar, o que criar, como mostrar e como seguir quando um negócio demonstra interesse.</p>
+            <p>Você está aprendendo uma habilidade comercial simples de começar, usando celular + IA, que pode ser apresentada e oferecida como serviço para negócios reais.</p>
           </div>
         </div>
 
         <div class="offer-card">
-          <p class="offer-facts">7 aulas práticas · cerca de 2h de conteúdo · acesso vitalício · suporte + comunidade</p>
+          <p class="offer-facts">7 aulas práticas · cerca de 2h · acesso vitalício · suporte direto via WhatsApp + comunidade</p>
+
+          <div class="offer-note">
+            <p>Conteúdo direto ao ponto, organizado para você saber qual é o próximo passo.</p>
+          </div>
 
           <div class="offer-stack" aria-label="Componentes centrais do Método Express">
             <article class="offer-product">
@@ -1184,30 +1238,36 @@
             </article>
             <article class="offer-product">
               <span class="offer-product-title">Prompt Raiz 2</span>
-              <p>Para ajudar você a seguir para a entrega depois do fechamento.</p>
+              <p>Para seguir com a produção depois do fechamento.</p>
             </article>
           </div>
 
           <div class="bonus-block">
             <p class="bonus-title">Bônus de implementação</p>
+            <p class="offer-urgency">Entrando até 10/09 às 23h59, os três bônus abaixo ficam incluídos no seu acesso.</p>
             <div class="bonus-grid">
               <article class="bonus-card">
                 <h3>Kit de Abordagem Express</h3>
-                <p>Modelos de mensagem para iniciar a conversa, enviar a simulação, fazer follow-up e responder quando o negócio demonstra interesse.</p>
+                <p>Modelos de mensagem para iniciar a conversa, apresentar a simulação, fazer follow-up e saber como seguir quando o negócio demonstra interesse.</p>
               </article>
               <article class="bonus-card">
                 <h3>Pack de Prompts por Nicho</h3>
-                <p>Aplicações guiadas para adaptar o processo a diferentes tipos de negócio, como hamburguerias, barbearias, salões, pet shops, imobiliárias e outros nichos.</p>
+                <p>Aplicações guiadas para adaptar o processo a diferentes tipos de negócio.</p>
               </article>
               <article class="bonus-card">
                 <h3>Fechamento Express</h3>
-                <p>Como conduzir a conversa quando o negócio demonstra interesse, montar uma proposta, definir o preço do serviço, apresentar o valor, responder objeções e encaminhar para o fechamento.</p>
+                <p>Como conduzir a conversa, montar uma proposta, definir o preço do serviço, apresentar o valor, responder objeções e encaminhar para o fechamento.</p>
               </article>
             </div>
           </div>
 
-          <div class="offer-note">
-            <p>Conteúdo direto ao ponto, organizado para você saber qual é o próximo passo.</p>
+          <div class="investment-math">
+            <h3>Um único serviço pode valer várias vezes o investimento no método.</h3>
+            <p>O acesso ao Método Express custa <strong>R$97</strong>.</p>
+            <p>O pacote inicial de referência ensinado no método pode incluir <strong>10 artes + melhorias na apresentação do perfil</strong>, com valor de referência em torno de <strong>R$700</strong>, conforme o escopo combinado.</p>
+            <p><strong>Uma venda nesse valor representa mais de 7 vezes o valor de acesso ao Método Express.</strong></p>
+            <p>E o processo não termina em um negócio. Você pode continuar prospectando, apresentando seu trabalho e criando novas oportunidades.</p>
+            <p class="investment-note">Valores podem variar conforme pacote e negociação.</p>
           </div>
 
           <div class="offer-price-block">
@@ -1227,9 +1287,8 @@
           <span class="guarantee-mark" aria-hidden="true">7</span>
           <div>
             <h2 id="garantia-titulo">Você tem 7 dias para conhecer o Método Express.</h2>
-            <p>Entre, veja as aulas, conheça o processo e analise se o conteúdo faz sentido para você.</p>
-            <p>Se dentro do prazo de garantia você decidir que não quer continuar, poderá solicitar o reembolso conforme as regras da plataforma.</p>
-            <p><strong>Sem complicação.</strong></p>
+            <p>Entre, assista às aulas e conheça o processo por dentro.</p>
+            <p>Se dentro desse prazo você perceber que o Método Express não faz sentido para você, pode solicitar o reembolso pela Hotmart.</p>
           </div>
         </div>
       </div>
@@ -1242,35 +1301,35 @@
         <div class="faq-list" id="faqList">
           <div class="faq-item">
             <button class="faq-question" id="faq-question-1" aria-expanded="false" aria-controls="faq-answer-1"><span>Preciso saber design?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1"><p><strong>Não.</strong><br>O método foi estruturado para que você consiga começar mesmo sem experiência profissional em design.</p></div>
+            <div class="faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1"><p>Não. O método foi pensado para usar inteligência artificial como ferramenta de execução, sem exigir que você seja designer.</p></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question" id="faq-question-2" aria-expanded="false" aria-controls="faq-answer-2"><span>Preciso entender de inteligência artificial?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2"><p>Não. Você aprende como usar as ferramentas dentro do processo.</p></div>
           </div>
           <div class="faq-item">
             <button class="faq-question" id="faq-question-3" aria-expanded="false" aria-controls="faq-answer-3"><span>Preciso de computador?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3"><p>A primeira transformação pode ser criada pelo celular.<br><br>Um computador pode facilitar algumas etapas posteriores, mas não é necessário para entender e começar o processo.</p></div>
+            <div class="faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3"><p>Não para começar. Um celular já permite executar as etapas principais do método.</p></div>
           </div>
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-4" aria-expanded="false" aria-controls="faq-answer-4"><span>Preciso já ter clientes?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4"><p><strong>Não.</strong><br>O Método Express começa justamente na etapa de encontrar possíveis oportunidades.</p></div>
+            <button class="faq-question" id="faq-question-4" aria-expanded="false" aria-controls="faq-answer-4"><span>Quais ferramentas são usadas?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4"><p>Você pode aplicar o processo com ferramentas como ChatGPT, Grok e outras capazes de criar a transformação visual.</p></div>
           </div>
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-5" aria-expanded="false" aria-controls="faq-answer-5"><span>Preciso ter seguidores?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5"><p><strong>Não.</strong><br>O serviço é oferecido para negócios. O foco não é construir audiência pessoal antes de começar.</p></div>
+            <button class="faq-question" id="faq-question-5" aria-expanded="false" aria-controls="faq-answer-5"><span>Quanto conteúdo eu recebo?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5"><p>São 7 aulas práticas, com cerca de 2 horas de conteúdo direto ao ponto.</p></div>
           </div>
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-6" aria-expanded="false" aria-controls="faq-answer-6"><span>O resultado é garantido?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6"><p><strong>Não.</strong><br>O Método Express entrega o processo, os materiais e a orientação.<br><br>Conseguir clientes e gerar resultados depende da execução, da qualidade do trabalho, das abordagens realizadas e de outros fatores individuais.</p></div>
+            <button class="faq-question" id="faq-question-6" aria-expanded="false" aria-controls="faq-answer-6"><span>Por quanto tempo tenho acesso?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6"><p>O acesso é vitalício.</p></div>
           </div>
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-7" aria-expanded="false" aria-controls="faq-answer-7"><span>Qual ferramenta de inteligência artificial é usada?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-7" role="region" aria-labelledby="faq-question-7"><p>O método pode ser aplicado com ferramentas como ChatGPT e Grok.<br><br>A lógica não depende de uma única plataforma: você aprende o processo e pode usar ferramentas capazes de criar a transformação.</p></div>
+            <button class="faq-question" id="faq-question-7" aria-expanded="false" aria-controls="faq-answer-7"><span>Existe suporte?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-7" role="region" aria-labelledby="faq-question-7"><p>Sim. Você tem suporte direto via WhatsApp e acesso à comunidade para tirar dúvidas e evoluir sua execução.</p></div>
           </div>
           <div class="faq-item">
-            <button class="faq-question" id="faq-question-8" aria-expanded="false" aria-controls="faq-answer-8"><span>Preciso pagar ferramentas extras para começar?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-8" role="region" aria-labelledby="faq-question-8"><p>Existem opções que permitem começar sem contratar uma estrutura cara de ferramentas. Ao longo do método, você entende quais ferramentas podem ser usadas em cada etapa.</p></div>
-          </div>
-          <div class="faq-item">
-            <button class="faq-question" id="faq-question-9" aria-expanded="false" aria-controls="faq-answer-9"><span>Quanto conteúdo eu recebo?</span><span class="faq-icon" aria-hidden="true">+</span></button>
-            <div class="faq-answer" id="faq-answer-9" role="region" aria-labelledby="faq-question-9"><p>O Método Express tem 7 aulas práticas, com cerca de 2 horas de conteúdo direto ao ponto.<br><br><strong>Por quanto tempo tenho acesso?</strong> O acesso é vitalício.<br><br><strong>Existe suporte?</strong> Sim. O aluno tem acesso a suporte e comunidade.</p></div>
+            <button class="faq-question" id="faq-question-8" aria-expanded="false" aria-controls="faq-answer-8"><span>Preciso já ter clientes ou seguidores?</span><span class="faq-icon" aria-hidden="true">+</span></button>
+            <div class="faq-answer" id="faq-answer-8" role="region" aria-labelledby="faq-question-8"><p>Não. O processo começa justamente encontrando possíveis clientes e criando uma forma profissional de iniciar a conversa.</p></div>
           </div>
         </div>
       </div>
@@ -1278,12 +1337,16 @@
 
     <section class="section section-dark final-section" id="cta-final" aria-labelledby="final-titulo">
       <div class="container">
-        <h2 id="final-titulo">A sua primeira transformação pode começar com um print.</h2>
-        <div class="final-copy"><p>Encontre um perfil.</p><p>Tire um print.</p><p>Crie a demonstração.</p><p>Mostre para o negócio.</p><p>E faça uma pergunta simples:</p></div>
-        <p class="final-question">“Quer ver como o seu Instagram poderia ficar?”</p>
-        <p class="final-after">Se essa ideia fez sentido para você, conheça o Método Express e veja o processo completo.</p>
+        <h2 id="final-titulo">Você já tem o principal para começar: <span class="accent">um celular e um caminho.</span></h2>
+        <div class="final-copy">
+          <p>Você não precisa largar tudo amanhã.</p>
+          <p>Pode começar construindo uma segunda opção, aprender uma habilidade simples de comercializar e levar isso tão longe quanto decidir executar.</p>
+          <p>O Método Express te mostra o caminho.</p>
+          <p><strong>Agora é você quem decide quantos negócios vai abordar e até onde quer levar essa habilidade.</strong></p>
+        </div>
+        <p class="final-urgency">Entre até 10/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso.</p>
 
-        <a href="https://pay.hotmart.com/G106758643C" class="btn" id="ctaFinal" target="_blank" rel="noopener">Quero conhecer o Método Express</a>
+        <a href="https://pay.hotmart.com/G106758643C" class="btn" id="ctaFinal" target="_blank" rel="noopener">Quero entrar no Método Express</a>
         <p class="secure-note">Pagamento processado pela Hotmart · 7 dias de garantia</p>
 
         <div class="support">
