@@ -1,0 +1,9 @@
+.git/
+.vercel/
+.agents/
+.codex/
+.env*
+tests/
+screenshots/
+*.md
+assets/images/depois.png

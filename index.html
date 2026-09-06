@@ -1282,7 +1282,39 @@
     setTimeout(start, 1500);
   }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   fbq('init', '3401433073361667');
-  fbq('track', 'PageView');
+  (function () {
+    // Um ID por documento, compartilhado entre Pixel e CAPI, sem persistência.
+    if (window.__mexPageView) return;
+    var id = window.crypto && typeof window.crypto.randomUUID === 'function'
+      ? window.crypto.randomUUID()
+      : 'pv-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    var event = window.__mexPageView = {
+      event_name: 'PageView', event_id: id,
+      event_time: Math.floor(Date.now() / 1000),
+      event_source_url: 'https://www.metodoexpress.com/'
+    };
+    try { fbq('track', 'PageView', {}, { eventID: id }); } catch (e) { /* CAPI independe do SDK. */ }
+    try {
+      if (typeof window.fetch !== 'function') return;
+      var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+      var timeout = controller ? setTimeout(function () { controller.abort(); }, 5000) : null;
+      // Sem retentativas: uma requisição por carregamento, inclusive em saídas rápidas.
+      window.fetch('/api/pageview', {
+        method: 'POST', credentials: 'same-origin', keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(event), signal: controller ? controller.signal : undefined
+      }).then(function (response) {
+        if (!response.ok) throw new Error('CAPI unavailable');
+        return response.json();
+      }).then(function (result) {
+        window.__mexPageViewStatus = result.accepted === true ? 'accepted' : 'failed';
+      }).catch(function () {
+        window.__mexPageViewStatus = 'failed';
+      }).finally(function () {
+        if (timeout !== null) clearTimeout(timeout);
+      });
+    } catch (e) { window.__mexPageViewStatus = 'failed'; }
+  }());
   </script>
   <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3401433073361667&amp;ev=PageView&amp;noscript=1" alt=""></noscript>
 </head>

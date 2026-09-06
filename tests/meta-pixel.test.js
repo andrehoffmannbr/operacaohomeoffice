@@ -11,7 +11,7 @@ const INDEX_PATH = path.join(__dirname, '..', 'index.html');
 function readPixelBootstrap() {
   const source = fs.readFileSync(INDEX_PATH, 'utf8');
   const match = source.match(
-    /<script>\s*(!function \(f, b, e, v, n, t, s\)[\s\S]*?fbq\('track', 'PageView'\);\s*)<\/script>/
+    /<script>\s*(!function \(f, b, e, v, n, t, s\)[\s\S]*?)<\/script>/
   );
 
   assert.ok(match, 'bootstrap inline do Meta Pixel não encontrado');
@@ -72,6 +72,9 @@ function createPixelEnvironment(options) {
 
   const window = {
     document,
+    crypto: require('node:crypto').webcrypto,
+    fetch: options.fetch,
+    AbortController,
     addEventListener(type, listener) {
       if (!listeners.has(type)) listeners.set(type, []);
       listeners.get(type).push(listener);
@@ -121,6 +124,8 @@ function createPixelEnvironment(options) {
   vm.runInContext(readPixelBootstrap(), context);
 
   return {
+    window,
+    rerun() { vm.runInContext(readPixelBootstrap(), context); },
     advance,
     dispatch: window.dispatch.bind(window),
     dispatchDocument: document.dispatch.bind(document),
@@ -146,7 +151,7 @@ function pageViewCount(environment) {
 test('A/B — stub, init e PageView ficam disponíveis imediatamente sem interação', () => {
   const environment = createPixelEnvironment();
 
-  assert.deepEqual(environment.pixelQueue(), [
+  assert.deepEqual(environment.pixelQueue().map(args => args.slice(0, 2)), [
     ['init', '3401433073361667'],
     ['track', 'PageView']
   ]);
@@ -263,4 +268,47 @@ test('J — cada reload cria um PageView novo, sem duplicar no carregamento', ()
   assert.equal(pageViewCount(reload), 1);
   assert.equal(firstLoad.requests.length, 1);
   assert.equal(reload.requests.length, 1);
+  assert.notEqual(firstLoad.window.__mexPageView.event_id, reload.window.__mexPageView.event_id);
+});
+
+test('CAPI recebe o mesmo ID e horário uma vez, independente do SDK e das interações', async () => {
+  const requests = [];
+  const env = createPixelEnvironment({ insertThrows: true, fetch: async (url, options) => {
+    requests.push({ url, options });
+    return { ok: true, json: async () => ({ accepted: true }) };
+  } });
+  const event = JSON.parse(requests[0].options.body);
+  assert.equal(requests[0].url, '/api/pageview');
+  assert.equal(requests[0].options.keepalive, true);
+  assert.equal(event.event_id, env.pixelQueue()[1][3].eventID);
+  assert.equal(event.event_time, env.window.__mexPageView.event_time);
+  assert.equal(event.event_source_url, 'https://www.metodoexpress.com/');
+  for (const type of ['click', 'scroll', 'play', 'focus', 'visibilitychange']) env.dispatch(type);
+  env.rerun();
+  env.advance(1500);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(requests.length, 1);
+  assert.equal(pageViewCount(env), 1);
+  assert.equal(env.window.__mexPageViewStatus, 'accepted');
+});
+
+test('CAPI rejeitada, indisponível ou com timeout não afeta Pixel nem gera retentativas', async () => {
+  const cases = [
+    async () => ({ ok: false }),
+    async () => ({ ok: true, json: async () => ({ accepted: false }) }),
+    async () => { throw new Error('network'); },
+    () => { throw new Error('synchronous failure'); },
+    (url, options) => new Promise((resolve, reject) => options.signal.addEventListener('abort', () => reject(new Error('timeout'))))
+  ];
+  for (const fetch of cases) {
+    let calls = 0;
+    const env = createPixelEnvironment({ fetch: (...args) => { calls++; return fetch(...args); } });
+    env.advance(6000);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(env.window.__mexPageViewStatus, 'failed');
+    assert.equal(pageViewCount(env), 1);
+    assert.equal(calls, 1);
+    env.callFbq('track', 'Contact');
+    assert.equal(env.pixelQueue().at(-1)[1], 'Contact');
+  }
 });

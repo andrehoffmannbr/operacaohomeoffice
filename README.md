@@ -99,7 +99,7 @@ Chaves antigas permanecem intocadas e não ativam eventos da nova VSL.
 
 ## Tracking preservado
 
-- `PageView` é enfileirado uma vez no `<head>`.
+- `PageView` é enfileirado uma vez no `<head>`, com ID compartilhado com `/api/pageview` (Vercel Function). Configuração e validação: [TRACKING-PAGEVIEW.md](TRACKING-PAGEVIEW.md).
 - `fbevents.js` carrega uma vez, com atraso de 1500ms.
 - `Contact` dispara somente no clique real do suporte.
 - A landing não cria `InitiateCheckout` nem duplica `Purchase`.
@@ -133,10 +133,11 @@ de cookie gerado pelo Meta Pixel obrigatório. O relatório bruto não é versio
 
 ```bash
 node --check script.js
-node --test tests/landing-v2.test.js tests/vsl-tracking.test.js tests/meta-pixel.test.js
+node --check api/pageview.js
+node --test tests/landing-v2.test.js tests/vsl-tracking.test.js tests/meta-pixel.test.js tests/pageview-api.test.js
 ```
 
-Total atual: **67 testes**.
+Total atual: **80 testes**.
 
 As regressões cobrem arquitetura, copy, dois CTAs Hotmart, suporte, atribuição,
 `fbclid` volátil, Pixel, player único, milestones, storage versionado e a lógica

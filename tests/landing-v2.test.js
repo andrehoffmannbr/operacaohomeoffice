@@ -270,7 +270,7 @@ test('V2.1 — milestones permanecem; VSL_Offer aguarda timestamp humano', () =>
 });
 
 test('V2.1 — Meta Pixel dispara um PageView e carrega fbevents uma vez', () => {
-  assert.equal(countOccurrences(INDEX_SOURCE, "fbq('track', 'PageView')"), 1);
+  assert.equal(countOccurrences(INDEX_SOURCE, "fbq('track', 'PageView', {}, { eventID: id })"), 1);
   assert.equal(countOccurrences(INDEX_SOURCE, 'connect.facebook.net/en_US/fbevents.js'), 1);
   assert.equal(countOccurrences(INDEX_SOURCE, 'setTimeout(start, 1500)'), 1);
   assert.equal(countOccurrences(INDEX_SOURCE, "fbq('init', '3401433073361667')"), 1);
