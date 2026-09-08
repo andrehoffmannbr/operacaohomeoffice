@@ -10,6 +10,31 @@ const MAX_BYTES = 2048;
 const buckets = new Map();
 const salt = randomBytes(32);
 
+function authenticationDiagnostic(token, error) {
+  // Apenas indicadores; nunca normalizar silenciosamente a credencial usada.
+  const diagnostic = {
+    production: process.env.VERCEL_ENV === 'production',
+    credential_format: {
+      bearer_prefix: /^\s*["']?Bearer\b/i.test(token),
+      contains_quotes: /["']/.test(token),
+      contains_whitespace: /\s/.test(token)
+    }
+  };
+  if (error && typeof error === 'object') {
+    diagnostic.meta_error = {};
+    const secret = token.trim().replace(/^["']?Bearer\s+/i, '').replace(/^["']|["']$/g, '');
+    for (const key of ['type', 'fbtrace_id']) {
+      const value = error[key];
+      if (typeof value === 'string' && /^[A-Za-z0-9_-]{1,100}$/.test(value) &&
+          !(secret && value.includes(secret))) diagnostic.meta_error[key] = value;
+    }
+    for (const key of ['code', 'error_subcode']) {
+      if (Number.isSafeInteger(error[key])) diagnostic.meta_error[key] = error[key];
+    }
+  }
+  return diagnostic;
+}
+
 function allowedOrigin(origin) {
   if (origin === 'https://www.metodoexpress.com' || origin === 'https://metodoexpress.com') return true;
   return process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL &&
@@ -115,9 +140,11 @@ module.exports = async function pageview(req, res) {
     const result = await response.json();
     if (!response.ok || result.error || result.events_received !== 1) {
       // Nunca registrar corpo, mensagem da Meta, token ou dados do visitante.
-      console.warn('pageview_capi: upstream_rejected', response.status);
+      console.warn('pageview_capi: upstream_rejected', response.status,
+        JSON.stringify(authenticationDiagnostic(token, result.error)));
       return reply(502);
     }
+    console.info('pageview_capi: accepted', JSON.stringify(authenticationDiagnostic(token)));
     return reply(202, true);
   } catch (error) {
     console.warn(controller.signal.aborted ? 'pageview_capi: timeout' : 'pageview_capi: upstream_failed');

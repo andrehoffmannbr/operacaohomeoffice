@@ -22,7 +22,7 @@ function setup(options = {}) {
   const context = vm.createContext({
     require, module: { exports: {} }, Buffer, AbortController,
     process: { env }, Date,
-    console: { warn: (...args) => logs.push(args) },
+    console: { warn: (...args) => logs.push(args), info: (...args) => logs.push(args) },
     setTimeout: callback => { timeout = callback; return 1; }, clearTimeout: () => {},
     fetch: async (url, init) => {
       calls.push({ url, init, payload: JSON.parse(init.body) });
@@ -118,6 +118,30 @@ test('Falha, rejeição e timeout da Meta nunca retornam aceitação ou vazam re
     assert.equal(api.logs.length, 1);
     assert.doesNotMatch(JSON.stringify([result, api.logs]), /test-private-sentinel|visitor-private|private upstream body/);
   }
+});
+
+test('Diagnóstico de autenticação expõe somente campos seguros e indicadores da credencial efetiva', async () => {
+  for (const token of ['test-private-sentinel', ' Bearer "test-private-sentinel" ']) {
+    const api = setup({ env: { META_CAPI_ACCESS_TOKEN: token }, fetch: async () => ({
+      ok: false, status: 401, json: async () => ({ error: {
+        type: 'OAuthException', code: 190, error_subcode: 463, fbtrace_id: 'SAFE_trace-123',
+        message: token, error_data: { token }, Authorization: token
+      } })
+    }) });
+    const response = await api.invoke();
+    const diagnostic = JSON.parse(api.logs[0][2]);
+    assert.deepEqual(diagnostic.meta_error, { type: 'OAuthException', fbtrace_id: 'SAFE_trace-123', code: 190, error_subcode: 463 });
+    assert.equal(diagnostic.production, true);
+    for (const value of Object.values(diagnostic.credential_format)) assert.equal(value, token.startsWith(' '));
+    assert.equal(api.calls[0].init.headers.Authorization, 'Bearer ' + token);
+    assert.deepEqual(response.body, { accepted: false });
+    assert.doesNotMatch(JSON.stringify([api.logs, response]), /test-private-sentinel|Authorization|error_data|message/);
+  }
+  const hostile = setup({ fetch: async () => ({ ok: false, status: 401, json: async () => ({ error: {
+    type: 'test-private-sentinel', fbtrace_id: 'private\nmessage', code: 'private', error_subcode: {}
+  } }) }) });
+  await hostile.invoke();
+  assert.deepEqual(JSON.parse(hostile.logs[0][2]).meta_error, {});
 });
 
 test('Configuração ausente falha fechada; código de teste é exclusivo do preview no servidor', async () => {
