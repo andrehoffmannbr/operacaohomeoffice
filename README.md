@@ -102,6 +102,11 @@ Chaves antigas permanecem intocadas e não ativam eventos da nova VSL.
 - `PageView` é enfileirado uma vez no `<head>`, com ID compartilhado com `/api/pageview` (Vercel Function). Configuração e validação: [TRACKING-PAGEVIEW.md](TRACKING-PAGEVIEW.md).
 - `fbevents.js` carrega uma vez, com atraso de 1500ms.
 - `Contact` dispara somente no clique real do suporte.
+- `Scroll_50` e `Scroll_90` são eventos personalizados do Pixel, emitidos uma
+  vez por documento quando a rolagem alcança 50% e 90% do percurso atual.
+- `Offer_View` é emitido uma vez quando pelo menos 50% do bloco compacto do
+  preço fica visível por 1 segundo contínuo, com a aba visível. Ele é
+  independente do progresso da VSL e não equivale a `VSL_Offer`.
 - A landing não cria `InitiateCheckout` nem duplica `Purchase`.
 - `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `src` e
   `sck` são persistidos por 30 dias na chave `metodoexpress_tracking` versão 2.
@@ -137,11 +142,12 @@ node --check api/pageview.js
 node --test tests/landing-v2.test.js tests/vsl-tracking.test.js tests/meta-pixel.test.js tests/pageview-api.test.js
 ```
 
-Total atual: **80 testes**.
+Total atual: **90 testes**.
 
 As regressões cobrem arquitetura, copy, dois CTAs Hotmart, suporte, atribuição,
-`fbclid` volátil, Pixel, player único, milestones, storage versionado e a lógica
-de `VSL_Offer` quando um timestamp legítimo for configurado.
+`fbclid` volátil, Pixel, rolagem, visualização contínua do preço, player único,
+milestones, storage versionado e a lógica de `VSL_Offer` quando um timestamp
+legítimo for configurado.
 
 ## Regras de conteúdo
 

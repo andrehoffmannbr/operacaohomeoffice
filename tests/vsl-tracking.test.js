@@ -74,6 +74,7 @@ function createEnvironment(options) {
   const pixelCalls = [];
   let playerConfig = null;
   let playerCount = 0;
+  const intersectionObservers = [];
 
   const localStorage = createStorage(options.localMap, options.localStorageUnavailable);
   const sessionStorage = createStorage(options.sessionMap, options.sessionStorageUnavailable);
@@ -154,6 +155,11 @@ function createEnvironment(options) {
   }
 
   const root = { classList: createClassList() };
+  const scrollRoot = {
+    scrollTop: 0,
+    scrollHeight: options.scrollHeight === undefined ? 2000 : options.scrollHeight,
+    clientHeight: options.clientHeight === undefined ? 1000 : options.clientHeight
+  };
   const toggle = createEventTarget({
     attributes: {},
     setAttribute(name, value) { this.attributes[name] = String(value); }
@@ -164,9 +170,41 @@ function createEnvironment(options) {
     removeAttribute() {},
     appendChild() {}
   });
+  const offerRect = {
+    width: 200,
+    height: 100,
+    left: 0,
+    right: 200,
+    top: 0,
+    bottom: 100
+  };
+  const offerPrice = createEventTarget({
+    getBoundingClientRect() { return { ...offerRect }; }
+  });
+
+  class IntersectionObserverFake {
+    constructor(callback, observerOptions) {
+      this.callback = callback;
+      this.options = observerOptions;
+      this.targets = new Set();
+      intersectionObservers.push(this);
+    }
+    observe(target) { this.targets.add(target); }
+    unobserve(target) { this.targets.delete(target); }
+    disconnect() { this.targets.clear(); }
+    trigger(target, ratio, isIntersecting) {
+      if (!this.targets.has(target)) return;
+      this.callback([{
+        target,
+        intersectionRatio: ratio,
+        isIntersecting: isIntersecting === undefined ? ratio > 0 : isIntersecting
+      }]);
+    }
+  }
 
   const document = createEventTarget({
     documentElement: root,
+    scrollingElement: scrollRoot,
     visibilityState: 'visible',
     head: { appendChild() {} },
     createElement() { return createEventTarget({ setAttribute() {} }); },
@@ -177,7 +215,7 @@ function createEnvironment(options) {
       return null;
     },
     querySelectorAll() { return []; },
-    querySelector() { return null; }
+    querySelector(selector) { return selector === '[data-offer-price]' ? offerPrice : null; }
   });
 
   const NativeDate = Date;
@@ -197,10 +235,16 @@ function createEnvironment(options) {
     URL,
     URLSearchParams,
     console,
+    innerWidth: options.desktop === false ? 390 : 1440,
+    innerHeight: options.desktop === false ? 720 : 900,
     matchMedia(query) {
       return { matches: query === '(min-width: 640px)' ? options.desktop !== false : false };
     }
   });
+
+  if (!options.intersectionObserverUnavailable) {
+    window.IntersectionObserver = IntersectionObserverFake;
+  }
 
   if (!options.pixelUnavailable) {
     window.fbq = function () {
@@ -230,6 +274,7 @@ function createEnvironment(options) {
     clearTimeout: clearTimerFake,
     setInterval: setIntervalFake,
     clearInterval: clearTimerFake,
+    IntersectionObserver: IntersectionObserverFake,
     encodeURIComponent
   });
 
@@ -275,10 +320,34 @@ function createEnvironment(options) {
     isContentLocked: () => root.classList.contains('content-locked'),
     localMap: localStorage.values,
     pagehide() { window.dispatch('pagehide'); },
+    pageshow() { window.dispatch('pageshow'); },
+    offerIntersection(ratio, isIntersecting) {
+      offerRect.top = -offerRect.height * (1 - ratio);
+      offerRect.bottom = offerRect.top + offerRect.height;
+      const observer = intersectionObservers.find((item) => item.targets.has(offerPrice));
+      if (observer) observer.trigger(offerPrice, ratio, isIntersecting);
+    },
+    setOfferGeometry(ratio) {
+      offerRect.top = -offerRect.height * (1 - ratio);
+      offerRect.bottom = offerRect.top + offerRect.height;
+    },
+    offerObserverOptions() {
+      const observer = intersectionObservers.find((item) => item.targets.has(offerPrice)) || intersectionObservers[0];
+      return observer && observer.options;
+    },
+    pixelCalls,
     playerConfig: () => playerConfig,
     playerCount: () => playerCount,
     secondOverlayClick() { startOverlay.dispatch('click'); },
     sessionMap: sessionStorage.values,
+    setScrollDimensions(scrollHeight, clientHeight) {
+      scrollRoot.scrollHeight = scrollHeight;
+      scrollRoot.clientHeight = clientHeight;
+    },
+    scrollTo(progress) {
+      scrollRoot.scrollTop = progress * (scrollRoot.scrollHeight - scrollRoot.clientHeight);
+      window.dispatch('scroll');
+    },
     setVisibility(state) {
       document.visibilityState = state;
       document.dispatch('visibilitychange');
@@ -297,6 +366,157 @@ function startPlaying(environment) {
   environment.clickVsl();
   environment.emitState(1);
 }
+
+test('Rolagem 01 — topo e documento sem percurso rolável não geram marcos', () => {
+  const atTop = createEnvironment();
+  assert.deepEqual(eventNames(atTop), []);
+  atTop.scrollTo(0.499);
+  assert.deepEqual(eventNames(atTop), []);
+
+  const withoutScroll = createEnvironment({ scrollHeight: 800, clientHeight: 800 });
+  withoutScroll.scrollTo(1);
+  assert.deepEqual(eventNames(withoutScroll), []);
+});
+
+test('Rolagem 02 — 50% e 90% usam dimensões atuais e não se repetem', () => {
+  const environment = createEnvironment();
+  environment.scrollTo(0.5);
+  assert.deepEqual(eventNames(environment), ['Scroll_50']);
+
+  environment.setScrollDimensions(3000, 1000);
+  environment.scrollTo(0.899);
+  assert.deepEqual(eventNames(environment), ['Scroll_50']);
+  environment.scrollTo(0.9);
+  environment.scrollTo(0.2);
+  environment.scrollTo(1);
+
+  assert.deepEqual(eventNames(environment), ['Scroll_50', 'Scroll_90']);
+  assert.deepEqual(environment.customEvents().map((event) => event.params.scroll_percent), [50, 90]);
+  assert.equal(environment.pixelCalls.some((call) => call[0] === 'track' && call[1] === 'PageView'), false);
+});
+
+test('Rolagem 03 — salto a 95% registra os dois marcos uma vez, inclusive após pageshow', () => {
+  const environment = createEnvironment();
+  environment.scrollTo(0.95);
+  environment.pageshow();
+  environment.scrollTo(0.1);
+  environment.scrollTo(0.95);
+  assert.deepEqual(eventNames(environment), ['Scroll_50', 'Scroll_90']);
+});
+
+test('Oferta 16 — exige 50% por um segundo contínuo e cancela ao sair do limiar', () => {
+  const environment = createEnvironment();
+  const observerOptions = environment.offerObserverOptions();
+  assert.equal(observerOptions.root, null);
+  assert.equal(observerOptions.rootMargin, '0px');
+  assert.equal(observerOptions.threshold, 0.5);
+
+  environment.offerIntersection(0.49);
+  environment.advance(2000);
+  assert.equal(eventNames(environment).includes('Offer_View'), false);
+
+  environment.offerIntersection(0.5);
+  environment.advance(500);
+  environment.offerIntersection(0.49);
+  environment.advance(2000);
+  assert.equal(eventNames(environment).includes('Offer_View'), false);
+
+  environment.offerIntersection(0.5);
+  environment.advance(999);
+  assert.equal(eventNames(environment).includes('Offer_View'), false);
+  environment.advance(1);
+  environment.offerIntersection(0.2);
+  environment.offerIntersection(1);
+  environment.advance(2000);
+
+  const events = environment.customEvents().filter((event) => event.name === 'Offer_View');
+  assert.equal(events.length, 1);
+  assert.equal(events[0].params.visible_percent, 50);
+  assert.equal(events[0].params.visible_ms, 1000);
+});
+
+test('Oferta 17 — revalida a geometria atual antes do envio', () => {
+  const environment = createEnvironment();
+  environment.offerIntersection(0.5);
+  environment.advance(999);
+
+  // Simula uma saída cujo callback do IntersectionObserver ainda está na fila.
+  environment.setOfferGeometry(0.49);
+  environment.advance(1);
+  assert.equal(eventNames(environment).includes('Offer_View'), false);
+
+  environment.offerIntersection(0.49);
+  environment.offerIntersection(0.5);
+  environment.advance(1000);
+  assert.equal(eventNames(environment).filter((name) => name === 'Offer_View').length, 1);
+});
+
+test('Oferta 18 — aba oculta e bfcache reiniciam a contagem sem repetir o evento', () => {
+  const environment = createEnvironment();
+  environment.offerIntersection(0.5);
+  environment.advance(500);
+  environment.setVisibility('hidden');
+  environment.advance(2000);
+  assert.equal(eventNames(environment).includes('Offer_View'), false);
+
+  environment.setVisibility('visible');
+  environment.offerIntersection(0.5);
+  environment.advance(999);
+  assert.equal(eventNames(environment).includes('Offer_View'), false);
+  environment.advance(1);
+  assert.equal(eventNames(environment).filter((name) => name === 'Offer_View').length, 1);
+
+  environment.pagehide();
+  environment.pageshow();
+  environment.offerIntersection(1);
+  environment.advance(2000);
+  assert.equal(eventNames(environment).filter((name) => name === 'Offer_View').length, 1);
+
+  const bfcache = createEnvironment();
+  bfcache.offerIntersection(0.5);
+  bfcache.advance(500);
+  bfcache.pagehide();
+  bfcache.advance(2000);
+  assert.equal(eventNames(bfcache).includes('Offer_View'), false);
+
+  bfcache.pageshow();
+  bfcache.offerIntersection(0.5);
+  bfcache.advance(999);
+  assert.equal(eventNames(bfcache).includes('Offer_View'), false);
+  bfcache.advance(1);
+  assert.equal(eventNames(bfcache).filter((name) => name === 'Offer_View').length, 1);
+});
+
+test('Oferta 19 — alvo único funciona em mobile e desktop, sem VSL, storage ou eventos padrão', () => {
+  for (const desktop of [false, true]) {
+    const first = createEnvironment({ desktop });
+    first.offerIntersection(0.5);
+    first.advance(1000);
+    assert.deepEqual(eventNames(first), ['Offer_View']);
+    assert.equal(first.playerCount(), 0);
+    assert.equal(first.pixelCalls.some((call) => call[0] === 'track'), false);
+    assert.equal(first.localMap.size, 0);
+    assert.equal(first.sessionMap.size, 0);
+
+    const reload = createEnvironment({ desktop, localMap: first.localMap, sessionMap: first.sessionMap });
+    reload.offerIntersection(0.5);
+    reload.advance(1000);
+    assert.deepEqual(eventNames(reload), ['Offer_View']);
+  }
+});
+
+test('Engajamento — falhas do Pixel ou do observer não afetam a landing', () => {
+  const throwingPixel = createEnvironment({ pixelThrows: true });
+  assert.doesNotThrow(() => {
+    throwingPixel.scrollTo(0.95);
+    throwingPixel.offerIntersection(0.5);
+    throwingPixel.advance(1000);
+  });
+
+  const withoutObserver = createEnvironment({ intersectionObserverUnavailable: true });
+  assert.doesNotThrow(() => withoutObserver.scrollTo(0.95));
+  assert.deepEqual(eventNames(withoutObserver), ['Scroll_50', 'Scroll_90']);
+});
 
 test('Thumbnail A/B — abre visível sem inicializar player ou VSL_Start', () => {
   const environment = createEnvironment();

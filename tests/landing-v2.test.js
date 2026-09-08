@@ -269,6 +269,14 @@ test('V2.1 — milestones permanecem; VSL_Offer aguarda timestamp humano', () =>
   assert.doesNotMatch(SCRIPT_SOURCE, /VSL_OFFER_SECONDS_(MOBILE|DESKTOP)\s*=\s*415/);
 });
 
+test('Tracking de oferta observa somente o bloco compacto que contém o preço real', () => {
+  assert.equal(countOccurrences(INDEX_SOURCE, 'data-offer-price'), 1);
+  assert.match(INDEX_SOURCE, /<div class="offer-price-block" data-offer-price>[\s\S]*?R\$97[\s\S]*?<\/div>/);
+  for (const event of ['Scroll_50', 'Scroll_90', 'Offer_View']) {
+    assert.match(SCRIPT_SOURCE, new RegExp(`'${event}'`));
+  }
+});
+
 test('V2.1 — Meta Pixel dispara um PageView e carrega fbevents uma vez', () => {
   assert.equal(countOccurrences(INDEX_SOURCE, "fbq('track', 'PageView', {}, { eventID: id })"), 1);
   assert.equal(countOccurrences(INDEX_SOURCE, 'connect.facebook.net/en_US/fbevents.js'), 1);

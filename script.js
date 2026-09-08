@@ -299,10 +299,10 @@
     }
   }
 
-  // Eventos de consumo da VSL são custom events: ficam separados do helper
-  // de eventos padrão para não haver risco de transformar um milestone em
+  // Eventos de consumo e navegação são custom events: ficam separados do
+  // helper de eventos padrão para não haver risco de transformar um marco em
   // Purchase, Contact ou qualquer outro evento de otimização da campanha.
-  function trackVslEvent(eventName, params) {
+  function trackCustomEvent(eventName, params) {
     try {
       if (typeof window.fbq === 'function') {
         window.fbq('trackCustom', eventName, params);
@@ -407,7 +407,7 @@
       // Persiste antes do envio: callbacks repetidos ou um reload imediato não
       // conseguem enfileirar o mesmo evento duas vezes na mesma aba/sessão.
       persistState();
-      trackVslEvent(eventName, params);
+      trackCustomEvent(eventName, params);
     }
 
     function checkMilestones() {
@@ -951,6 +951,149 @@
   }
 
   /* ============================================================
+     Rolagem da página e visualização do preço.
+
+     São eventos exclusivos do Pixel do navegador, deduplicados somente em
+     memória nesta abertura. Não interferem no PageView/CAPI, na VSL ou nos
+     eventos de checkout mantidos pela Hotmart.
+     ============================================================ */
+
+  function initScrollTracking() {
+    var sent = { Scroll_50: false, Scroll_90: false };
+
+    function stopWhenComplete() {
+      if (!sent.Scroll_50 || !sent.Scroll_90) return;
+      window.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('pageshow', checkScroll);
+    }
+
+    function emitOnce(eventName, percent) {
+      if (sent[eventName]) return;
+      sent[eventName] = true;
+      trackCustomEvent(eventName, { scroll_percent: percent });
+      stopWhenComplete();
+    }
+
+    function checkScroll() {
+      var root = document.scrollingElement || document.documentElement;
+      if (!root) return;
+
+      var distance = Number(root.scrollHeight) - Number(root.clientHeight);
+      if (!isFinite(distance) || distance <= 0) return;
+
+      var progress = Number(root.scrollTop) / distance;
+      if (!isFinite(progress)) return;
+      progress = Math.max(0, Math.min(1, progress));
+
+      if (progress >= 0.5) emitOnce('Scroll_50', 50);
+      if (progress >= 0.9) emitOnce('Scroll_90', 90);
+    }
+
+    window.addEventListener('scroll', checkScroll, { passive: true });
+    window.addEventListener('pageshow', checkScroll);
+    checkScroll();
+  }
+
+  function initOfferViewTracking() {
+    var target = document.querySelector('[data-offer-price]');
+    if (!target || !('IntersectionObserver' in window)) return;
+
+    var timer = null;
+    var qualifies = false;
+    var sent = false;
+    var observer;
+
+    function cancelTimer() {
+      if (timer === null) return;
+      clearTimeout(timer);
+      timer = null;
+    }
+
+    function detach() {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', suspend);
+      window.removeEventListener('pageshow', resume);
+    }
+
+    function isAtLeastHalfVisibleNow() {
+      var rect = target.getBoundingClientRect();
+      var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      var targetArea = Number(rect.width) * Number(rect.height);
+
+      if (!isFinite(targetArea) || targetArea <= 0 ||
+          !isFinite(viewportWidth) || viewportWidth <= 0 ||
+          !isFinite(viewportHeight) || viewportHeight <= 0) return false;
+
+      var visibleWidth = Math.max(0,
+        Math.min(Number(rect.right), viewportWidth) - Math.max(Number(rect.left), 0));
+      var visibleHeight = Math.max(0,
+        Math.min(Number(rect.bottom), viewportHeight) - Math.max(Number(rect.top), 0));
+
+      return visibleWidth * visibleHeight >= targetArea * 0.5;
+    }
+
+    function startTimer() {
+      if (sent || timer !== null || !qualifies || document.visibilityState !== 'visible') return;
+      timer = setTimeout(function () {
+        timer = null;
+        if (sent || !qualifies || document.visibilityState !== 'visible' ||
+            !isAtLeastHalfVisibleNow()) {
+          qualifies = false;
+          return;
+        }
+        sent = true;
+        trackCustomEvent('Offer_View', { visible_percent: 50, visible_ms: 1000 });
+        detach();
+      }, 1000);
+    }
+
+    function syncTimer() {
+      if (!qualifies || document.visibilityState !== 'visible') {
+        cancelTimer();
+        return;
+      }
+      startTimer();
+    }
+
+    function suspend() {
+      qualifies = false;
+      cancelTimer();
+    }
+
+    function resume() {
+      if (sent || document.visibilityState !== 'visible') return;
+      // Uma nova observação força a confirmação da interseção atual. Assim,
+      // o tempo anterior à aba oculta ou ao bfcache nunca é reaproveitado.
+      suspend();
+      observer.unobserve(target);
+      observer.observe(target);
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState !== 'visible') {
+        suspend();
+        return;
+      }
+      resume();
+    }
+
+    observer = new window.IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.target !== target) return;
+        qualifies = entry.isIntersecting && entry.intersectionRatio >= 0.5;
+        syncTimer();
+      });
+    }, { root: null, rootMargin: '0px', threshold: 0.5 });
+
+    observer.observe(target);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', suspend);
+    window.addEventListener('pageshow', resume);
+  }
+
+  /* ============================================================
      Rodapé — ano atual.
      ============================================================ */
 
@@ -1029,6 +1172,8 @@
     safeInit('initVsl', function () { initVsl(offerProgress); });
     safeInit('initFaq', initFaq);
     safeInit('initLinks', initLinks);
+    safeInit('initScrollTracking', initScrollTracking);
+    safeInit('initOfferViewTracking', initOfferViewTracking);
     safeInit('initLazyPosters', initLazyPosters);
     safeInit('initFooterYear', initFooterYear);
   });
