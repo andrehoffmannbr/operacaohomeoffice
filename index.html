@@ -1294,26 +1294,68 @@
       event_source_url: 'https://www.metodoexpress.com/'
     };
     try { fbq('track', 'PageView', {}, { eventID: id }); } catch (e) { /* CAPI independe do SDK. */ }
-    try {
-      if (typeof window.fetch !== 'function') return;
-      var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
-      var timeout = controller ? setTimeout(function () { controller.abort(); }, 5000) : null;
-      // Sem retentativas: uma requisição por carregamento, inclusive em saídas rápidas.
-      window.fetch('/api/pageview', {
-        method: 'POST', credentials: 'same-origin', keepalive: true,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(event), signal: controller ? controller.signal : undefined
-      }).then(function (response) {
-        if (!response.ok) throw new Error('CAPI unavailable');
-        return response.json();
-      }).then(function (result) {
-        window.__mexPageViewStatus = result.accepted === true ? 'accepted' : 'failed';
-      }).catch(function () {
-        window.__mexPageViewStatus = 'failed';
-      }).finally(function () {
-        if (timeout !== null) clearTimeout(timeout);
-      });
-    } catch (e) { window.__mexPageViewStatus = 'failed'; }
+    var sent = false;
+    var cookieTimer = null;
+    var deadlineTimer = null;
+
+    function hasFbp() {
+      try {
+        return /(?:^|;\s*)_fbp=[^;]+(?:;|$)/.test(document.cookie || '');
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function stopWaiting() {
+      if (cookieTimer !== null) clearTimeout(cookieTimer);
+      if (deadlineTimer !== null) clearTimeout(deadlineTimer);
+      cookieTimer = null;
+      deadlineTimer = null;
+      window.removeEventListener('pagehide', sendOnce);
+    }
+
+    function sendOnce() {
+      if (sent) return;
+      sent = true;
+      stopWaiting();
+      try {
+        if (typeof window.fetch !== 'function') return;
+        var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+        var timeout = controller ? setTimeout(function () { controller.abort(); }, 5000) : null;
+        // Sem retentativas: uma requisição por carregamento, inclusive em saídas rápidas.
+        window.fetch('/api/pageview', {
+          method: 'POST', credentials: 'same-origin', keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(event), signal: controller ? controller.signal : undefined
+        }).then(function (response) {
+          if (!response.ok) throw new Error('CAPI unavailable');
+          return response.json();
+        }).then(function (result) {
+          window.__mexPageViewStatus = result.accepted === true ? 'accepted' : 'failed';
+        }).catch(function () {
+          window.__mexPageViewStatus = 'failed';
+        }).finally(function () {
+          if (timeout !== null) clearTimeout(timeout);
+        });
+      } catch (e) { window.__mexPageViewStatus = 'failed'; }
+    }
+
+    function waitForFbp() {
+      if (sent) return;
+      if (hasFbp()) {
+        sendOnce();
+        return;
+      }
+      cookieTimer = setTimeout(waitForFbp, 100);
+    }
+
+    if (hasFbp()) {
+      sendOnce();
+    } else {
+      window.addEventListener('pagehide', sendOnce);
+      deadlineTimer = setTimeout(sendOnce, 4000);
+      cookieTimer = setTimeout(waitForFbp, 100);
+    }
   }());
   </script>
   <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3401433073361667&amp;ev=PageView&amp;noscript=1" alt=""></noscript>
