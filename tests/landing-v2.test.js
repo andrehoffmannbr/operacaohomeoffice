@@ -1,6 +1,6 @@
 'use strict';
 
-/** Regressões estruturais e comerciais da landing Método Express V2.1. */
+/** Regressões estruturais e comerciais da landing Método Express + Agente Express. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -25,25 +25,24 @@ function countOccurrences(haystack, needle) {
 }
 
 function visibleText(fragment) {
-  return fragment.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  return fragment.replace(/<br\s*\/?\s*>/gi, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 }
 
-test('V2.1 — hero segue a ordem H1, VSL e microcopy', () => {
+test('Agente Express — hero apresenta a IA, o serviço e uma âncora interna', () => {
   const hero = INDEX_BODY.match(/<header class="hero"[\s\S]*?<\/header>/);
   assert.ok(hero, 'hero não encontrado');
   assert.equal(countOccurrences(hero[0], '<h1'), 1);
   const h1 = hero[0].match(/<h1[^>]*>([\s\S]*?)<\/h1>/)[1];
-  const text = h1.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-  assert.equal(text, 'Pare de pedir uma chance. Mostre por que um negócio deveria contratar você.');
-  assert.match(h1, /<span class="accent">contratar você<\/span>/);
-  assert.match(hero[0], /Em menos de 3 minutos,[\s\S]*usar um celular e inteligência artificial/);
-  assert.match(hero[0], /apresentar isso a negócios reais e abrir uma conversa comercial de um jeito diferente/);
+  assert.equal(visibleText(h1), 'Tenha uma IA personalizada que encontra oportunidades, cria a transformação e prepara o serviço para você oferecer pelo celular.');
+  const text = visibleText(hero[0]);
+  assert.match(text, /MÉTODO EXPRESS \+ AGENTE EXPRESS/);
+  assert.match(text, /Você escolhe o negócio, revisa e envia\./);
+  assert.match(text, /Sem aparecer\. Sem saber design\. Sem dominar IA\. Sem precisar falar outro idioma\./);
+  assert.match(text, /Brasil ou do exterior/);
   assert.match(hero[0], /id="vslPlayer"/);
   assert.ok(hero[0].indexOf('<h1') < hero[0].indexOf('id="vslPlayer"'));
-  assert.ok(hero[0].indexOf('id="vslPlayer"') < hero[0].indexOf('class="hero-sub"'));
-  assert.match(hero[0], /<span class="hero-sub-lead">Em menos de 3 minutos,<\/span>/);
-  assert.match(STYLE_SOURCE, /\.hero-sub\s*\{[^}]*max-width:\s*680px;[^}]*font-size:\s*clamp\(0\.84rem,[^}]*text-align:\s*center;/);
-  assert.doesNotMatch(hero[0], /1 celular|1 prompt|R\$97|wa\.me/);
+  assert.match(hero[0], /<a\b[^>]*href="#agente-express"[^>]*>\s*QUERO CONHECER O AGENTE EXPRESS\s*<\/a>/);
+  assert.doesNotMatch(hero[0], /Em menos de 3 minutos|1 prompt|wa\.me/);
   assert.equal(countOccurrences(hero[0], CHECKOUT_URL), 0);
 });
 
@@ -61,57 +60,63 @@ test('V2.1 — VSL usa um único vídeo vertical e poster local otimizado', () =
   assert.doesNotMatch(INDEX_SOURCE + SCRIPT_SOURCE, /zyZgphLLg-Y|a4tbLBVzkOs/);
 });
 
-test('V2.1 — mecanismo separado apresenta a sequência em quatro passos', () => {
-  const section = INDEX_SOURCE.match(/<section[^>]*id="mecanismo"[\s\S]*?<\/section>/);
+test('Agente Express — apresenta quatro resultados e a participação do aluno', () => {
+  const section = INDEX_SOURCE.match(/<section[^>]*id="agente-express"[\s\S]*?<\/section>/);
   assert.ok(section);
-  assert.match(section[0], /Pegue um print de um Instagram\. Use um prompt\./);
-  assert.match(section[0], /Você não precisa começar tentando convencer alguém de que sabe fazer\./);
-  assert.match(section[0], /Primeiro, você mostra\./);
-  assert.equal(countOccurrences(section[0], 'class="mechanism-card"'), 4);
+  const text = visibleText(section[0]);
+  assert.match(text, /Agente Express prepara o que mostrar, o que dizer e o que entregar/);
+  assert.match(text, /Você escolhe a oportunidade, confere o resultado e faz o material chegar ao negócio/);
   let previous = -1;
-  for (const step of ['1 celular', '1 print', '1 prompt', 'Uma transformação para mostrar']) {
-    const position = section[0].indexOf(step);
+  for (const step of ['Encontra', 'Transforma', 'Conversa', 'Entrega']) {
+    const position = text.indexOf(step);
     assert.ok(position > previous, `passo ausente ou fora de ordem: ${step}`);
     previous = position;
   }
 });
 
-test('V2.1 — antes/depois empilha no mobile e fica lado a lado a partir de 640px', () => {
+test('Agente Express — antes/depois real apresenta o mecanismo e mantém imagens responsivas', () => {
   assert.match(STYLE_SOURCE, /\.ba\s*\{[^}]*grid-template-columns:\s*1fr;/);
-  assert.match(STYLE_SOURCE, /@media \(min-width: 640px\)[\s\S]*?\.ba\s*\{[^}]*grid-template-columns:\s*1fr auto 1fr;/);
+  assert.match(STYLE_SOURCE, /@media\s*\(min-width:\s*640px\)[\s\S]*?\.ba\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto minmax\(0,\s*1fr\);/);
   const section = INDEX_SOURCE.match(/<section[^>]*id="demonstracao"[\s\S]*?<\/section>/);
   assert.ok(section);
   assert.equal(countOccurrences(section[0], 'class="ba-shot'), 2);
   assert.equal(countOccurrences(section[0], '<img '), 2);
-  assert.match(section[0], /Simulação visual de apresentação do perfil\./);
+  const text = visibleText(section[0]);
+  assert.match(text, /Perfil atual/);
+  assert.match(text, /Simulação de transformação/);
+  assert.match(text, /A maioria tenta vender primeiro\. Aqui, você mostra primeiro\./);
+  assert.match(visibleText(INDEX_BODY), /Enquanto a maioria envia mensagens genéricas oferecendo social media, você chega mostrando uma transformação criada para aquele negócio\./);
+  for (const asset of ['perfil-antes-480.webp', 'perfil-depois-480.webp']) {
+    assert.ok(section[0].includes(asset), `ativo real ausente: ${asset}`);
+  }
   assert.doesNotMatch(section[0], /crescimento de seguidores|vendas ou faturamento/i);
 });
 
-test('V2.1 — há somente um fluxo de execução com seis etapas', () => {
+test('Agente Express — há somente um fluxo de execução com quatro etapas', () => {
   assert.equal(countOccurrences(INDEX_SOURCE, 'class="process-flow"'), 1);
   const process = INDEX_SOURCE.match(/<ol class="process-flow"[\s\S]*?<\/ol>/);
   assert.ok(process);
-  assert.equal(countOccurrences(process[0], '<li>'), 6);
+  assert.equal(countOccurrences(process[0], '<li>'), 4);
   let previous = -1;
   for (const step of [
-    'Encontrar possíveis clientes', 'Criar a transformação', 'Mostrar antes de vender',
-    'Abrir a conversa', 'Apresentar a proposta', 'Fechar e entregar'
+    'Escolher', 'Mostrar', 'Conversar', 'Entregar'
   ]) {
     const position = process[0].indexOf(`>${step}</strong>`);
     assert.ok(position > previous, `etapa ausente ou fora de ordem: ${step}`);
     previous = position;
   }
-  const section = INDEX_SOURCE.match(/<section[^>]*id="processo"[\s\S]*?<\/section>/)[0];
-  assert.match(section, /Transforme a IA em uma habilidade simples que pode virar[\s\S]*serviço e renda/);
-  assert.match(section, /A ideia não é largar tudo amanhã\. É começar a construir uma segunda opção\./);
-  assert.match(section, /Por trás de cada etapa existe um processo: prompts, scripts, follow-up, proposta, negociação e entrega\./);
-  assert.match(section, /É isso que você aprende dentro do Método Express\./);
+  const text = visibleText(process[0]);
+  assert.match(text, /Você escolhe uma oportunidade/i);
+  assert.match(text, /Você confere e envia/i);
+  assert.match(text, /Você decide as condições/i);
+  assert.match(text, /Você confere, solicita ajustes e envia/i);
 });
 
-test('V2.1 — seções seguem a arquitetura final', () => {
+test('Agente Express — seções seguem a arquitetura autorizada', () => {
   const order = [
-    'id="vsl"', 'id="mecanismo"', 'id="demonstracao"', 'id="mostrar-primeiro"',
-    'id="prova-mecanismo"', 'id="processo"', 'id="depoimentos"', 'id="investimento"', 'id="autoridade"',
+    'id="vsl"', 'id="demonstracao"', 'id="agente-express"', 'id="prova-mecanismo"',
+    'id="depoimentos"', 'id="processo"', 'id="pacote"', 'id="perfil-profissional"',
+    'id="idiomas"', 'id="investimento"', 'id="autoridade"',
     'id="garantia"', 'id="faq"', 'id="cta-final"'
   ];
   let previous = -1;
@@ -123,29 +128,26 @@ test('V2.1 — seções seguem a arquitetura final', () => {
   }
 });
 
-test('V2.1 — urgência real não reintroduz promessas ou artifícios', () => {
-  assert.match(INDEX_VISIBLE, /Você tem 7 dias para conhecer o Método Express\./);
-  assert.match(INDEX_VISIBLE, /7 dias de garantia/);
-  assert.equal(countOccurrences(INDEX_VISIBLE, '15/09 às 23h59'), 3);
-  assert.equal(countOccurrences(INDEX_VISIBLE, 'datetime="2026-09-15T23:59:00-03:00"'), 3);
-  assert.doesNotMatch(INDEX_VISIBLE, /10\/09/);
+test('Agente Express — garantia não vira prazo de resultado nem urgência fictícia', () => {
   const pageText = visibleText(INDEX_BODY);
-  assert.match(pageText, /Eles ficam incluídos nesta oferta até 15\/09 às 23h59\./);
-  assert.match(pageText, /Entrando até 15\/09 às 23h59, os três bônus abaixo ficam incluídos no seu acesso\./);
-  assert.match(pageText, /Entre até 15\/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso\./);
+  assert.match(pageText, /Você tem sete dias para conhecer o Método Express por dentro\./);
+  assert.match(pageText, /sete dias de garantia/i);
+  assert.doesNotMatch(INDEX_VISIBLE, /15\/09|10\/09|2026-09-15|acesso vitalício|imagens ilimitadas/i);
   for (const prohibited of [
     /\bem 7 dias\b/i, /7 dias de missões/i, /curso de 7 dias/i, /Dia\s*[1-7]\s*[—-]/,
     /primeira renda/i, /renda garantida/i, /resultado garantido/i,
     /liberdade financeira/i, /últimas vagas/i, /vagas limitadas/i, /countdown/i,
     /só hoje/i, /termina em \d/i, /preço subindo/i, /\[DATA\]/,
-    /<s>/, /<del>/, /de R\$\s*\d/i
+    /<s>/, /<del>/, /clientes prontos para comprar/i, /fecha clientes sozinho/i,
+    /ganhe em dólar sem esforço/i, /qualquer pessoa consegue/i, /ChatGPT incluso/i,
+    /identidade visual completa/i, /somos os únicos/i, /mercado sem concorrência/i
   ]) assert.doesNotMatch(INDEX_VISIBLE, prohibited, `promessa proibida: ${prohibited}`);
 });
 
-test('V2.1 — prova do mecanismo usa os dois prints reais e vem após Mostrar primeiro', () => {
+test('Agente Express — provas existentes sustentam o mecanismo e precedem o processo', () => {
   const proof = INDEX_SOURCE.match(/<section[^>]*id="prova-mecanismo"[\s\S]*?<\/section>/);
   assert.ok(proof, 'prova do mecanismo não encontrada');
-  assert.ok(INDEX_SOURCE.indexOf('id="mostrar-primeiro"') < INDEX_SOURCE.indexOf('id="prova-mecanismo"'));
+  assert.ok(INDEX_SOURCE.indexOf('id="agente-express"') < INDEX_SOURCE.indexOf('id="prova-mecanismo"'));
   assert.ok(INDEX_SOURCE.indexOf('id="prova-mecanismo"') < INDEX_SOURCE.indexOf('id="processo"'));
   for (const name of ['conversa1.png', 'conversa2.png']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'assets', 'images', name)));
@@ -156,76 +158,87 @@ test('V2.1 — prova do mecanismo usa os dois prints reais e vem após Mostrar p
     assert.match(tag[0], /height="1672"/);
   }
   assert.match(STYLE_SOURCE, /\.proof-grid\s*\{[^}]*display:\s*grid;/);
-  assert.match(STYLE_SOURCE, /@media \(min-width: 640px\)[\s\S]*?\.proof-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
-  assert.match(proof[0], /Quando você mostra,[\s\S]*a conversa muda\./);
+  assert.match(STYLE_SOURCE, /@media\s*\(min-width:\s*640px\)[\s\S]*?\.proof-grid\s*,\s*\.testimonials\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+  const text = visibleText(proof[0]);
+  assert.match(text, /Quando você mostra algo feito para o negócio, a conversa muda\./);
   assert.equal(countOccurrences(proof[0], 'class="proof-result"'), 2);
-  assert.equal(countOccurrences(proof[0], 'Depois de ver a simulação, o negócio quis entender como o serviço funcionava e a conversa avançou para proposta.'), 2);
   assert.equal(countOccurrences(proof[0], 'class="founder-case"'), 1);
-  assert.match(proof[0], /Mostrar abre a conversa\. Prospectar transforma conversa em oportunidade\./);
-  assert.match(proof[0], /Na minha primeira semana aplicando essa lógica, abordei cerca de 10 negócios\./);
-  assert.match(proof[0], /Um deles se tornou meu primeiro cliente por R\$700\./);
-  assert.match(proof[0], /Não foi esperar alguém aparecer\./);
-  assert.match(proof[0], /Foi procurar negócios, mostrar o trabalho e conversar\./);
-  assert.match(visibleText(proof[0]), /≈ 10\s*negócios abordados → 1\s*cliente → R\$700/);
-  assert.equal(countOccurrences(proof[0], 'R$700'), 2);
-  assert.doesNotMatch(proof[0], /não representam garantia de contratação, venda ou resultado/i);
+  assert.match(text, /Na primeira semana aplicando essa lógica, André abordou cerca de dez negócios\./);
+  assert.match(text, /Um deles se tornou seu primeiro cliente por R\$700\./);
+  assert.match(text, /Ele encontrou o negócio, mostrou a transformação e conduziu a conversa\./);
+  assert.equal(countOccurrences(text, 'Relato específico da aplicação do método. Resultados variam conforme execução, abordagem e negociação.'), 1);
   for (const prohibited of [/cliente fechado/i, /venda garantida/i, /contratação garantida/i, /resultado financeiro/i]) {
     assert.doesNotMatch(proof[0], prohibited);
   }
 });
 
-test('V2.1 — materiais centrais, informações de acesso e bônus aparecem antes do preço', () => {
-  const process = INDEX_SOURCE.match(/<section[^>]*id="processo"[\s\S]*?<\/section>/)[0];
-  assert.match(process, /Com um print, um celular e a IA, você consegue criar uma primeira simulação em poucos minutos\./);
-  assert.match(process, /Continue descendo\. Eu preparei 3 bônus de implementação para facilitar seus primeiros passos\./);
-  assert.doesNotMatch(process, /Kit de Abordagem Express|Pack de Prompts por Nicho|Fechamento Express/);
+test('Agente Express — oferta reúne ferramenta, método, acesso e condições antes da compra', () => {
   const offer = INDEX_SOURCE.match(/<section[^>]*id="investimento"[\s\S]*?<\/section>/)[0];
-  assert.match(offer, /O que você recebe ao entrar/);
-  assert.equal(countOccurrences(offer, 'class="offer-product"'), 2);
-  assert.match(offer, /Processo completo/);
-  assert.match(offer, /Encontrar → Criar → Mostrar → Abordar → Oferecer → Entregar/);
-  assert.match(offer, /Prompt Raiz 1 \+ Prompt Raiz 2/);
-  for (const fact of ['7 aulas práticas', 'cerca de 2h', 'Acesso vitalício', 'Suporte direto', 'via WhatsApp + comunidade']) {
-    assert.match(offer, new RegExp(fact.replace(/[+]/g, '\\+'), 'i'));
+  const text = visibleText(offer);
+  for (const component of [
+    'Agente Express', 'Método Express', 'Perfil Profissional Express',
+    'Kit de Abordagem', 'Pack por Nicho', 'Fechamento Express',
+    'Suporte direto e comunidade'
+  ]) {
+    assert.ok(text.includes(component), `componente ausente: ${component}`);
+    assert.ok(offer.indexOf(component) < offer.indexOf('id="ctaInvestimento"'));
   }
-  assert.equal(countOccurrences(offer, 'class="bonus-card"'), 3);
-  for (const bonus of ['Kit de Abordagem Express', 'Pack de Prompts por Nicho', 'Fechamento Express']) {
-    assert.match(offer, new RegExp(bonus));
-  }
-  assert.match(offer, /Como conduzir a conversa, montar uma proposta, definir o preço do serviço, apresentar o valor, responder objeções e encaminhar para o fechamento\./);
-  assert.match(offer, /O acesso ao Método Express custa <strong>R\$97<\/strong>/);
-  assert.match(offer, /10 artes \+ melhorias na apresentação do perfil/);
-  assert.match(offer, /valor de referência em torno de <strong>R\$700<\/strong>/);
-  assert.match(offer, /mais de 7 vezes o valor de acesso ao Método Express/);
-  assert.match(offer, /Valores podem variar conforme pacote e negociação\./);
-  assert.ok(offer.indexOf('class="offer-stack"') < offer.indexOf('R$97'));
-  assert.ok(offer.indexOf('class="bonus-block"') < offer.indexOf('R$97'));
-  assert.doesNotMatch(offer, /R\$997|<s>|<del>|de R\$\s*\d/i);
+  assert.match(text, /Suporte via WhatsApp e acesso à comunidade/);
+  assert.match(text, /R\$97/);
+  assert.match(text, /Parcelamento disponível no checkout/);
+  assert.match(text, /mais de sete vezes o valor de acesso ao Método Express/);
+  assert.match(text, /As aulas e os materiais ficam na Hotmart/);
+  assert.match(text, /ChatGPT com a conta do próprio aluno/);
+  assert.match(text, /compra não inclui uma assinatura do ChatGPT/i);
+  assert.match(text, /limites de mensagens e imagens dependem do plano/i);
+  assert.ok(offer.indexOf('Agente Express') < offer.indexOf('data-offer-price'));
+  assert.doesNotMatch(offer, /R\$997|<s>|<del>|Prompt Raiz|vitalício|15\/09/i);
 });
 
-test('V2.1 — autoridade prioriza aplicação prática sem alegações financeiras', () => {
+test('Agente Express — pacote, perfil e idiomas diferenciam entrega e ações do aluno', () => {
+  const packageSection = INDEX_SOURCE.match(/<section[^>]*id="pacote"[\s\S]*?<\/section>/)[0];
+  const packageText = visibleText(packageSection);
+  for (const component of ['dez imagens individuais', 'logo', 'bio', 'capas', 'direção visual']) {
+    assert.ok(packageText.toLowerCase().includes(component), `entrega ausente: ${component}`);
+  }
+  assert.match(packageText, /A demonstração abre a conversa/);
+  assert.match(packageText, /Você confere, pede os ajustes e entrega tudo pelo celular/);
+  const profile = visibleText(INDEX_SOURCE.match(/<section[^>]*id="perfil-profissional"[\s\S]*?<\/section>/)[0]);
+  assert.match(profile, /Seu trabalho aparece\. Seu rosto não precisa\./);
+  assert.match(profile, /perfil de marca/);
+  assert.match(profile, /sem gravar vídeos ou expor sua vida pessoal/);
+  const languages = visibleText(INDEX_SOURCE.match(/<section[^>]*id="idiomas"[\s\S]*?<\/section>/)[0]);
+  assert.match(languages, /Você fala com o agente em português/);
+  assert.match(languages, /Copie a mensagem e leve ao Agente Express/);
+  assert.match(languages, /real, dólar ou euro/);
+  assert.doesNotMatch(languages, /participa de chamadas|recebe pagamentos|garante clientes/i);
+});
+
+test('Agente Express — história mantém a aplicação real sem credencial acadêmica não confirmada', () => {
   const author = INDEX_SOURCE.match(/<section[^>]*id="autoridade"[\s\S]*?<\/section>/)[0];
   assert.match(author, /André Hoffmann/);
   assert.match(author, /Criador do Método Express/);
-  assert.match(author, /testei a lógica com negócios reais/);
-  assert.match(author, /Peguei perfis, criei simulações e apresentei a ideia diretamente para os donos/);
-  assert.match(author, /mostrar uma transformação antes de tentar vender mudaria a conversa/);
-  assert.match(author, /Formado em Análise e Desenvolvimento de Sistemas e Marketing/);
-  assert.match(author, /unir tecnologia, comunicação e prospecção em um caminho simples de executar/);
-  assert.doesNotMatch(author, /faturamento|R\$|\d+ clientes/i);
+  assert.match(visibleText(author), /Quando testei essa ideia com negócios reais/);
+  assert.match(visibleText(author), /primeiro serviço por R\$700/);
+  assert.match(author, /Agente Express/);
+  assert.doesNotMatch(author, /Formado em|Análise e Desenvolvimento de Sistemas|\d+ clientes/i);
 });
 
-test('V2.1 — FAQ responde ferramentas, conteúdo, acesso e suporte', () => {
+test('Agente Express — FAQ responde às dez dúvidas obrigatórias sem promessa automática', () => {
   const faq = INDEX_SOURCE.match(/<section[^>]*id="faq"[\s\S]*?<\/section>/)[0];
   for (const copy of [
-    'Preciso saber design?', 'Preciso entender de inteligência artificial?', 'Preciso de computador?',
-    'Quais ferramentas são usadas?', 'ChatGPT', 'Grok', 'Quanto conteúdo eu recebo?',
-    '7 aulas práticas', 'cerca de 2 horas', 'Por quanto tempo tenho acesso?',
-    'O acesso é vitalício.', 'Existe suporte?', 'suporte direto via WhatsApp', 'comunidade',
-    'Preciso já ter clientes ou seguidores?'
+    'Consigo fazer tudo pelo celular?', 'Preciso aparecer ou gravar vídeos?',
+    'Preciso saber design ou inteligência artificial?',
+    'Preciso falar inglês para abordar negócios de outros países?',
+    'A IA envia as mensagens automaticamente?',
+    'Preciso ter perfil profissional ou portfólio pronto?',
+    'Preciso de conta no ChatGPT?', 'O método garante clientes ou renda?',
+    'O que está incluído no pacote que posso oferecer?', 'Como funciona a garantia?'
   ]) assert.match(faq, new RegExp(copy.replace(/[?+.]/g, '\\$&'), 'i'), `copy ausente: ${copy}`);
-  assert.equal(countOccurrences(faq, 'class="faq-item"'), 8);
-  assert.doesNotMatch(faq, /O resultado é garantido|Preciso pagar ferramentas extras|100% grátis|nunca vai pagar nada/i);
+  assert.equal(countOccurrences(faq, 'class="faq-item"'), 10);
+  assert.match(visibleText(faq), /revisa e envia/);
+  assert.match(visibleText(faq), /limites[\s\S]*plano/i);
+  assert.doesNotMatch(faq, /O resultado é garantido|100% grátis|nunca vai pagar nada|acesso é vitalício/i);
 });
 
 test('V2.1 — favicon oficial usa somente o novo asset ME', () => {
@@ -237,7 +250,7 @@ test('V2.1 — favicon oficial usa somente o novo asset ME', () => {
   assert.equal(countOccurrences(INDEX_BODY, 'assets/images/favicon.png'), 0);
 });
 
-test('V2.1 — dois CTAs Hotmart e suporte final mantêm os destinos aprovados', () => {
+test('Agente Express — somente dois CTAs Hotmart e suporte final mantêm os destinos aprovados', () => {
   assert.equal(countOccurrences(INDEX_SOURCE, CHECKOUT_URL), 2);
   assert.match(INDEX_SOURCE, /id="ctaInvestimento"/);
   assert.match(INDEX_SOURCE, /id="ctaFinal"/);
@@ -246,10 +259,15 @@ test('V2.1 — dois CTAs Hotmart e suporte final mantêm os destinos aprovados',
   assert.match(INDEX_SOURCE, new RegExp(`https://wa\\.me/${WHATSAPP_NUMBER}`));
   assert.match(INDEX_VISIBLE, /Ficou com alguma dúvida sobre acesso ou pagamento\?/);
   const final = INDEX_SOURCE.match(/<section[^>]*id="cta-final"[\s\S]*?<\/section>/)[0];
-  assert.match(final, /Você já tem o principal para começar:[\s\S]*um celular e um caminho\./);
-  assert.match(final, /Agora é você quem decide quantos negócios vai abordar e até onde quer levar essa habilidade\./);
-  assert.match(visibleText(final), /Entre até 15\/09 às 23h59 e leve os 3 Bônus de Implementação junto com seu acesso\./);
-  assert.match(final, /Quero entrar no Método Express/i);
+  assert.match(visibleText(final), /Você não precisa chegar pronto\. Precisa de um celular e de algo concreto para mostrar\./);
+  assert.match(visibleText(final), /Com o Agente Express, você tem apoio para encontrar oportunidades/);
+  const checkoutLinks = INDEX_VISIBLE.match(/<a\b[^>]*href="https:\/\/pay\.hotmart\.com\/G106758643C"[^>]*>[\s\S]*?<\/a>/g) || [];
+  assert.equal(checkoutLinks.length, 2);
+  for (const link of checkoutLinks) {
+    assert.equal(visibleText(link), 'QUERO ACESSAR O AGENTE EXPRESS');
+    assert.match(link, /target="_blank"/);
+    assert.match(link, /rel="noopener"/);
+  }
   assert.match(SCRIPT_SOURCE, new RegExp(`WHATSAPP_NUMERO = '${WHATSAPP_NUMBER}'`));
 });
 
@@ -257,6 +275,12 @@ test('V2.1 — nenhum gate, reveal ou cabeçalho fixo foi reintroduzido', () => 
   for (const prohibited of [/content-locked/, /stickyNav/, /sticky-nav/, /initStickyNav/, /initScrollReveal/]) {
     assert.doesNotMatch(INDEX_SOURCE + SCRIPT_SOURCE, prohibited);
   }
+  for (const id of ['investimento', 'ctaInvestimento', 'ctaFinal']) {
+    const openingTag = INDEX_VISIBLE.match(new RegExp(`<[^>]+id="${id}"[^>]*>`));
+    assert.ok(openingTag, `oferta precisa existir no HTML inicial: ${id}`);
+    assert.doesNotMatch(openingTag[0], /\bhidden\b|aria-hidden="true"|display\s*:\s*none|visibility\s*:\s*hidden/);
+  }
+  assert.doesNotMatch(SCRIPT_SOURCE, /(?:getElementById\(['"]investimento['"]\)|ctaInvestimento|ctaFinal)[^;]*\.hidden\s*=\s*true/);
 });
 
 test('V2.1 — milestones permanecem; VSL_Offer aguarda timestamp humano', () => {
@@ -292,7 +316,7 @@ test('V2.1 — depoimentos ficam lado a lado no desktop e fora do caminho críti
   for (const name of ['depoimento-naldo-poster.webp', 'depoimento-amanda-poster.webp']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'assets', 'images', name)));
   }
-  assert.match(STYLE_SOURCE, /@media \(min-width: 640px\)[\s\S]*?\.testimonials\s*\{[^}]*grid-template-columns:\s*1fr 1fr;/);
+  assert.match(STYLE_SOURCE, /@media\s*\(min-width:\s*640px\)[\s\S]*?\.testimonials\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(SCRIPT_SOURCE, /function initLazyPosters\(\)/);
   const videos = INDEX_SOURCE.match(/<video[^>]*>/g) || [];
   assert.equal(videos.length, 2);
@@ -306,8 +330,11 @@ test('V2.1 — depoimentos ficam lado a lado no desktop e fora do caminho críti
     assert.match(tag, /width="\d+"/);
     assert.match(tag, /height="\d+"/);
   }
-  const testimonials = INDEX_SOURCE.match(/<section[^>]*id="depoimentos"[\s\S]*?<\/section>/)[0];
-  assert.match(testimonials, /pessoas que saíram da teoria e começaram a executar\./);
+  const proof = INDEX_SOURCE.match(/<section[^>]*id="prova-mecanismo"[\s\S]*?<\/section>/)[0];
+  assert.ok(proof.includes('id="depoimentos"'));
+  const testimonials = proof.slice(proof.indexOf('id="depoimentos"'));
+  assert.match(testimonials, /Naldo/);
+  assert.match(testimonials, /Amanda/);
   assert.doesNotMatch(testimonials, /Cada experiência é individual|não garante clientes, vendas ou renda/i);
   assert.doesNotMatch(INDEX_VISIBLE, /\bPIX\b|R\$\s*3[.]?500/i);
 });
@@ -315,7 +342,7 @@ test('V2.1 — depoimentos ficam lado a lado no desktop e fora do caminho críti
 test('V2.1 — imagens abaixo da dobra são lazy e poster local da VSL tem prioridade alta', () => {
   const images = INDEX_SOURCE.match(/<img[^>]*>/g) || [];
   const local = images.filter((tag) => /src="assets\//.test(tag));
-  assert.equal(local.length, 6);
+  assert.ok(local.length >= 6, 'ativos reais essenciais devem permanecer');
   for (const tag of local.filter((tag) => !tag.includes('vsl-poster.webp'))) {
     assert.match(tag, /loading="lazy"/);
     assert.match(tag, /width="\d+"/);
@@ -432,22 +459,31 @@ test('V2.1 — clique no suporte dispara exatamente um Contact', () => {
   landing.elements.ctaInvestimento.dispatch('click');
   landing.elements.ctaFinal.dispatch('click');
   assert.equal(landing.contactCount(), 1);
+  assert.equal(landing.pixelCalls.filter((call) => ['Purchase', 'InitiateCheckout'].includes(call[1])).length, 0);
 });
 
-test('V2.1 — UTMs, src, sck e fbclid chegam aos dois checkouts', () => {
+test('Agente Express — cinco UTMs, src, sck e fbclid chegam aos dois checkouts antes do play', () => {
   const landing = bootLanding({
     search: '?utm_source=facebook&utm_medium=paid_social&utm_campaign=teste' +
-            '&utm_term=adset&utm_content=criativo&src=meta_ads&sck=1_2_3&fbclid=ABC123'
+            '&utm_term=adset&utm_content=criativo&src=meta_ads&sck=1_2_3&fbclid=ABC123' +
+            '&s1=legado1&s2=legado2&s3=legado3'
   });
   const href = landing.elements.ctaInvestimento.href;
-  const params = new URL(href).searchParams;
-  assert.equal(new URL(href).hostname, 'pay.hotmart.com');
-  for (const [key, value] of [
-    ['utm_source', 'facebook'], ['utm_medium', 'paid_social'], ['utm_campaign', 'teste'],
-    ['utm_term', 'adset'], ['utm_content', 'criativo'], ['src', 'meta_ads'],
-    ['sck', '1_2_3'], ['fbclid', 'ABC123']
-  ]) assert.equal(params.get(key), value);
+  for (const id of ['ctaInvestimento', 'ctaFinal']) {
+    const url = new URL(landing.elements[id].href);
+    assert.equal(url.origin + url.pathname, CHECKOUT_URL);
+    for (const [key, value] of [
+      ['utm_source', 'facebook'], ['utm_medium', 'paid_social'], ['utm_campaign', 'teste'],
+      ['utm_term', 'adset'], ['utm_content', 'criativo'], ['src', 'meta_ads'],
+      ['sck', '1_2_3'], ['fbclid', 'ABC123']
+    ]) assert.equal(url.searchParams.get(key), value, `${id}: ${key}`);
+    // Política já vigente na migração para Hotmart: os campos da Kiwify não voltam.
+    for (const legacy of ['s1', 's2', 's3']) assert.equal(url.searchParams.has(legacy), false);
+  }
   assert.equal(landing.elements.ctaFinal.href, href);
+  const saved = JSON.parse(landing.storage.getItem('metodoexpress_tracking'));
+  for (const legacy of ['s1', 's2', 's3']) assert.equal(saved.params[legacy], undefined);
+  assert.deepEqual(landing.pixelCalls, []);
 });
 
 test('V2.1 — fbclid acompanha a sessão, mas nunca é persistido', () => {

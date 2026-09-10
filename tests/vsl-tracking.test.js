@@ -557,7 +557,7 @@ test('Overlay D/E — play parte de 0:00 e Start depende de PLAYING real', () =>
 test('Player G/H — preserva 9:16 no mobile e desktop', () => {
   assert.match(INDEX_SOURCE, /\.vsl-player\s*\{[^}]*aspect-ratio:\s*9\s*\/\s*16;/);
   assert.doesNotMatch(INDEX_SOURCE, /aspect-ratio:\s*16\s*\/\s*9;/);
-  assert.match(INDEX_SOURCE, /\.vsl-launch,[\s\S]*?inset:\s*0;[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%;/);
+  assert.match(INDEX_SOURCE, /\.vsl-launch,[\s\S]*?inset:\s*0;[\s\S]*?width:\s*100%;[\s\S]*?height:\s*100%(?:;|})/);
 });
 
 test('Player I/J/K — landing segue aberta e Offer fica desativado sem timestamp', () => {

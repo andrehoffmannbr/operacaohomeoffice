@@ -4,6 +4,7 @@
 .codex/
 .env*
 tests/
+tools/
 screenshots/
 *.md
 assets/images/depois.png
