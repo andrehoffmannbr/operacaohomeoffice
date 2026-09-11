@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const baseline = '9f45645389961c6b1448033e21e6ddb026beb660';
+const baseline = '8046fb8f739f414ca0b332bb555aa2458c1c42c6';
 const before = execFileSync('git', ['show', `${baseline}:index.html`], { cwd: root, encoding: 'utf8' });
 const port = Number(process.env.LOCAL_PREVIEW_PORT || 4173);
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.svg': 'image/svg+xml' };
@@ -60,6 +60,12 @@ const instrumentation = String.raw`(function () {
     data.resourceBytes = resources.reduce(function (sum, entry) { return sum + entry.transferSize; },0);
     data.resources = resources.length;
     data.imageFailures = Array.from(document.images).filter(function (img) { return img.complete && img.naturalWidth === 0; }).map(function (img) { return img.getAttribute('src'); });
+    var mainTextSelector = '.hero-lead,.hero-barriers,.hero-territory,.vsl-caption,.asset-caption,.agent-result>p,.agent-io-label,.agent-io-value,.media-pending p,.proof-result,.founder-case-story>p,.process-flow span,.package-components p,.pending-note,.profile-list li,.language-step-label,.language-step p,.offer-intro,.offer-product p,.offer-value,.offer-price-label,.offer-price-alt,.btn,.secure-note,.access-note,.author-copy .prose,.author-role,.guarantee-card p,.faq-answer p,.final-copy,.final-reinforcement,.support';
+    data.mainTextBelow16 = Array.from(document.querySelectorAll(mainTextSelector)).filter(function (el) { return el.getClientRects().length && parseFloat(getComputedStyle(el).fontSize) < 16; }).map(function (el) { return { selector: el.className || el.tagName.toLowerCase(), fontSize: getComputedStyle(el).fontSize }; });
+    var heroCopy = document.querySelector('.hero-copy');
+    var heroMedia = document.querySelector('.hero-media');
+    var columnCount = function (selector) { var value = getComputedStyle(document.querySelector(selector)).gridTemplateColumns; return value === 'none' ? 1 : value.split(' ').length; };
+    data.layout = { innerWidth: window.innerWidth, visualViewportWidth: window.visualViewport ? window.visualViewport.width : null, heroColumns: columnCount('.hero-layout'), beforeAfterColumns: columnCount('.ba'), agentColumns: columnCount('.agent-results'), proofColumns: columnCount('.proof-grid'), offerColumns: columnCount('.offer-card'), heroMediaBelowCopy: heroMedia.getBoundingClientRect().top >= heroCopy.getBoundingClientRect().bottom - 1 };
     node.textContent = JSON.stringify(data);
   }
   setInterval(refresh, 300);
@@ -68,8 +74,11 @@ const instrumentation = String.raw`(function () {
 
 const pixelStub = `var q=window.fbq.queue.slice();window.fbq.callMethod=function(){window.__localReview.recordPixel(Array.from(arguments));};q.forEach(function(a){window.__localReview.recordPixel(Array.from(a));});window.fbq.queue=[];`;
 
-function prepare(html, old) {
-  return html.replace('<head>', '<head><script src="/_review/instrumentation.js"></script>')
+function prepare(html, old, captureY) {
+  const captureSetup = Number.isInteger(captureY)
+    ? `<style>html{scroll-behavior:auto!important}</style><script>addEventListener('load',function(){scrollTo(0,${captureY});},{once:true});</script>`
+    : '';
+  return html.replace('<head>', `<head><script src="/_review/instrumentation.js"></script>${captureSetup}`)
     .replace('https://connect.facebook.net/en_US/fbevents.js', '/_review/pixel.js')
     .replace('<body>', '<body data-local-preview="' + (old ? 'before' : 'after') + '">');
 }
@@ -95,7 +104,10 @@ const server = http.createServer(async (req, res) => {
     const old = url.pathname === '/before/' || url.pathname === '/before/index.html';
     if (url.pathname === '/' || url.pathname === '/index.html' || old) {
       const html = old ? before : await readFile(path.join(root, 'index.html'), 'utf8');
-      res.writeHead(200, { ...headers, 'Content-Type': mime['.html'] }).end(prepare(html, old)); return;
+      const captureY = url.searchParams.has('_capture_y')
+        ? Math.max(0, Math.min(100000, Math.round(Number(url.searchParams.get('_capture_y')) || 0)))
+        : null;
+      res.writeHead(200, { ...headers, 'Content-Type': mime['.html'] }).end(prepare(html, old, captureY)); return;
     }
     const relative = decodeURIComponent(url.pathname).replace(/^\/before\//, '/').replace(/^\//, '');
     if (relative !== 'script.js' && !relative.startsWith('assets/')) { res.writeHead(404, headers).end(); return; }

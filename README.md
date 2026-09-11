@@ -43,7 +43,7 @@ YouTube permanece habilitado para a verificação do player. O HTTP 202 desta
 prévia é uma simulação, não comprova aceitação pela Meta.
 
 A comparação anterior usa o HTML do commit
-`9f45645389961c6b1448033e21e6ddb026beb660`, com scripts e ativos preservados. A
+`8046fb8f739f414ca0b332bb555aa2458c1c42c6`, com scripts e ativos preservados. A
 instrumentação existe apenas na resposta do servidor de revisão. `tools/`,
 `screenshots/`, testes e Markdown são excluídos do artefato Vercel.
 
@@ -102,11 +102,12 @@ node --check tools/preview-local.mjs
 node --test tests/landing-v2.test.js tests/vsl-tracking.test.js tests/meta-pixel.test.js tests/pageview-api.test.js
 ```
 
-A suíte atual tem 98 testes. Cobre estrutura/copy, CTAs, atribuição, cookies,
+A suíte atual tem 99 testes. Cobre estrutura/copy, responsividade, CTAs, atribuição, cookies,
 PageView, prazo/fallback, player, scroll, preço visível, aba e BFCache.
 Build usa a configuração existente da Vercel (`vercel build --prod`), localmente;
 essa operação não publica. O projeto não possui formatter dedicado; usar
 `git diff --check` e as verificações de sintaxe.
 
 Resultados e pendências: [VALIDACAO-AGENTE-EXPRESS-LOCAL.md](VALIDACAO-AGENTE-EXPRESS-LOCAL.md).
-Capturas ficam em `screenshots/agente-express-local/`, ignoradas pelo Git.
+Capturas do polimento ficam em `screenshots/agente-express-polimento-final/`,
+ignoradas pelo Git.

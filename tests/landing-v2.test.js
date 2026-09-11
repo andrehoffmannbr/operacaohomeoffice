@@ -28,6 +28,18 @@ function visibleText(fragment) {
   return fragment.replace(/<br\s*\/?\s*>/gi, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 }
 
+function cssAtRule(marker) {
+  const start = STYLE_SOURCE.indexOf(marker);
+  assert.notEqual(start, -1, `regra CSS ausente: ${marker}`);
+  const brace = STYLE_SOURCE.indexOf('{', start);
+  let depth = 0;
+  for (let index = brace; index < STYLE_SOURCE.length; index++) {
+    if (STYLE_SOURCE[index] === '{') depth++;
+    if (STYLE_SOURCE[index] === '}' && --depth === 0) return STYLE_SOURCE.slice(brace + 1, index);
+  }
+  assert.fail(`regra CSS sem fechamento: ${marker}`);
+}
+
 test('Agente Express — hero apresenta a IA, o serviço e uma âncora interna', () => {
   const hero = INDEX_BODY.match(/<header class="hero"[\s\S]*?<\/header>/);
   assert.ok(hero, 'hero não encontrado');
@@ -72,15 +84,30 @@ test('Agente Express — apresenta quatro resultados e a participação do aluno
     assert.ok(position > previous, `passo ausente ou fora de ordem: ${step}`);
     previous = position;
   }
+  assert.match(text, /Veja o fluxo do Agente Express/);
+  assert.equal(countOccurrences(section[0], 'class="agent-io"'), 4);
+  assert.equal(countOccurrences(section[0], 'class="agent-io-row"'), 8);
+  assert.equal(countOccurrences(section[0], 'role="listitem"'), 4);
+  for (const flow of ['Cidade + segmento', 'Negócios para analisar', 'Link ou print do perfil', 'Demonstração visual', 'Mensagem recebida', 'Resposta preparada', 'Direção aprovada', 'Materiais do pacote']) {
+    assert.ok(text.includes(flow), `entrada ou resultado ausente: ${flow}`);
+  }
+  assert.match(STYLE_SOURCE, /\.agent-results\s*\{[^}]*grid-template-columns:\s*minmax\(0,1fr\)/);
+  assert.match(cssAtRule('@media(min-width:640px)'), /\.agent-results\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+  assert.doesNotMatch(cssAtRule('@media(min-width:900px)'), /\.agent-results\s*\{[^}]*grid-template-columns:\s*repeat\(4,/);
+  assert.match(cssAtRule('@media(min-width:1200px)'), /\.agent-results\s*\{[^}]*grid-template-columns:\s*repeat\(4,/);
 });
 
 test('Agente Express — antes/depois real apresenta o mecanismo e mantém imagens responsivas', () => {
-  assert.match(STYLE_SOURCE, /\.ba\s*\{[^}]*grid-template-columns:\s*1fr;/);
-  assert.match(STYLE_SOURCE, /@media\s*\(min-width:\s*640px\)[\s\S]*?\.ba\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto minmax\(0,\s*1fr\);/);
+  assert.match(STYLE_SOURCE, /\.ba\s*\{[^}]*grid-template-columns:\s*minmax\(0,1fr\);/);
+  assert.doesNotMatch(cssAtRule('@media(min-width:640px)'), /\.ba\s*\{/);
+  assert.match(cssAtRule('@media(min-width:768px)'), /\.ba\s*\{[^}]*grid-template-columns:\s*minmax\(0,1fr\) auto minmax\(0,1fr\);/);
   const section = INDEX_SOURCE.match(/<section[^>]*id="demonstracao"[\s\S]*?<\/section>/);
   assert.ok(section);
   assert.equal(countOccurrences(section[0], 'class="ba-shot'), 2);
   assert.equal(countOccurrences(section[0], '<img '), 2);
+  assert.equal(countOccurrences(section[0], 'class="media-link"'), 2);
+  assert.equal(countOccurrences(section[0], 'class="image-action"'), 2);
+  assert.equal(countOccurrences(section[0], 'target="_blank" rel="noopener"'), 2);
   const text = visibleText(section[0]);
   assert.match(text, /Perfil atual/);
   assert.match(text, /Simulação de transformação/);
@@ -128,6 +155,29 @@ test('Agente Express — seções seguem a arquitetura autorizada', () => {
   }
 });
 
+test('Polimento final — layouts móveis ficam em uma coluna e textos principais não são reduzidos', () => {
+  assert.match(STYLE_SOURCE, /\.hero-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0,1fr\)/);
+  assert.match(cssAtRule('@media(min-width:900px)'), /\.hero-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0,1\.55fr\) minmax\(0,1fr\)/);
+  assert.match(cssAtRule('@media(max-height:700px)'), /\.vsl-wrap\s*\{[^}]*width:\s*min\(100%,250px\)/);
+  const mainTextSelectors = [
+    '.hero-barriers', '.hero-territory', '.vsl-caption', '.ba-label', '.asset-caption',
+    '.agent-result>p', '.agent-io-label', '.media-pending p', '.proof-result', '.disclaimer',
+    '.package-components p', '.pending-note', '.language-step-label', '.offer-product p',
+    '.offer-value', '.offer-price-label', '.offer-price-alt', '.btn', '.secure-note',
+    '.access-note', '.author-role', '.support'
+  ];
+  for (const selector of mainTextSelectors) {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const rule = STYLE_SOURCE.match(new RegExp(`(?:^|})\\s*${escaped}\\s*\\{([^}]*)\\}`));
+    assert.ok(rule, `regra ausente: ${selector}`);
+    const size = rule[1].match(/font-size:\s*([\d.]+)(rem|px)/);
+    assert.ok(size, `font-size ausente: ${selector}`);
+    const pixels = Number(size[1]) * (size[2] === 'rem' ? 16 : 1);
+    assert.ok(pixels >= 16, `texto principal abaixo de 16px: ${selector} (${size[0]})`);
+  }
+  assert.match(STYLE_SOURCE, /\.btn\s*\{[^}]*min-height:\s*58px/);
+});
+
 test('Agente Express — garantia não vira prazo de resultado nem urgência fictícia', () => {
   const pageText = visibleText(INDEX_BODY);
   assert.match(pageText, /Você tem sete dias para conhecer o Método Express por dentro\./);
@@ -158,10 +208,13 @@ test('Agente Express — provas existentes sustentam o mecanismo e precedem o pr
     assert.match(tag[0], /height="1672"/);
   }
   assert.match(STYLE_SOURCE, /\.proof-grid\s*\{[^}]*display:\s*grid;/);
-  assert.match(STYLE_SOURCE, /@media\s*\(min-width:\s*640px\)[\s\S]*?\.proof-grid\s*,\s*\.testimonials\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+  assert.match(cssAtRule('@media(min-width:768px)'), /\.proof-grid\s*,\s*\.testimonials\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
   const text = visibleText(proof[0]);
   assert.match(text, /Quando você mostra algo feito para o negócio, a conversa muda\./);
   assert.equal(countOccurrences(proof[0], 'class="proof-result"'), 2);
+  assert.equal(countOccurrences(proof[0], 'class="proof-sequence"'), 1);
+  assert.equal(countOccurrences(proof[0], '<li>'), 4);
+  assert.equal(countOccurrences(proof[0], 'Ampliar registro'), 2);
   assert.equal(countOccurrences(proof[0], 'class="founder-case"'), 1);
   assert.match(text, /Na primeira semana aplicando essa lógica, André abordou cerca de dez negócios\./);
   assert.match(text, /Um deles se tornou seu primeiro cliente por R\$700\./);
@@ -186,7 +239,7 @@ test('Agente Express — oferta reúne ferramenta, método, acesso e condições
   assert.match(text, /Suporte via WhatsApp e acesso à comunidade/);
   assert.match(text, /R\$97/);
   assert.match(text, /Parcelamento disponível no checkout/);
-  assert.match(text, /mais de sete vezes o valor de acesso ao Método Express/);
+  assert.match(text, /um serviço de R\$700 representou mais de sete vezes o valor de acesso de R\$97/);
   assert.match(text, /As aulas e os materiais ficam na Hotmart/);
   assert.match(text, /ChatGPT com a conta do próprio aluno/);
   assert.match(text, /compra não inclui uma assinatura do ChatGPT/i);
@@ -203,6 +256,8 @@ test('Agente Express — pacote, perfil e idiomas diferenciam entrega e ações 
   }
   assert.match(packageText, /A demonstração abre a conversa/);
   assert.match(packageText, /Você confere, pede os ajustes e entrega tudo pelo celular/);
+  assert.match(packageText, /Você não oferece “inteligência artificial”/);
+  assert.ok(packageSection.indexOf('</ul>') < packageSection.indexOf('data-pending-asset="pacote-express-arquivos"'), 'lista do pacote deve preceder a pendência visual');
   const profile = visibleText(INDEX_SOURCE.match(/<section[^>]*id="perfil-profissional"[\s\S]*?<\/section>/)[0]);
   assert.match(profile, /Seu trabalho aparece\. Seu rosto não precisa\./);
   assert.match(profile, /perfil de marca/);
@@ -260,7 +315,8 @@ test('Agente Express — somente dois CTAs Hotmart e suporte final mantêm os de
   assert.match(INDEX_VISIBLE, /Ficou com alguma dúvida sobre acesso ou pagamento\?/);
   const final = INDEX_SOURCE.match(/<section[^>]*id="cta-final"[\s\S]*?<\/section>/)[0];
   assert.match(visibleText(final), /Você não precisa chegar pronto\. Precisa de um celular e de algo concreto para mostrar\./);
-  assert.match(visibleText(final), /Com o Agente Express, você tem apoio para encontrar oportunidades/);
+  assert.match(visibleText(final), /O Agente Express pesquisa oportunidades, cria a transformação, prepara a conversa e produz o pacote/);
+  assert.match(visibleText(final), /Você escolhe, revisa, envia e combina as condições com o cliente/);
   const checkoutLinks = INDEX_VISIBLE.match(/<a\b[^>]*href="https:\/\/pay\.hotmart\.com\/G106758643C"[^>]*>[\s\S]*?<\/a>/g) || [];
   assert.equal(checkoutLinks.length, 2);
   for (const link of checkoutLinks) {
@@ -316,7 +372,7 @@ test('V2.1 — depoimentos ficam lado a lado no desktop e fora do caminho críti
   for (const name of ['depoimento-naldo-poster.webp', 'depoimento-amanda-poster.webp']) {
     assert.ok(fs.existsSync(path.join(ROOT, 'assets', 'images', name)));
   }
-  assert.match(STYLE_SOURCE, /@media\s*\(min-width:\s*640px\)[\s\S]*?\.testimonials\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
+  assert.match(cssAtRule('@media(min-width:768px)'), /\.testimonials\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(SCRIPT_SOURCE, /function initLazyPosters\(\)/);
   const videos = INDEX_SOURCE.match(/<video[^>]*>/g) || [];
   assert.equal(videos.length, 2);

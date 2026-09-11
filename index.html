@@ -64,14 +64,14 @@
     .section-dark .prose{color:#C4D5CF}
     .closing{max-width:58ch;margin:28px auto 0;font-size:1.08rem;font-weight:700;line-height:1.6;text-align:center}
     .hero{position:relative;padding:30px 0 58px;color:var(--white);background:radial-gradient(circle at 84% 38%,rgba(15,203,192,.12),transparent 40%),var(--dark)}
-    .hero-brand{padding-bottom:26px;border-bottom:1px solid rgba(174,211,198,.16);margin-bottom:32px}
-    .hero-brand .eyebrow{margin:0;font-size:.65rem;letter-spacing:.11em}
-    .hero-layout{display:grid;gap:34px;align-items:center}
+    .hero-brand{padding-bottom:20px;border-bottom:1px solid rgba(174,211,198,.16);margin-bottom:26px}
+    .hero-brand .eyebrow{margin:0;font-size:.75rem;letter-spacing:.09em}
+    .hero-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:36px;align-items:center}
     .hero-copy{min-width:0}
-    .hero h1{font-size:clamp(1.85rem,6.8vw,2.75rem);line-height:1.15;max-width:25ch}
-    .hero-lead{margin-top:22px;color:#C4D5CF;font-size:1.02rem}
-    .hero-barriers{margin-top:22px;max-width:45ch;color:#70E2D8;font-size:.96rem;font-weight:700;line-height:1.65}
-    .hero-territory{max-width:49ch;margin-top:14px;color:#B1C6BD;font-size:.93rem}
+    .hero h1{max-width:none;font-size:clamp(1.625rem,7vw,2.4rem);line-height:1.14;letter-spacing:-.045em;text-wrap:pretty}
+    .hero-lead{margin-top:22px;color:#C4D5CF;font-size:1.0625rem}
+    .hero-barriers{margin-top:22px;max-width:45ch;color:#70E2D8;font-size:1rem;font-weight:700;line-height:1.65}
+    .hero-territory{max-width:49ch;margin-top:14px;color:#B1C6BD;font-size:1rem}
     .hero .btn{max-width:430px;margin-top:28px}
     .hero-media{min-width:0}
     .vsl-wrap{width:min(100%,360px);margin:0 auto}
@@ -81,39 +81,51 @@
     .vsl-launch img{object-fit:cover;object-position:center;transition:filter 200ms ease}
     .vsl-launch:hover img{filter:brightness(1.06)}
     .vsl-yt-target iframe{border:0}
-    .vsl-caption{max-width:38ch;margin:16px auto 0;color:#B6CBC2;font-size:.86rem;line-height:1.6;text-align:center}
+    .vsl-caption{max-width:38ch;margin:18px auto 0;color:#B6CBC2;font-size:1rem;line-height:1.6;text-align:center}
     .vsl-caption strong{color:#F4F7F6}
-    .ba{display:grid;grid-template-columns:1fr;justify-items:center;gap:16px;max-width:860px;margin:32px auto 0}
-    .ba-shot{width:min(100%,380px);min-width:0}
-    .ba-label{display:block;min-height:32px;margin-bottom:10px;font-size:.81rem;font-weight:700;line-height:1.4;text-align:center}
+    .ba{display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;gap:20px;max-width:900px;margin:32px auto 0}
+    .ba-shot{width:min(100%,420px);min-width:0}
+    .ba-label{display:block;min-height:32px;margin-bottom:10px;font-size:1rem;font-weight:700;line-height:1.4;text-align:center}
     .ba-shot-after .ba-label{color:var(--teal-ink)}
     .ba-shot img{width:100%;height:auto;border:1px solid var(--line);border-radius:18px;box-shadow:0 14px 44px rgba(7,17,17,.09)}
     .ba-shot-after img{border-color:#3A9E8A}
     .ba-arrow{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;color:#052B29;background:var(--teal);font-size:1.25rem;font-weight:700}
-    .asset-caption{max-width:65ch;margin:18px auto 0;color:var(--muted);font-size:.86rem;line-height:1.6;text-align:center}
+    .media-link{display:block;color:inherit;text-decoration:none}
+    .media-link img{transition:transform 180ms ease,box-shadow 180ms ease}
+    .media-link:hover img{transform:translateY(-2px);box-shadow:0 18px 48px rgba(7,17,17,.14)}
+    .image-action{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:9px 10px;color:var(--teal-ink);font-size:1rem;font-weight:700;text-decoration:underline;text-underline-offset:4px}
+    .asset-caption{max-width:65ch;margin:18px auto 0;color:var(--muted);font-size:1rem;line-height:1.6;text-align:center}
     .mechanism-statement{max-width:900px;margin:32px auto 0;padding:24px 20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
     .mechanism-statement strong{display:block;font-family:var(--font-display);font-size:clamp(1.2rem,4.2vw,1.65rem);line-height:1.4}
     .mechanism-statement p{max-width:70ch;margin:14px auto 0;color:var(--muted)}
-    .agent-results{display:grid;border-top:1px solid rgba(177,211,198,.25);margin-top:36px}
-    .agent-result{padding:24px 0;border-bottom:1px solid rgba(177,211,198,.25)}
-    .agent-number{display:block;margin-bottom:16px;color:#69DED4;font-size:.8rem;font-weight:700;letter-spacing:.09em}
+    .agent-flow-label{margin:0 auto 22px;color:#F4F7F6;font-family:var(--font-display);font-size:1.12rem;font-weight:800;text-align:center}
+    .agent-results{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:1080px;margin:0 auto}
+    .agent-result{min-width:0;padding:24px 20px;border:1px solid rgba(177,211,198,.3);border-radius:16px;background:rgba(121,189,167,.055)}
+    .agent-number{display:block;margin-bottom:12px;color:#69DED4;font-size:.8rem;font-weight:700;letter-spacing:.09em}
     .agent-result h3{font-size:1.4rem;color:#F4F7F6}
-    .agent-result p{margin-top:12px;color:#C4D5CF}
+    .agent-result>p{margin-top:10px;color:#C4D5CF;font-size:1rem}
+    .agent-io{display:grid;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(177,211,198,.22)}
+    .agent-io-row{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:baseline}
+    .agent-io-label{color:#82CDB9;font-size:1rem;font-weight:700;letter-spacing:.025em;text-transform:uppercase}
+    .agent-io-value{color:#F4F7F6;font-size:1rem;font-weight:700;line-height:1.45}
     .media-pending{display:flex;gap:18px;align-items:center;max-width:900px;margin:30px auto 0;padding:23px;border:1px dashed rgba(121,189,167,.6);border-radius:14px}
     .media-pending .pending-symbol{display:grid;place-items:center;flex:0 0 44px;height:44px;border:1px solid rgba(121,189,167,.7);border-radius:50%;font-size:1.15rem;color:#79DED0}
-    .media-pending strong{display:block;font-size:.98rem}
-    .media-pending p{margin-top:5px;color:#BBD1C8;font-size:.87rem;line-height:1.55}
+    .media-pending strong{display:block;font-size:1rem}
+    .media-pending p{margin-top:5px;color:#BBD1C8;font-size:1rem;line-height:1.55}
+    .proof-sequence{display:grid;gap:0;max-width:920px;margin:0 auto 30px;counter-reset:proof-sequence;border-top:1px solid var(--line)}
+    .proof-sequence li{counter-increment:proof-sequence;display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-weight:700}
+    .proof-sequence li::before{content:'0' counter(proof-sequence);color:var(--teal-ink);font-size:.78rem;letter-spacing:.04em}
     .proof-grid{display:grid;gap:28px;max-width:920px;margin:32px auto 0}
     .proof-card{min-width:0;padding:8px;border:1px solid var(--line);border-radius:18px;background:white}
     .proof-card img{width:100%;height:auto;border-radius:12px}
-    .proof-result{padding:17px 10px 12px;color:var(--muted);font-size:.92rem;line-height:1.6}
+    .proof-result{padding:8px 10px 14px;color:var(--muted);font-size:1rem;line-height:1.6}
     .proof-result strong{display:block;margin-bottom:5px;color:var(--ink)}
     .founder-case{max-width:920px;margin:34px auto 0;padding:28px 22px;background:#E1EFE7;border-radius:18px}
     .case-value{display:block;color:#165C49;font-family:var(--font-display);font-size:clamp(3rem,7vw,3.75rem);font-weight:800;letter-spacing:-.06em;line-height:1.1}
-    .case-kicker{margin:9px 0 23px;color:#2D5F4F;font-size:.84rem;font-weight:700}
+    .case-kicker{margin:9px 0 23px;color:#2D5F4F;font-size:1rem;font-weight:700}
     .founder-case-story{color:#354F43}
     .founder-case-story h3{margin-bottom:14px;color:var(--ink);font-size:1.3rem}
-    .disclaimer{margin-top:18px;color:#4D6257;font-size:.82rem;line-height:1.6}
+    .disclaimer{margin-top:18px;color:#4D6257;font-size:1rem;line-height:1.6}
     .testimonials-block{padding-top:60px}
     .testimonials-block h3{max-width:30ch;margin:0 auto;text-align:center;font-size:clamp(1.45rem,5vw,1.95rem)}
     .testimonials{display:grid;gap:28px;max-width:740px;margin:28px auto 0}
@@ -128,12 +140,13 @@
     .editorial-grid{display:grid;gap:32px;align-items:start}
     .editorial-copy h2{margin-bottom:24px}
     .editorial-copy .eyebrow{margin-bottom:18px}
+    .package-showcase{min-width:0}
     .package-components{border-top:1px solid var(--line)}
     .package-components li{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:19px 0;border-bottom:1px solid var(--line)}
     .package-components .component-mark{color:var(--teal-ink);font-family:var(--font-display);font-size:1rem;font-weight:800}
     .package-components strong{display:block;font-size:1.02rem}
-    .package-components p{margin-top:4px;color:var(--muted);font-size:.92rem}
-    .pending-note{margin-top:25px;padding:18px 20px;border:1px dashed #7C9D8E;border-radius:12px;color:#4E665A;background:rgba(255,255,255,.4);font-size:.88rem;line-height:1.6}
+    .package-components p{margin-top:4px;color:var(--muted);font-size:1rem}
+    .pending-note{margin-top:25px;padding:18px 20px;border:1px dashed #7C9D8E;border-radius:12px;color:#4E665A;background:rgba(255,255,255,.4);font-size:1rem;line-height:1.6}
     .pending-note strong{display:block;color:#254E3C;margin-bottom:4px}
     .profile-outline{padding:28px 24px;border:1px solid var(--line);border-radius:18px;background:#fff}
     .profile-outline h3{margin-bottom:20px;font-size:1.25rem}
@@ -145,7 +158,7 @@
     .example-label{margin-bottom:14px;color:#69DED4;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-align:center}
     .language-step{padding:24px 22px;border-top:1px solid rgba(177,211,198,.25)}
     .language-step:last-child{border-bottom:1px solid rgba(177,211,198,.25)}
-    .language-step-label{display:block;margin-bottom:12px;color:#82CDB9;font-size:.78rem;font-weight:700;letter-spacing:.055em;text-transform:uppercase}
+    .language-step-label{display:block;margin-bottom:12px;color:#82CDB9;font-size:1rem;font-weight:700;letter-spacing:.035em;text-transform:uppercase}
     .language-step p{color:#E0EBE5;font-size:1.03rem}
     .language-step-explanation{background:rgba(123,191,165,.07)}
     .offer-intro{max-width:66ch;margin:0 auto;color:var(--muted);text-align:center}
@@ -154,25 +167,25 @@
     .offer-product{padding:20px 0;border-bottom:1px solid var(--line)}
     .offer-product:first-child{padding-top:0}
     .offer-product-title{display:block;margin-bottom:7px;color:var(--ink);font-family:var(--font-display);font-size:1.07rem;font-weight:800}
-    .offer-product p{color:var(--muted);font-size:.95rem}
+    .offer-product p{color:var(--muted);font-size:1rem}
     .offer-product-agent{padding:23px 20px!important;margin-bottom:4px;border:0;border-radius:14px;background:#E6F4EC}
     .offer-product-agent .offer-product-title{color:#12664F;font-size:1.3rem}
-    .offer-purchase{padding-top:26px}
-    .offer-value{padding:18px 0;color:var(--muted);font-size:.9rem;line-height:1.6;border-bottom:1px solid var(--line)}
+    .offer-purchase{margin-top:28px;padding:24px 20px;border:1px solid #D1E3DB;border-radius:16px;background:#F2F8F5}
+    .offer-value{padding:0 0 20px;color:var(--muted);font-size:1rem;line-height:1.6;border-bottom:1px solid var(--line)}
     .offer-price-block{margin-top:24px;text-align:center}
-    .offer-price-label{color:var(--muted);font-size:.9rem}
+    .offer-price-label{color:var(--muted);font-size:1rem}
     .offer-price{margin:12px 0;color:#08746E;font-family:var(--font-display);font-size:clamp(3.8rem,15vw,4.7rem);font-weight:800;line-height:1;letter-spacing:-.06em}
-    .offer-price-alt{color:var(--muted);font-size:.9rem}
-    .btn{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:58px;margin-top:24px;padding:17px 20px;border:1px solid var(--teal);border-radius:10px;color:#052B29;background:var(--teal);font-size:.88rem;font-weight:700;line-height:1.35;text-align:center;text-decoration:none;text-transform:uppercase;transition:background-color 180ms ease,transform 180ms ease}
+    .offer-price-alt{color:var(--muted);font-size:1rem}
+    .btn{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:58px;margin-top:24px;padding:17px 20px;border:1px solid var(--teal);border-radius:10px;color:#052B29;background:var(--teal);font-size:1rem;font-weight:700;line-height:1.35;text-align:center;text-decoration:none;text-transform:uppercase;transition:background-color 180ms ease,transform 180ms ease}
     .btn:hover{background:#44E0D3;transform:translateY(-2px)}
-    .secure-note{margin-top:13px;color:var(--muted);font-size:.82rem;line-height:1.6;text-align:center}
-    .access-note{margin-top:25px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:.87rem;line-height:1.7}
+    .secure-note{margin-top:13px;color:var(--muted);font-size:1rem;line-height:1.6;text-align:center}
+    .access-note{margin-top:25px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:1rem;line-height:1.7}
     .access-note strong{display:block;margin-bottom:6px;color:var(--ink)}
     .author-card{display:grid;gap:30px;align-items:center}
     .author-photo{width:min(100%,360px);height:auto;aspect-ratio:1;margin:0 auto;object-fit:cover;border:1px solid #5A9E86;border-radius:20px}
     .author-copy h2{margin-bottom:24px;font-size:clamp(1.7rem,5vw,2.5rem)}
     .author-name{margin-top:25px;color:#F4F7F6;font-weight:700}
-    .author-role{color:#70D8C3;font-size:.9rem}
+    .author-role{color:#70D8C3;font-size:1rem}
     .guarantee-card{display:grid;grid-template-columns:52px 1fr;gap:18px;max-width:850px;margin:0 auto}
     .guarantee-mark{display:grid;place-items:center;width:52px;height:52px;border:1px solid #70A48C;border-radius:50%;color:var(--teal-ink);font-family:var(--font-display);font-size:1.35rem;font-weight:800}
     .guarantee-card h2{max-width:27ch;margin-bottom:18px;font-size:clamp(1.5rem,5vw,2.2rem)}
@@ -190,30 +203,35 @@
     .final-reinforcement{max-width:56ch;margin:24px auto 0;color:#83E4D5;font-weight:700}
     .final-section .btn{max-width:480px;margin-top:30px}
     .section-dark .secure-note{color:#B1C6BD}
-    .support{max-width:560px;margin:36px auto 0;padding-top:26px;border-top:1px solid rgba(177,211,198,.2);color:#C4D5CF;font-size:.91rem}
+    .support{max-width:560px;margin:36px auto 0;padding-top:26px;border-top:1px solid rgba(177,211,198,.2);color:#C4D5CF;font-size:1rem}
     .support span{display:block}
     .support-link{display:inline-block;margin-top:4px;padding:10px 4px;color:#69DED4;font-weight:700;text-underline-offset:4px}
     .footer{padding:23px 0;color:#A8BDB4;background:#050D0B;font-size:.8rem;text-align:center}
     @media(min-width:640px){
       .container{padding:0 28px}.section{padding:84px 0}.hero{padding:30px 0 70px}.hero-brand .eyebrow{font-size:.73rem}
-      .ba{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:24px}.ba-shot{width:100%}.ba-arrow{transform:rotate(-90deg)}
-      .agent-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 34px}.agent-result{padding:30px 0}
-      .proof-grid,.testimonials{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .agent-results{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.agent-result{padding:26px 22px}
       .founder-case{display:grid;grid-template-columns:200px 1fr;gap:34px;padding:32px}.case-kicker{margin-bottom:0}
       .process-flow{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:36px}
       .offer-card{padding:34px}
+    }
+    @media(min-width:768px){
+      .ba{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:24px}.ba-shot{width:100%}.ba-arrow{transform:rotate(-90deg)}
+      .proof-sequence{grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--line)}.proof-sequence li{display:block;padding:16px 14px;border-bottom:0}.proof-sequence li+li{border-left:1px solid var(--line)}.proof-sequence li::before{display:block;margin-bottom:7px}
+      .proof-grid,.testimonials{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
     @media(min-width:900px){
       .section{padding:98px 0}.hero-layout{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:46px}.hero-brand{margin-bottom:42px}
       .hero h1{font-size:2.7rem}.hero .vsl-wrap{max-width:348px}.hero-media{align-self:center}
       .editorial-grid{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:65px}
-      .agent-results{grid-template-columns:repeat(4,minmax(0,1fr));gap:28px}.agent-result{border-bottom:0}.agent-result p{font-size:.95rem}
-      .offer-card{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:38px}.offer-purchase{padding:0 0 0 32px;border-left:1px solid var(--line)}
-      .offer-value{padding-top:0}.author-card{grid-template-columns:360px 1fr;gap:58px}
+      .offer-card{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:38px}.offer-purchase{margin:0;padding:28px}
+      .author-card{grid-template-columns:360px 1fr;gap:58px}
       .language-example{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid rgba(177,211,198,.25);border-radius:16px;overflow:hidden}
       .example-label{grid-column:1 / -1;margin:0;padding:16px;border-bottom:1px solid rgba(177,211,198,.25)}
       .language-step{border:0;padding:25px}.language-step+.language-step{border-left:1px solid rgba(177,211,198,.25)}.language-step:last-child{border-bottom:0}
     }
+    @media(min-width:1200px){.agent-results{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}}
+    @media(max-height:700px) and (min-width:640px){.vsl-wrap{width:min(100%,250px)}.hero{padding-bottom:44px}}
+    @media(max-height:680px) and (max-width:639px){.vsl-wrap{width:min(100%,300px)}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important}}
   </style>
 
@@ -338,7 +356,7 @@
               </a>
             </div>
           </div>
-          <p class="vsl-caption"><strong>Conheça a ideia que deu origem ao método.</strong><br>Apresentação do processo de mostrar uma transformação antes de oferecer o serviço.</p>
+          <p class="vsl-caption"><strong>Veja como mostrar uma transformação antes de oferecer o serviço.</strong><br>A apresentação atual explica o mecanismo que deu origem ao Método Express.</p>
         </div>
       </div>
     </div>
@@ -355,12 +373,18 @@
         <div class="ba">
           <figure class="ba-shot">
             <figcaption class="ba-label">Perfil atual</figcaption>
-            <img src="assets/images/perfil-antes-480.webp" srcset="assets/images/perfil-antes-320.webp 320w, assets/images/perfil-antes-480.webp 480w" sizes="(min-width: 900px) 380px, (min-width: 640px) 40vw, calc(100vw - 40px)" alt="Perfil atual da Barbearia Vintage, com nome, arroba e métricas preservados no registro" width="480" height="853" loading="lazy" decoding="async">
+            <a class="media-link" href="assets/images/perfil-antes-480.webp" target="_blank" rel="noopener" aria-label="Ampliar o perfil atual da Barbearia Vintage em nova aba">
+              <img src="assets/images/perfil-antes-480.webp" srcset="assets/images/perfil-antes-320.webp 320w, assets/images/perfil-antes-480.webp 480w" sizes="(min-width: 900px) 400px, (min-width: 768px) 43vw, calc(100vw - 40px)" alt="Perfil atual da Barbearia Vintage, com nome, arroba e métricas preservados no registro" width="480" height="853" loading="lazy" decoding="async">
+              <span class="image-action">↗ Ampliar perfil atual</span>
+            </a>
           </figure>
           <span class="ba-arrow" aria-hidden="true">↓</span>
           <figure class="ba-shot ba-shot-after">
             <figcaption class="ba-label">Simulação de transformação</figcaption>
-            <img src="assets/images/perfil-depois-480.webp" srcset="assets/images/perfil-depois-320.webp 320w, assets/images/perfil-depois-480.webp 480w" sizes="(min-width: 900px) 380px, (min-width: 640px) 40vw, calc(100vw - 40px)" alt="Simulação visual da Barbearia Vintage com proposta de bio, destaques e organização do feed" width="480" height="853" loading="lazy" decoding="async">
+            <a class="media-link" href="assets/images/perfil-depois-480.webp" target="_blank" rel="noopener" aria-label="Ampliar a simulação de transformação da Barbearia Vintage em nova aba">
+              <img src="assets/images/perfil-depois-480.webp" srcset="assets/images/perfil-depois-320.webp 320w, assets/images/perfil-depois-480.webp 480w" sizes="(min-width: 900px) 400px, (min-width: 768px) 43vw, calc(100vw - 40px)" alt="Simulação visual da Barbearia Vintage com proposta de bio, destaques e organização do feed" width="480" height="853" loading="lazy" decoding="async">
+              <span class="image-action">↗ Ampliar simulação</span>
+            </a>
           </figure>
         </div>
         <p class="asset-caption">Exemplo visual utilizado no Método Express. A simulação apresenta uma direção para o perfil.</p>
@@ -378,11 +402,12 @@
           <h2 id="agente-titulo">Você envia as informações. O Agente Express prepara <span class="accent">o que mostrar, o que dizer e o que entregar.</span></h2>
           <p class="prose">Você não precisa criar prompts complicados ou começar cada arte de uma tela vazia. O agente já vem preparado com o processo. Você escolhe a oportunidade, confere o resultado e faz o material chegar ao negócio.</p>
         </div>
-        <div class="agent-results" aria-label="Quatro resultados preparados pelo Agente Express">
-          <article class="agent-result"><span class="agent-number">01 / PESQUISA</span><h3>Encontra</h3><p>Pesquisa e organiza negócios para você analisar, conforme o segmento e a região escolhidos.</p></article>
-          <article class="agent-result"><span class="agent-number">02 / CRIAÇÃO</span><h3>Transforma</h3><p>Analisa o link ou print do perfil e cria uma demonstração visual para aquele negócio.</p></article>
-          <article class="agent-result"><span class="agent-number">03 / CONVERSA</span><h3>Conversa</h3><p>Prepara a abordagem, respostas, follow-up, proposta e apoio para responder objeções.</p></article>
-          <article class="agent-result"><span class="agent-number">04 / PRODUÇÃO</span><h3>Entrega</h3><p>Gera os materiais do pacote usando a direção visual aprovada. Você confere e solicita os ajustes.</p></article>
+        <p class="agent-flow-label">Veja o fluxo do Agente Express</p>
+        <div class="agent-results" role="list" aria-label="Fluxo de quatro resultados preparados pelo Agente Express">
+          <article class="agent-result" role="listitem"><span class="agent-number">01 / PESQUISA</span><h3>Encontra</h3><p>Pesquisa e organiza negócios para você analisar, conforme o segmento e a região escolhidos.</p><div class="agent-io"><div class="agent-io-row"><span class="agent-io-label">Entrada</span><span class="agent-io-value">Cidade + segmento</span></div><div class="agent-io-row"><span class="agent-io-label">Resultado</span><span class="agent-io-value">Negócios para analisar</span></div></div></article>
+          <article class="agent-result" role="listitem"><span class="agent-number">02 / CRIAÇÃO</span><h3>Transforma</h3><p>Analisa o link ou print do perfil e cria uma demonstração visual para aquele negócio.</p><div class="agent-io"><div class="agent-io-row"><span class="agent-io-label">Entrada</span><span class="agent-io-value">Link ou print do perfil</span></div><div class="agent-io-row"><span class="agent-io-label">Resultado</span><span class="agent-io-value">Demonstração visual</span></div></div></article>
+          <article class="agent-result" role="listitem"><span class="agent-number">03 / CONVERSA</span><h3>Conversa</h3><p>Prepara a abordagem, as respostas, o follow-up, a proposta e respostas para objeções.</p><div class="agent-io"><div class="agent-io-row"><span class="agent-io-label">Entrada</span><span class="agent-io-value">Mensagem recebida</span></div><div class="agent-io-row"><span class="agent-io-label">Resultado</span><span class="agent-io-value">Resposta preparada</span></div></div></article>
+          <article class="agent-result" role="listitem"><span class="agent-number">04 / PRODUÇÃO</span><h3>Entrega</h3><p>Gera os materiais do pacote usando a direção visual aprovada. Você confere e solicita os ajustes.</p><div class="agent-io"><div class="agent-io-row"><span class="agent-io-label">Entrada</span><span class="agent-io-value">Direção aprovada</span></div><div class="agent-io-row"><span class="agent-io-label">Resultado</span><span class="agent-io-value">Materiais do pacote</span></div></div></article>
         </div>
         <div class="media-pending" data-pending-asset="agente-express-demonstracao-mobile">
           <span class="pending-symbol" aria-hidden="true">▷</span>
@@ -399,13 +424,16 @@
           <h2 id="prova-mecanismo-titulo">Quando você mostra algo feito para o negócio, <span class="accent">a conversa muda.</span></h2>
           <p class="prose">Veja a transformação apresentada, a abordagem e as respostas nos registros de conversas com negócios reais.</p>
         </div>
+        <ol class="proof-sequence" aria-label="Sequência comprovada pelo mecanismo e pelo case">
+          <li>Transformação apresentada</li><li>Conversa iniciada</li><li>Interesse ou proposta</li><li>Case real de R$700</li>
+        </ol>
         <div class="proof-grid">
           <figure class="proof-card">
-            <img src="assets/images/conversa1.png" alt="Registro real da transformação apresentada e da conversa com a Prime Imóveis" width="941" height="1672" loading="lazy" decoding="async">
+            <a class="media-link" href="assets/images/conversa1.png" target="_blank" rel="noopener" aria-label="Ampliar o registro real da Prime Imóveis em nova aba"><img src="assets/images/conversa1.png" alt="Registro real da transformação apresentada e da conversa com a Prime Imóveis" width="941" height="1672" loading="lazy" decoding="async"><span class="image-action">↗ Ampliar registro</span></a>
             <figcaption class="proof-result"><strong>Prime Imóveis</strong>A simulação abriu espaço para apresentar o serviço e avançar na conversa sobre a proposta.</figcaption>
           </figure>
           <figure class="proof-card">
-            <img src="assets/images/conversa2.png" alt="Registro real da transformação apresentada e da conversa com o Dogão" width="941" height="1672" loading="lazy" decoding="async">
+            <a class="media-link" href="assets/images/conversa2.png" target="_blank" rel="noopener" aria-label="Ampliar o registro real do Dogão em nova aba"><img src="assets/images/conversa2.png" alt="Registro real da transformação apresentada e da conversa com o Dogão" width="941" height="1672" loading="lazy" decoding="async"><span class="image-action">↗ Ampliar registro</span></a>
             <figcaption class="proof-result"><strong>Dogão</strong>Após ver a ideia, o negócio demonstrou interesse em entender como o serviço funcionava.</figcaption>
           </figure>
         </div>
@@ -436,7 +464,7 @@
         <ol class="process-flow" aria-label="Quatro etapas do Método Express">
           <li><strong>Escolher</strong><span>O agente pesquisa e organiza negócios. Você escolhe uma oportunidade e envia o link ou print.</span></li>
           <li><strong>Mostrar</strong><span>O agente prepara o diagnóstico, a transformação e a primeira abordagem. Você confere e envia.</span></li>
-          <li><strong>Conversar</strong><span>O agente prepara respostas, follow-up, proposta e apoio para definir o preço e responder objeções. Você decide as condições e conduz a conversa por mensagens.</span></li>
+          <li><strong>Conversar</strong><span>O agente prepara respostas, follow-up, proposta, sugestão de preço e respostas para objeções. Você decide as condições e conduz a conversa por mensagens.</span></li>
           <li><strong>Entregar</strong><span>O agente gera logo, bio, capas e dez imagens coerentes. Você confere, solicita ajustes e envia os arquivos ao cliente.</span></li>
         </ol>
         <p class="closing">A IA faz a parte técnica. O Método Express mostra como transformar isso em um serviço que você consegue apresentar e entregar.</p>
@@ -447,17 +475,19 @@
       <div class="container editorial-grid">
         <div class="editorial-copy">
           <p class="eyebrow">O serviço que você poderá oferecer</p>
-          <h2 id="pacote-titulo">Você oferece <span class="accent">uma transformação para o Instagram do negócio.</span></h2>
+          <h2 id="pacote-titulo">Você não oferece “inteligência artificial”. <span class="accent">Você oferece uma transformação para o Instagram do negócio.</span></h2>
           <div class="prose"><p>O cliente recebe materiais para apresentar melhor sua empresa, seus produtos ou seus serviços.</p><p>A demonstração abre a conversa. Quando o cliente aprova o serviço, o Agente Express usa a direção visual escolhida para gerar os materiais. Você confere, pede os ajustes e entrega tudo pelo celular.</p></div>
+        </div>
+        <div class="package-showcase">
+          <ul class="package-components" aria-label="Componentes do pacote-base oferecido ao negócio">
+            <li><span class="component-mark" aria-hidden="true">10</span><div><strong>Dez imagens individuais para o Instagram</strong><p>Artes alinhadas ao negócio e à direção visual escolhida.</p></div></li>
+            <li><span class="component-mark" aria-hidden="true">↗</span><div><strong>Logo preparada para o perfil</strong><p>Uma apresentação visual para identificar o negócio.</p></div></li>
+            <li><span class="component-mark" aria-hidden="true">Aa</span><div><strong>Bio profissional</strong><p>Texto para apresentar o serviço ou produto com clareza.</p></div></li>
+            <li><span class="component-mark" aria-hidden="true">◉</span><div><strong>Capas para os destaques</strong><p>Elementos para organizar os assuntos do perfil.</p></div></li>
+            <li><span class="component-mark" aria-hidden="true">＋</span><div><strong>Organização e direção visual coerente</strong><p>Cores e estilo que conectam os materiais do pacote.</p></div></li>
+          </ul>
           <p class="pending-note" data-pending-asset="pacote-express-arquivos"><strong>Prévia dos arquivos da entrega</strong>Espaço reservado para o pacote real: artes individuais, logo, bio e capas em tamanho legível.</p>
         </div>
-        <ul class="package-components" aria-label="Componentes do pacote-base oferecido ao negócio">
-          <li><span class="component-mark" aria-hidden="true">10</span><div><strong>Dez imagens individuais para o Instagram</strong><p>Artes alinhadas ao negócio e à direção visual escolhida.</p></div></li>
-          <li><span class="component-mark" aria-hidden="true">↗</span><div><strong>Logo preparada para o perfil</strong><p>Uma apresentação visual para identificar o negócio.</p></div></li>
-          <li><span class="component-mark" aria-hidden="true">Aa</span><div><strong>Bio profissional</strong><p>Texto para apresentar o serviço ou produto com clareza.</p></div></li>
-          <li><span class="component-mark" aria-hidden="true">◉</span><div><strong>Capas para os destaques</strong><p>Elementos para organizar os assuntos do perfil.</p></div></li>
-          <li><span class="component-mark" aria-hidden="true">＋</span><div><strong>Organização e direção visual coerente</strong><p>Cores e estilo que conectam os materiais do pacote.</p></div></li>
-        </ul>
       </div>
     </section>
 
@@ -466,7 +496,7 @@
         <div class="editorial-copy">
           <p class="eyebrow">Sua própria vitrine profissional</p>
           <h2 id="perfil-titulo">Seu trabalho aparece. <span class="accent">Seu rosto não precisa.</span></h2>
-          <div class="prose"><p>Antes de abordar negócios, o Agente Express ajuda você a montar sua própria vitrine profissional: nome, posicionamento, identidade, foto de perfil, bio, destaques e conteúdos iniciais.</p><p>Você pode usar um perfil de marca para mostrar transformações e exemplos, conversar por mensagens e apresentar o serviço sem gravar vídeos ou expor sua vida pessoal.</p></div>
+          <div class="prose"><p>Antes de abordar negócios, o Agente Express prepara a base da sua vitrine profissional: nome, posicionamento, identidade, foto de perfil, bio, destaques e conteúdos iniciais. Você revisa e escolhe o que publicar.</p><p>Você pode usar um perfil de marca para mostrar transformações e exemplos, conversar por mensagens e apresentar o serviço sem gravar vídeos ou expor sua vida pessoal.</p></div>
         </div>
         <div class="profile-outline">
           <h3>Uma apresentação para começar</h3>
@@ -481,7 +511,7 @@
         <div class="section-head">
           <p class="eyebrow">Brasil ou exterior</p>
           <h2 id="idiomas-titulo">Você fala com o agente em português. <span class="accent">Ele prepara a conversa no idioma do cliente.</span></h2>
-          <div class="prose"><p>Recebeu uma resposta em inglês, espanhol ou outro idioma? Copie a mensagem e leve ao Agente Express. Ele explica em português o que foi dito e prepara uma resposta natural considerando o histórico da conversa.</p><p>Assim, o mesmo serviço pode ser apresentado a negócios do Brasil ou do exterior. O agente também ajuda a preparar a proposta na moeda combinada com o cliente, como real, dólar ou euro.</p></div>
+          <div class="prose"><p>Recebeu uma resposta em inglês, espanhol ou outro idioma? Copie a mensagem e leve ao Agente Express. Ele explica em português o que foi dito e prepara uma resposta natural considerando o histórico da conversa.</p><p>Assim, o mesmo serviço pode ser apresentado a negócios do Brasil ou do exterior. O agente também prepara a proposta na moeda combinada com o cliente, como real, dólar ou euro. Você revisa e combina as condições.</p></div>
         </div>
         <div class="language-example" aria-label="Exemplo didático de apoio à conversa em inglês">
           <p class="example-label">Exemplo didático de conversa · textos ilustrativos</p>
@@ -511,7 +541,7 @@
             <article class="offer-product"><span class="offer-product-title">Suporte direto e comunidade</span><p>Suporte via WhatsApp e acesso à comunidade para tirar dúvidas sobre o método.</p></article>
           </div>
           <div class="offer-purchase">
-            <p class="offer-value">No case que deu origem ao método, um único serviço de <strong>R$700</strong> representou mais de sete vezes o valor de acesso ao Método Express.</p>
+            <p class="offer-value">No case que deu origem ao método, um serviço de <strong>R$700</strong> representou mais de sete vezes o valor de acesso de <strong>R$97</strong>.</p>
             <div class="offer-price-block" data-offer-price>
               <p class="offer-price-label">Acesso ao Método Express<br>com Agente Express</p>
               <p class="offer-price">R$97</p>
@@ -598,7 +628,7 @@
       <div class="container">
         <p class="eyebrow">Seu próximo passo</p>
         <h2 id="final-titulo">Você não precisa chegar pronto. Precisa de um celular e de <span class="accent">algo concreto para mostrar.</span></h2>
-        <p class="final-copy">Com o Agente Express, você tem apoio para encontrar oportunidades, criar a transformação, preparar a conversa e produzir o pacote. Com o Método Express, você sabe como conduzir cada etapa e fazer esse serviço chegar a negócios reais.</p>
+        <p class="final-copy">O Agente Express pesquisa oportunidades, cria a transformação, prepara a conversa e produz o pacote. Com o Método Express, você sabe como conduzir cada etapa. Você escolhe, revisa, envia e combina as condições com o cliente.</p>
         <p class="final-reinforcement">Sem aparecer. Sem saber design. Sem precisar falar outro idioma. Para começar no Brasil e, se quiser, expandir para outros países.</p>
         <a href="https://pay.hotmart.com/G106758643C" class="btn" id="ctaFinal" target="_blank" rel="noopener">QUERO ACESSAR O AGENTE EXPRESS</a>
         <p class="secure-note">Pagamento processado pela Hotmart · 7 dias de garantia</p>
