@@ -109,9 +109,9 @@ test('Agente Express — estrutura ARIA associa a lista aos quatro resultados na
   const containerEnd = section[0].indexOf('\n        </div>', containerStart);
   assert.notEqual(containerEnd, -1, 'fim do contêiner dos resultados não encontrado');
   const results = section[0].slice(containerStart, containerEnd);
-  const cards = results.match(/<article class="agent-result"[^>]*>[\s\S]*?<\/article>/g) || [];
+  const cards = (results.match(/^ {10}<div class="agent-result"[^\n]*$/gm) || []).map((card) => card.trim());
   assert.equal(cards.length, 4);
-  for (const card of cards) assert.match(card, /^<article class="agent-result" role="listitem">/);
+  for (const card of cards) assert.match(card, /^<div class="agent-result" role="listitem">/);
   assert.deepEqual(
     cards.map((card) => visibleText(card.match(/<h3>([\s\S]*?)<\/h3>/)[1])),
     ['Encontra', 'Transforma', 'Conversa', 'Entrega']
