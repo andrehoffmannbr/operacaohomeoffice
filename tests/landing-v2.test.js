@@ -97,6 +97,27 @@ test('Agente Express — apresenta quatro resultados e a participação do aluno
   assert.match(cssAtRule('@media(min-width:1200px)'), /\.agent-results\s*\{[^}]*grid-template-columns:\s*repeat\(4,/);
 });
 
+test('Agente Express — estrutura ARIA associa a lista aos quatro resultados na ordem original', () => {
+  const section = INDEX_SOURCE.match(/<section[^>]*id="agente-express"[\s\S]*?<\/section>/);
+  assert.ok(section, 'seção do Agente Express não encontrada');
+  const openingTag = section[0].match(/<div class="agent-results"[^>]*>/);
+  assert.ok(openingTag, 'contêiner dos resultados não encontrado');
+  assert.match(openingTag[0], /\brole="list"/);
+  assert.match(openingTag[0], /\baria-label="Fluxo de quatro resultados preparados pelo Agente Express"/);
+
+  const containerStart = section[0].indexOf(openingTag[0]);
+  const containerEnd = section[0].indexOf('\n        </div>', containerStart);
+  assert.notEqual(containerEnd, -1, 'fim do contêiner dos resultados não encontrado');
+  const results = section[0].slice(containerStart, containerEnd);
+  const cards = results.match(/<article class="agent-result"[^>]*>[\s\S]*?<\/article>/g) || [];
+  assert.equal(cards.length, 4);
+  for (const card of cards) assert.match(card, /^<article class="agent-result" role="listitem">/);
+  assert.deepEqual(
+    cards.map((card) => visibleText(card.match(/<h3>([\s\S]*?)<\/h3>/)[1])),
+    ['Encontra', 'Transforma', 'Conversa', 'Entrega']
+  );
+});
+
 test('Agente Express — antes/depois real apresenta o mecanismo e mantém imagens responsivas', () => {
   assert.match(STYLE_SOURCE, /\.ba\s*\{[^}]*grid-template-columns:\s*minmax\(0,1fr\);/);
   assert.doesNotMatch(cssAtRule('@media(min-width:640px)'), /\.ba\s*\{/);
