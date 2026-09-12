@@ -395,7 +395,7 @@ test('V2.1 — depoimentos ficam lado a lado no desktop e fora do caminho críti
   assert.doesNotMatch(INDEX_VISIBLE, /\bPIX\b|R\$\s*3[.]?500/i);
 });
 
-test('V2.1 — imagens abaixo da dobra são lazy e poster local da VSL tem prioridade alta', () => {
+test('V2.1 — rota crítica prioriza o poster só no desktop e mantém o FAQ fora da contenção', () => {
   const images = INDEX_SOURCE.match(/<img[^>]*>/g) || [];
   const local = images.filter((tag) => /src="assets\//.test(tag));
   assert.ok(local.length >= 6, 'ativos reais essenciais devem permanecer');
@@ -410,8 +410,17 @@ test('V2.1 — imagens abaixo da dobra são lazy e poster local da VSL tem prior
   assert.match(thumbnail, /width="720"/);
   assert.match(thumbnail, /height="1279"/);
   assert.match(thumbnail, /loading="eager"/);
-  assert.match(thumbnail, /fetchpriority="high"/);
+  assert.match(thumbnail, /fetchpriority="low"/);
   assert.doesNotMatch(thumbnail, /loading="lazy"/);
+  const posterPreload = INDEX_SOURCE.match(/<link[^>]*rel="preload"[^>]*href="assets\/images\/vsl-poster\.webp"[^>]*>/);
+  assert.ok(posterPreload);
+  assert.match(posterPreload[0], /as="image"/);
+  assert.match(posterPreload[0], /fetchpriority="high"/);
+  assert.match(posterPreload[0], /media="\(min-width: 900px\)"/);
+  assert.equal((INDEX_SOURCE.match(/fetchpriority="high"/g) || []).length, 1);
+  assert.match(STYLE_SOURCE, /main>\.section:not\(#faq\)\s*\{[^}]*content-visibility:\s*auto;[^}]*contain-intrinsic-size:\s*auto 900px/);
+  assert.doesNotMatch(STYLE_SOURCE, /#faq\s*\{[^}]*content-visibility:\s*auto/);
+  assert.doesNotMatch(STYLE_SOURCE, /\.hero[^{}]*\{[^}]*content-visibility:\s*auto/);
 });
 
 test('V2.1 — continua em HTML, CSS e JS puros, com fontes self-hosted', () => {

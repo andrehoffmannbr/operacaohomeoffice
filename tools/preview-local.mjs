@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const baseline = '8046fb8f739f414ca0b332bb555aa2458c1c42c6';
+const baseline = '9f45645389961c6b1448033e21e6ddb026beb660'; // 8046fb8^
 const before = execFileSync('git', ['show', `${baseline}:index.html`], { cwd: root, encoding: 'utf8' });
 const port = Number(process.env.LOCAL_PREVIEW_PORT || 4173);
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.svg': 'image/svg+xml' };

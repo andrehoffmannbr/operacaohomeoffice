@@ -43,7 +43,7 @@ YouTube permanece habilitado para a verificação do player. O HTTP 202 desta
 prévia é uma simulação, não comprova aceitação pela Meta.
 
 A comparação anterior usa o HTML do commit
-`8046fb8f739f414ca0b332bb555aa2458c1c42c6`, com scripts e ativos preservados. A
+`9f45645389961c6b1448033e21e6ddb026beb660` (`8046fb8^`), com scripts e ativos preservados. A
 instrumentação existe apenas na resposta do servidor de revisão. `tools/`,
 `screenshots/`, testes e Markdown são excluídos do artefato Vercel.
 
@@ -80,8 +80,10 @@ Meta. O endpoint e `script.js` não foram alterados nesta implementação.
 ## VSL e mídia
 
 O vídeo `fIDX2aD1TdQ` e a capa local `assets/images/vsl-poster.webp` foram
-preservados. Contêiner 9:16, imagem com prioridade alta e player/API YouTube
-carregados somente após clique ou Enter. Controles nativos disponíveis. A copy
+preservados. O contêiner continua 9:16; o preload do poster recebe prioridade
+alta apenas a partir de 900 px, quando ele é o LCP, enquanto o `<img>` mantém
+prioridade baixa. No celular, o LCP é o título. Player/API YouTube são carregados
+somente após clique ou Enter. Controles nativos disponíveis. A copy
 identifica o vídeo como apresentação do mecanismo original; a compatibilidade
 com a nova oferta ainda precisa de revisão e VSL atualizada.
 
@@ -92,6 +94,9 @@ existir um timestamp confirmado. Isso não bloqueia a oferta.
 Imagens abaixo da dobra têm carregamento tardio e dimensões declaradas. Naldo e
 Amanda mantêm `preload="none"`, controles e posters carregados perto da tela.
 Nenhum ativo real foi alterado ou apresentado como resultado do agente novo.
+As seções filhas de `main`, exceto o FAQ interativo, usam
+`content-visibility: auto` com espaço intrínseco reservado; o hero permanece
+fora dessa regra e visível desde o HTML inicial.
 
 ## Validação
 
